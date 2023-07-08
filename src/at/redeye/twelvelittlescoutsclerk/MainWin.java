@@ -527,7 +527,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
        
         if( checkAz() )
             invokeDialogUnique(new Member(this));
-        
+       
     }//GEN-LAST:event_jMenuItemKundenActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed

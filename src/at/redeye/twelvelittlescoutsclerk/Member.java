@@ -437,10 +437,10 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
     private void newEntry() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException {
                        
-        DBKunden kunde = new DBKunden();
-        kunde.az_idx.loadFromCopy(mainwin.getAZIdx());
+        DBMember member = new DBMember();
+        member.az_idx.loadFromCopy(mainwin.getAZIdx());
         
-        CreateKunde create_kunde = new CreateKunde(mainwin, this, kunde);
+        CreateKunde create_kunde = new CreateKunde(mainwin, this, member);
         
         invokeDialogModal(create_kunde);
         
@@ -448,10 +448,10 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         {        
             mainwin.getAudit().openNewAudit();
             
-            create_kunde.createNewKunde(getTransaction(), kunde, create_kunde.getMentor(), create_kunde.isTrainer());
+            create_kunde.createNewKunde(getTransaction(), member, create_kunde.getMentor(), create_kunde.isTrainer());
                                                                      
-            tm.add(kunde, true, true);
-            values.add(kunde);
+            tm.add(member, true, true);
+            values.add(member);
             setEdited();
             save();
             feed_table();

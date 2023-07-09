@@ -275,27 +275,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
                      @Override
                      public void do_stuff() throws Exception {
-                         
-                         UpdateBonusSystem updater = new UpdateBonusSystem(root, getTransaction(), mainwin.getAZIdx(), audit);
-                                         
-                         DBKunden entry = values.get(i);
-                         
-                         StringBuilder error_msg = new StringBuilder();
-                         
-                         if( !updater.canDeleteKunde(entry,error_msg)) {
-                             JOptionPane.showMessageDialog(parent, MlM("Kunde kann nicht gelöscht werden.\n") + error_msg);
-                             return;
-                         }
-                         
-                         updater.deleteKunde(entry);
-                         /*
-                         getTransaction().updateValues(
-                                 "delete from " + entry.getName() + " where "
-                                 + getTransaction().markColumn("idx") + " = "
-                                 + ((Integer) entry.idx.getValue()).toString());
-                                 * 
-                                 */
-
+                                                  
                          values.remove(i);
                          tm.remove(i);
                          setEdited();
@@ -335,20 +315,15 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
     private void save() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
-        UpdateBonusSystem updaterBonus = new UpdateBonusSystem(root, getTransaction(), mainwin.getAZIdx(), mainwin.getAudit());
-
         for (Integer i : tm.getEditedRows()) {
 
             if( i < 0 )
                 continue;
             
-            DBKunden entry = values.get(i);
+            DBMember entry = values.get(i);
 
             entry.hist.setAeHist(root.getUserName());
             getTransaction().updateValues(entry);
-
-            updaterBonus.updateKundenDatenInBonusSystem(entry);
-            updaterBonus.insertKundenDatenIfNotExists(entry);
         }
 
         getTransaction().commit();
@@ -384,7 +359,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
             return;
         }
 
-        final EditKunde editkunde = new EditKunde(mainwin, values.get(i));
+        final EditMember editkunde = new EditMember(mainwin, values.get(i));
         editkunde.registerOnCloseListener(new Runnable() {
 
             @Override
@@ -440,15 +415,13 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         DBMember member = new DBMember();
         member.az_idx.loadFromCopy(mainwin.getAZIdx());
         
-        CreateKunde create_kunde = new CreateKunde(mainwin, this, member);
+        CreateMember create_kunde = new CreateMember(mainwin, this, member);
         
         invokeDialogModal(create_kunde);
         
         if( create_kunde.pressedSave() )
         {        
-            mainwin.getAudit().openNewAudit();
-            
-            create_kunde.createNewKunde(getTransaction(), member, create_kunde.getMentor(), create_kunde.isTrainer());
+            mainwin.getAudit().openNewAudit();            
                                                                      
             tm.add(member, true, true);
             values.add(member);

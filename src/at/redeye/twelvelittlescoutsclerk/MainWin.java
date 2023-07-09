@@ -18,6 +18,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.imports.ImportMemberFromScoreg;
 import at.redeye.twelvelittlescoutsclerk.reports.audit.ReportAudit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -149,7 +150,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMDBExport = new javax.swing.JMenuItem();
         jMDBImport = new javax.swing.JMenuItem();
         jMResetDB = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jMenuItem12 = new javax.swing.JMenuItem();
+        jMMemberImport = new javax.swing.JMenuItem();
         jMQuit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         jMenuItemKunden = new javax.swing.JMenuItem();
@@ -202,6 +205,11 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
 
         jMenu1.setText("Programm");
+        jMenu1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu1ActionPerformed(evt);
+            }
+        });
 
         jMDatabase.setText("Datenbankverbindung");
         jMDatabase.addActionListener(new java.awt.event.ActionListener() {
@@ -234,6 +242,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu1.add(jMResetDB);
+        jMenu1.add(jSeparator1);
 
         jMenuItem12.setText("Abrechnungszeitraum löschen");
         jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
@@ -242,6 +251,14 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu1.add(jMenuItem12);
+
+        jMMemberImport.setText("Mitgliederdaten importieren");
+        jMMemberImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMMemberImportActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMMemberImport);
 
         jMQuit.setText("Beenden");
         jMQuit.addActionListener(new java.awt.event.ActionListener() {
@@ -669,6 +686,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         invokeDialogModal(new DeleteAZ(this));
         
     }//GEN-LAST:event_jMenuItem12ActionPerformed
+
+    private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenu1ActionPerformed
+
+    private void jMMemberImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMMemberImportActionPerformed
+        
+        ImportMemberFromScoreg.importMember(this);
+        
+    }//GEN-LAST:event_jMMemberImportActionPerformed
     
 
     public String getLastOpenPath() {
@@ -706,6 +733,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMDBExport;
     private javax.swing.JMenuItem jMDBImport;
     private javax.swing.JMenuItem jMDatabase;
+    private javax.swing.JMenuItem jMMemberImport;
     private javax.swing.JMenuItem jMPlugin;
     private javax.swing.JMenuItem jMQuit;
     private javax.swing.JMenuItem jMResetDB;
@@ -727,6 +755,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JRadioButtonMenuItem jRNimbus;
     private javax.swing.JRadioButtonMenuItem jRSystem;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JTextArea jTComment;
     // End of variables declaration//GEN-END:variables

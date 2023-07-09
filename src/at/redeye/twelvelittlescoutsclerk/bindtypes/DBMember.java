@@ -12,6 +12,8 @@ import at.redeye.FrameWork.base.bindtypes.*;
  */
 public class DBMember extends DBStrukt
 {
+    public static final String KUNR_IDX_SEQUENCE = "KUNR_IDX_SEQUENCE";
+    
     public DBInteger      idx = new DBInteger("idx", "Idx");   
     public DBString       kundennummer = new DBString("kundennummer", "Kundennummmer", 50);
     public DBString       name = new DBString("name", "Name", 50 );

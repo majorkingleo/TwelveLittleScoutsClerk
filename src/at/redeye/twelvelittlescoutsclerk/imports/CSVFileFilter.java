@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package at.redeye.twelvelittlescoutsclerk;
+package at.redeye.twelvelittlescoutsclerk.imports;
 
 import at.redeye.FrameWork.utilities.FileExtFilter;
 import java.io.File;

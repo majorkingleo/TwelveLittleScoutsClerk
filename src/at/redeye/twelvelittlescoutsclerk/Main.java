@@ -131,13 +131,13 @@ public class Main extends BaseModuleLauncher
     
     private boolean autocreateInternalDB() throws ClassNotFoundException, UnSupportedDatabaseException, SQLException, MissingConnectionParamException
     {
-        String db_name = Setup.getHiddenUserHomeFileName("GriesdornSystem.db");
+        String db_name = Setup.getHiddenUserHomeFileName("TwelveLittleScoutsClerk.db");
 
         File f = new File( db_name );
         
         // Migration ins .Disnstplan Verzeichnis        
         if( !f.isDirectory() )
-            db_name = Setup.getAppConfigFile(root.getAppName(),"GriesdornSystem.db");
+            db_name = Setup.getAppConfigFile(root.getAppName(),"TwelveLittleScoutsClerk.db");
         
         ConnectionDefinition connparams = new ConnectionDefinition(
                "",

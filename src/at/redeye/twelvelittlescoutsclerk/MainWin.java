@@ -492,7 +492,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
     private void jBNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBNewActionPerformed
                
-        invokeDialogModal(new CreateAZ(this));
+        invokeDialogModal(new CreateBP(this));
         
     }//GEN-LAST:event_jBNewActionPerformed
 
@@ -529,7 +529,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
                     root.closeAllWindowsExceptThisOne(mainwin);
 
-                    CreateAZ.AZNameWrapper wrapper = (CreateAZ.AZNameWrapper) jCAZ.getSelectedItem();
+                    CreateBP.AZNameWrapper wrapper = (CreateBP.AZNameWrapper) jCAZ.getSelectedItem();
 
                     if (wrapper != null) {
                        changeAZ(wrapper.az);                        
@@ -658,7 +658,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         };
         */
-        AZEdit az_edit = new AZEdit(root, this, az);
+        BPEdit az_edit = new BPEdit(root, this, az);
         
         invokeDialogModal(az_edit);          
         
@@ -683,7 +683,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
     private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem12ActionPerformed
         
-        invokeDialogModal(new DeleteAZ(this));
+        invokeDialogModal(new DeleteBP(this));
         
     }//GEN-LAST:event_jMenuItem12ActionPerformed
 
@@ -869,7 +869,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
                 az_other.loadFromCopy(j);
             }
             
-            jCAZ.addItem(new CreateAZ.AZNameWrapper(j));
+            jCAZ.addItem(new CreateBP.AZNameWrapper(j));
             if (j.idx.getValue().equals(az.idx.getValue())) {                                   
                 preselect = count;
             }

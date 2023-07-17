@@ -17,7 +17,7 @@ import javax.swing.JFrame;
  *
  * @author martin
  */
-public class AZEdit extends BaseDialogDialog {
+public class BPEdit extends BaseDialogDialog {
     
     DBBillingPeriod az;
     DBBillingPeriod az_save;
@@ -25,7 +25,7 @@ public class AZEdit extends BaseDialogDialog {
     /**
      * Creates new form AZEdit
      */
-    public AZEdit(Root root, JFrame parent, DBBillingPeriod az )
+    public BPEdit(Root root, JFrame parent, DBBillingPeriod az )
     {
         super( parent, root, "Abrechnungszeitraum Editieren");
         

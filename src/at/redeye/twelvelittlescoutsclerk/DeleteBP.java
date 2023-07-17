@@ -15,7 +15,7 @@ import at.redeye.Setup.dbexport.ExportDialog;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
-import at.redeye.twelvelittlescoutsclerk.CreateAZ.AZNameWrapper;
+import at.redeye.twelvelittlescoutsclerk.CreateBP.AZNameWrapper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterface {
+public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterface {
          
     
     private DBBillingPeriod az = new DBBillingPeriod();
@@ -40,7 +40,7 @@ public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterf
     /**
      * Creates new form CreateAZ
      */
-    public DeleteAZ(MainWin mainwin) {
+    public DeleteBP(MainWin mainwin) {
         super( mainwin.getRoot(), "Abrechnungszeitraum" );
         initComponents();        
                 
@@ -50,7 +50,7 @@ public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterf
         
         final Transaction trans = getTransaction();
 
-        new AutoMBox(DeleteAZ.class.getName()) {
+        new AutoMBox(DeleteBP.class.getName()) {
 
             @Override
             public void do_stuff() throws Exception {
@@ -62,7 +62,7 @@ public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterf
 
                 for( DBBillingPeriod j : jt )
                 {
-                    jCold.addItem(new CreateAZ.AZNameWrapper(j));
+                    jCold.addItem(new CreateBP.AZNameWrapper(j));
                     if( j.idx.getValue().equals(az.idx.getValue()) )
                     {
                         preselect = count;
@@ -174,7 +174,7 @@ public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterf
     {
         Transaction trans = getTransaction();
         
-       UpdateAZ updateAz = new UpdateAZ(trans, this );
+       UpdateBP updateAz = new UpdateBP(trans, this );
        updateAz.deleteAZ(idx);
     }    
     
@@ -231,7 +231,7 @@ public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterf
 
         gui_to_var();                                      
 
-        AutoMBox am = new AutoMBox(DeleteAZ.class.getName()) {
+        AutoMBox am = new AutoMBox(DeleteBP.class.getName()) {
             @Override
             public void do_stuff() throws Exception {
 

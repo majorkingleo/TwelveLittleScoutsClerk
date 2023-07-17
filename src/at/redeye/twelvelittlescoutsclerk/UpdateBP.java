@@ -19,14 +19,14 @@ import org.apache.log4j.Logger;
  *
  * @author martin
  */
-public class UpdateAZ {
+public class UpdateBP {
     
-    private static final Logger logger = Logger.getLogger(UpdateAZ.class);
+    private static final Logger logger = Logger.getLogger(UpdateBP.class);
     
     Transaction trans;
     NewSequenceValueInterface dialog;
     
-    public UpdateAZ( Transaction trans, NewSequenceValueInterface dialog )
+    public UpdateBP( Transaction trans, NewSequenceValueInterface dialog )
     {
         this.trans = trans;
         this.dialog = dialog;

@@ -23,7 +23,7 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterface {
+public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterface {
     
     static class AZNameWrapper
     {
@@ -50,7 +50,7 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
     /**
      * Creates new form CreateAZ
      */
-    public CreateAZ(MainWin mainwin) {
+    public CreateBP(MainWin mainwin) {
         super( mainwin.getRoot(), "Abrechnungszeitraum" );
         initComponents();        
                 
@@ -60,7 +60,7 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
         
         final Transaction trans = getTransaction();
 
-        new AutoMBox(CreateAZ.class.getName()) {
+        new AutoMBox(CreateBP.class.getName()) {
 
             @Override
             public void do_stuff() throws Exception {
@@ -194,7 +194,7 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
     {
         Transaction trans = getTransaction();
         
-       UpdateAZ updateAz = new UpdateAZ(trans, this );
+       UpdateBP updateAz = new UpdateBP(trans, this );
        updateAz.copyData2NewAZ(idx, az_other);
     }    
     
@@ -226,7 +226,7 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
 
         gui_to_var();                               
         
-        new AutoMBox(CreateAZ.class.getName()) {
+        new AutoMBox(CreateBP.class.getName()) {
 
             @Override
             public void do_stuff() throws Exception {

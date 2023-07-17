@@ -123,7 +123,7 @@ public class Main extends BaseModuleLauncher
                             logger.error("Fehler beim Einrichten der Datenbank!");
                             trans.rollback();
                         }                  
-                    }                    
+                    }
                 }
             }
         };

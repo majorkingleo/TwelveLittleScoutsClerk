@@ -25,8 +25,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -47,7 +51,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     
     Main main;
     String last_path;
-    DBBillingPeriod az = new DBBillingPeriod();
+    DBBillingPeriod bp = new DBBillingPeriod();
     boolean started = false;    
     Audit audit;
     /**
@@ -71,19 +75,23 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             @Override
             public void do_stuff() throws Exception {
                 
-                az.idx.loadFromString(last_az);
+                bp.idx.loadFromString(last_az);
                 
-                if( getTransaction().fetchTableWithPrimkey(az) )                
-                    changeAZ(az, false);
+                if( getTransaction().fetchTableWithPrimkey(bp) )                
+                    changeAZ(bp, false);
                 else {
-                    az.idx.loadFromCopy(0);
+                    bp.idx.loadFromCopy(1);
+                    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
+                    cal.setTime(new Date(System.currentTimeMillis()));
+                    int year = cal.get(Calendar.YEAR);                    
+                    bp.title.loadFromCopy(String.format("%d",year));
                     // damit die Combobox befüllt ist
-                    changeAZ(az, false, true);
+                    changeAZ(bp, false, true);
                 }
             }
         };
         
-        bindVar(jTComment,az.comment);
+        bindVar(jTComment,bp.comment);
         
         var_to_gui();
         
@@ -500,16 +508,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     {
         gui_to_var();
 
-        if( az.idx.getValue() > 0 ) {
+        if( bp.idx.getValue() > 0 ) {
             
             DBBillingPeriod other = new DBBillingPeriod();
-            other.loadFromCopy(az);
+            other.loadFromCopy(bp);
             getTransaction().fetchTableWithPrimkey(other);
             
-            if (!other.comment.getValue().equals(az.comment.getValue()))
+            if (!other.comment.getValue().equals(bp.comment.getValue()))
             {
-                az.hist.setAeHist(root.getUserName());
-                getTransaction().updateValues(az);      
+                bp.hist.setAeHist(root.getUserName());
+                getTransaction().updateValues(bp);      
                 getTransaction().commit();
             }
         }
@@ -658,7 +666,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         };
         */
-        BPEdit az_edit = new BPEdit(root, this, az);
+        BPEdit az_edit = new BPEdit(root, this, bp);
         
         invokeDialogModal(az_edit);          
         
@@ -669,7 +677,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
                 @Override
                 public void do_stuff() throws Exception {
                     DBBillingPeriod az_new = new DBBillingPeriod();
-                    az_new.loadFromCopy(az);
+                    az_new.loadFromCopy(bp);
 
                     started = false;
                     changeAZ(az_new, false);
@@ -718,7 +726,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         };
         
         root.getSetup().setLocalConfig("LastPath", last_path);
-        root.getSetup().setLocalConfig(CONFIG_LAST_AZ, String.valueOf(az.idx.getValue()));
+        root.getSetup().setLocalConfig(CONFIG_LAST_AZ, String.valueOf(bp.idx.getValue()));
         super.close();
     }
  
@@ -832,7 +840,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     
     void updateAZList() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
     {
-        changeAZ(az,true);
+        changeAZ(bp,true);
     }    
 
     void changeAZ(DBBillingPeriod az_other) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
@@ -850,13 +858,19 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         if( save_current )
             saveCurrentAZ();
         
-        az.loadFromCopy(az_other);
+        bp.loadFromCopy(az_other);
         Transaction trans = getTransaction();
         
-        trans.fetchTableWithPrimkey(az);
+        trans.fetchTableWithPrimkey(bp);
 
         List<DBBillingPeriod> jt = getTransaction().fetchTable2(new DBBillingPeriod(), "order by " + getTransaction().markColumn("hist_anzeit") + " desc");
 
+        if( jt.isEmpty() ) {
+            trans.insertValues(bp);
+            trans.commit();
+            jt.add(bp);
+        }
+        
         jCAZ.removeAllItems();
         
         int preselect = -1;
@@ -870,7 +884,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
             
             jCAZ.addItem(new CreateBP.BPNameWrapper(j));
-            if (j.idx.getValue().equals(az.idx.getValue())) {                                   
+            if (j.idx.getValue().equals(bp.idx.getValue())) {                                   
                 preselect = count;
             }
 
@@ -885,17 +899,17 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     }
 
     public DBBillingPeriod getAZ() {
-        return az;
+        return bp;
     }
 
     @Override
     public Integer getAZIdx() {
-        return az.idx.getValue();
+        return bp.idx.getValue();
     }
     
     public boolean isAzLocked()
     {
-        return az.isLocked();
+        return bp.isLocked();
     }
     
     public boolean checkAz()

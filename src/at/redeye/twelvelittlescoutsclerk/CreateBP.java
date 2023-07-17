@@ -25,11 +25,11 @@ import javax.swing.JTextField;
  */
 public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterface {
     
-    static class AZNameWrapper
+    static class BPNameWrapper
     {
         DBBillingPeriod az;
         
-        public AZNameWrapper( DBBillingPeriod az )
+        public BPNameWrapper( DBBillingPeriod az )
         {
             this.az = az;
         }
@@ -45,7 +45,7 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
     }              
     
     DBBillingPeriod az = new DBBillingPeriod();
-    DBBillingPeriod az_other = new DBBillingPeriod();
+    DBBillingPeriod bp_other = new DBBillingPeriod();
     MainWin mainwin;
     /**
      * Creates new form CreateAZ
@@ -71,7 +71,7 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
 
                 for( DBBillingPeriod j : jt )
                 {
-                    jCold.addItem(new AZNameWrapper(j));
+                    jCold.addItem(new BPNameWrapper(j));
                     if( j.idx.getValue().equals(az.idx.getValue()) )
                     {
                         preselect = count;
@@ -190,12 +190,12 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    void createNewAZ4Bonus( int idx ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
+    void copyDate2NewBp( int idx ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
         Transaction trans = getTransaction();
         
-       UpdateBP updateAz = new UpdateBP(trans, this );
-       updateAz.copyData2NewAZ(idx, az_other);
+       UpdateBP updateBP = new UpdateBP(trans, this );
+       updateBP.copyData2NewAZ(idx, bp_other);
     }    
     
     void createNewAZ() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
@@ -210,7 +210,7 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         Object obj = jCold.getSelectedItem();
         
         if( obj != null ) {            
-            az_other = ((AZNameWrapper) obj).az;
+            bp_other = ((BPNameWrapper) obj).az;
         }
         
         az.hist.setAnHist(root.getUserName());
@@ -219,7 +219,7 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         
         getTransaction().insertValues(az);
                 
-        createNewAZ4Bonus( az.idx.getValue() );
+        copyDate2NewBp( az.idx.getValue() );
     }
     
     private void jBSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSaveActionPerformed

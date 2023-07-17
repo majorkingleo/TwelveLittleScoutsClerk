@@ -15,7 +15,7 @@ import at.redeye.Setup.dbexport.ExportDialog;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
-import at.redeye.twelvelittlescoutsclerk.CreateBP.AZNameWrapper;
+import at.redeye.twelvelittlescoutsclerk.CreateBP.BPNameWrapper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
 
                 for( DBBillingPeriod j : jt )
                 {
-                    jCold.addItem(new CreateBP.AZNameWrapper(j));
+                    jCold.addItem(new CreateBP.BPNameWrapper(j));
                     if( j.idx.getValue().equals(az.idx.getValue()) )
                     {
                         preselect = count;
@@ -186,7 +186,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
             return false;
         }
             
-        az = ((AZNameWrapper) obj).az;        
+        az = ((BPNameWrapper) obj).az;        
      
         if( az.title.isEmptyTrimmed() )
         {

@@ -38,7 +38,7 @@ import javax.swing.UIManager;
  */
 public class MainWin extends BaseDialog implements MainWinInterface {
 
-    private static final String CONFIG_LAST_AZ = "last_az";
+    private static final String CONFIG_LAST_AZ = "last_bp";
     
     private String MESSAGE_REALLY_IMPORT_DATABASE;
     private String MESSAGE_REALLY_REALLY_IMPORT_DATABASE;    
@@ -152,7 +152,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMResetDB = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jMenuItem12 = new javax.swing.JMenuItem();
-        jMMemberImport = new javax.swing.JMenuItem();
+        jMScoregMemberImport = new javax.swing.JMenuItem();
         jMQuit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         jMenuItemKunden = new javax.swing.JMenuItem();
@@ -252,13 +252,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu1.add(jMenuItem12);
 
-        jMMemberImport.setText("Mitgliederdaten importieren");
-        jMMemberImport.addActionListener(new java.awt.event.ActionListener() {
+        jMScoregMemberImport.setText("Mitgliederdaten von Scoreg importieren");
+        jMScoregMemberImport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMMemberImportActionPerformed(evt);
+                jMScoregMemberImportActionPerformed(evt);
             }
         });
-        jMenu1.add(jMMemberImport);
+        jMenu1.add(jMScoregMemberImport);
 
         jMQuit.setText("Beenden");
         jMQuit.addActionListener(new java.awt.event.ActionListener() {
@@ -529,7 +529,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
                     root.closeAllWindowsExceptThisOne(mainwin);
 
-                    CreateBP.AZNameWrapper wrapper = (CreateBP.AZNameWrapper) jCAZ.getSelectedItem();
+                    CreateBP.BPNameWrapper wrapper = (CreateBP.BPNameWrapper) jCAZ.getSelectedItem();
 
                     if (wrapper != null) {
                        changeAZ(wrapper.az);                        
@@ -691,11 +691,11 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenu1ActionPerformed
 
-    private void jMMemberImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMMemberImportActionPerformed
+    private void jMScoregMemberImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMScoregMemberImportActionPerformed
         
         ImportMemberFromScoreg.importMember(this);
         
-    }//GEN-LAST:event_jMMemberImportActionPerformed
+    }//GEN-LAST:event_jMScoregMemberImportActionPerformed
     
 
     public String getLastOpenPath() {
@@ -733,10 +733,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMDBExport;
     private javax.swing.JMenuItem jMDBImport;
     private javax.swing.JMenuItem jMDatabase;
-    private javax.swing.JMenuItem jMMemberImport;
     private javax.swing.JMenuItem jMPlugin;
     private javax.swing.JMenuItem jMQuit;
     private javax.swing.JMenuItem jMResetDB;
+    private javax.swing.JMenuItem jMScoregMemberImport;
     private javax.swing.JMenuItem jMSettings;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -869,7 +869,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
                 az_other.loadFromCopy(j);
             }
             
-            jCAZ.addItem(new CreateBP.AZNameWrapper(j));
+            jCAZ.addItem(new CreateBP.BPNameWrapper(j));
             if (j.idx.getValue().equals(az.idx.getValue())) {                                   
                 preselect = count;
             }

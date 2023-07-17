@@ -61,7 +61,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         tm.setEditable(kunden.eintrittsdatum);                
         */
         
-        tm.setValidator(kunden.eintrittsdatum, new DateValidator());
+        tm.setValidator(kunden.entry_date, new DateValidator());
         tm.setValidator(kunden.hist.ae_zeit, new DateValidator());
         tm.setValidator(kunden.hist.an_zeit, new DateValidator());               
         

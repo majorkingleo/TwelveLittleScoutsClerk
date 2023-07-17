@@ -55,13 +55,13 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         kunde_old = new DBMember();
         kunde_old.loadFromCopy(kunde);
         
-        bindVar(jTKundennummer, kunde.kundennummer);
+        bindVar(jTKundennummer, kunde.member_registration_number);
         bindVar(jTName, kunde.name);
-        bindVar(jTVorname, kunde.vorname);
-        bindVar(jDEintrittsdatum, kunde.eintrittsdatum);
+        bindVar(jTVorname, kunde.forname);
+        bindVar(jDEintrittsdatum, kunde.entry_date);
         bindVar(jTtel,kunde.tel);
         bindVar(jCinaktiv,kunde.inaktiv);
-        bindVar(jCgekuendigt,kunde.gekuendigt);
+        bindVar(jCgekuendigt,kunde.de_registered);
                
         var_to_gui();
         
@@ -122,14 +122,14 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     {
         Transaction trans = getTransaction();
         
-        if( kunde.kundennummer.isEmptyTrimmed() ) {
+        if( kunde.member_registration_number.isEmptyTrimmed() ) {
             JOptionPane.showMessageDialog(this, MlM("Die Kundennummer darf nicht leer sein"));
             jTKundennummer.requestFocus();
             return false;
         }
         
         List<DBMember> kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.az_idx) + "  = " + kunde.az_idx
-                + " and " + trans.markColumn(kunde.kundennummer) + " = '" + kunde.kundennummer + "'" 
+                + " and " + trans.markColumn(kunde.member_registration_number) + " = '" + kunde.member_registration_number + "'" 
                 + " and " + trans.markColumn(kunde.idx) + " != " + kunde.idx.getValue());
         
         if( !kunden_list.isEmpty() ) {
@@ -144,7 +144,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
             return false;
         }
 
-        if( kunde.vorname.isEmptyTrimmed() ) {
+        if( kunde.forname.isEmptyTrimmed() ) {
             JOptionPane.showMessageDialog(this, MlM("Bitte einen Vornamen eingeben"));
             jTName.requestFocus();
             return false;
@@ -152,7 +152,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         
         kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.az_idx) + "  = " + kunde.az_idx
                 + " and " + trans.markColumn(kunde.name) + " = '" + kunde.name + "' "
-                + " and " + trans.markColumn(kunde.vorname) + " = '" + kunde.vorname + "' "
+                + " and " + trans.markColumn(kunde.forname) + " = '" + kunde.forname + "' "
                 + " and " + trans.markColumn(kunde.idx) + " != " + kunde.idx.getValue());
         
         if( !kunden_list.isEmpty() ) {

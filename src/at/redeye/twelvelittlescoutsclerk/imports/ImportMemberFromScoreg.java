@@ -51,6 +51,7 @@ public class ImportMemberFromScoreg
         kundennummern = new ArrayList();
         doppelte_kundennummern = new ArrayList();       
         unbekannte_kunden = new ArrayList();
+        trans = main.getNewTransaction();
     }
     
     public void clear()
@@ -117,7 +118,7 @@ public class ImportMemberFromScoreg
         
         for( DBMember kunde : kunden_liste )        
         {
-            kunden_by_kundennr.put(kunde.kundennummer.getValue(), kunde);
+            kunden_by_kundennr.put(kunde.member_registration_number.getValue(), kunde);
         }
         
         return kunden_by_kundennr;
@@ -155,10 +156,10 @@ public class ImportMemberFromScoreg
             
             DBMember member = new DBMember();            
             
-            member.kundennummer.loadFromString(match.getOrDefault( "Scout-Id", cols ));
-            member.vorname.loadFromString(match.getOrDefault( "Vorname",cols));
+            member.member_registration_number.loadFromString(match.getOrDefault( "Scout-Id", cols ));
+            member.forname.loadFromString(match.getOrDefault( "Vorname",cols));
             member.name.loadFromString(match.getOrDefault("Nachname", cols));
-            member.eintrittsdatum.loadFromCopy(readDate(match.getOrDefault("Eintrittsdatum",cols)));
+            member.entry_date.loadFromCopy(readDate(match.getOrDefault("Eintrittsdatum",cols)));
             member.tel.loadFromString(match.getOrDefault("Handy",cols));
                        
             if( ignore_line ) {
@@ -166,7 +167,7 @@ public class ImportMemberFromScoreg
             }
             
             member.az_idx.loadFromCopy(main.getAZIdx());
-            member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.KUNR_IDX_SEQUENCE));
+            member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
             
             trans.insertValues(member);            
         }

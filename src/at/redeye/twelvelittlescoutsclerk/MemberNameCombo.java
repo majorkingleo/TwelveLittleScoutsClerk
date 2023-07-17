@@ -45,7 +45,7 @@ public class MemberNameCombo extends Pair {
     }    
 
     public static String getName4Kunde(DBMember kunde) {
-        return kunde.name.getValue() + " " + kunde.vorname.getValue() + " (" + kunde.kundennummer + ")";
+        return kunde.name.getValue() + " " + kunde.forname.getValue() + " (" + kunde.member_registration_number + ")";
     }
 
     @Override

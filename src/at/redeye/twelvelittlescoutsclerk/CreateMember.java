@@ -44,9 +44,9 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         this.member = member;      
         this.mainwin = mainwin;
         
-        if( member.eintrittsdatum.getValue().getTime() < 10000 && 
+        if( member.entry_date.getValue().getTime() < 10000 && 
             member.idx.getValue() == 0) {
-            member.eintrittsdatum.loadFromCopy(new Date());
+            member.entry_date.loadFromCopy(new Date());
         }
         
         
@@ -60,10 +60,10 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
                 });     
                        
                             
-        bindVar(jTKundennummer,member.kundennummer);
-        bindVar(jTVorname,member.vorname);
+        bindVar(jTKundennummer,member.member_registration_number);
+        bindVar(jTVorname,member.forname);
         bindVar(jTName,member.name);
-        bindVar(jDEintrittsdatum,member.eintrittsdatum);                
+        bindVar(jDEintrittsdatum,member.entry_date);                
         
         var_to_gui();
     }
@@ -220,14 +220,14 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
     {
         Transaction trans = getTransaction();
         
-        if( member.kundennummer.isEmptyTrimmed() ) {
+        if( member.member_registration_number.isEmptyTrimmed() ) {
             JOptionPane.showMessageDialog(this, MlM("Die Kundennummer darf nicht leer sein"));
             jTKundennummer.requestFocus();
             return false;
         }
         
         List<DBMember> kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.az_idx) + "  = " + member.az_idx
-                + " and " + trans.markColumn(member.kundennummer) + " = '" + member.kundennummer + "'" );
+                + " and " + trans.markColumn(member.member_registration_number) + " = '" + member.member_registration_number + "'" );
         
         if( !kunden_list.isEmpty() ) {
             JOptionPane.showMessageDialog(this, MlM("Diese Kundennummer ist bereits vorhanden"));
@@ -241,7 +241,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
             return false;
         }
 
-        if( member.vorname.isEmptyTrimmed() ) {
+        if( member.forname.isEmptyTrimmed() ) {
             JOptionPane.showMessageDialog(this, MlM("Bitte einen Vornamen eingeben"));
             jTName.requestFocus();
             return false;
@@ -249,7 +249,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         
         kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.az_idx) + "  = " + member.az_idx
                 + " and " + trans.markColumn(member.name) + " = '" + member.name + "' "
-                + " and " + trans.markColumn(member.vorname) + " = '" + member.vorname + "' ");
+                + " and " + trans.markColumn(member.forname) + " = '" + member.forname + "' ");
         
         if( !kunden_list.isEmpty() ) {
             JOptionPane.showMessageDialog(this, MlM("Es existiert bereits ein Kunde mit diesem Namen"));

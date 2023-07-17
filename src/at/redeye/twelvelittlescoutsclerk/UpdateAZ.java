@@ -8,7 +8,7 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class UpdateAZ {
      * @throws TableBindingNotRegisteredException
      * @throws IOException 
      */
-    public void copyData2NewAZ( int new_az_idx, DBAZ az_to_copy_from ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
+    public void copyData2NewAZ( int new_az_idx, DBBillingPeriod az_to_copy_from ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
         if( new_az_idx == az_to_copy_from.idx.getValue() )
         {

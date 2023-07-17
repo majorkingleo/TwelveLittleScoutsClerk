@@ -14,7 +14,7 @@ import at.redeye.FrameWork.base.reports.ReportRenderer;
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.twelvelittlescoutsclerk.DateFilter;
 import at.redeye.twelvelittlescoutsclerk.MemberNameCombo;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAudit;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import java.util.*;
@@ -25,7 +25,7 @@ import java.util.*;
  */
 public class ReportAuditRenderer extends BaseReportRenderer implements ReportRenderer
 {           
-    protected DBAZ az;
+    protected DBBillingPeriod az;
     protected DBDateTime von;
     protected DBDateTime bis;
     protected DBAudit audit;
@@ -34,7 +34,7 @@ public class ReportAuditRenderer extends BaseReportRenderer implements ReportRen
     protected HashMap<Integer,DBMember> member_map;
     protected List<DBAudit> audit_liste;
     
-    public ReportAuditRenderer(Transaction trans, DBAZ az, DBDateTime von, DBDateTime bis, DBMember member )
+    public ReportAuditRenderer(Transaction trans, DBBillingPeriod az, DBDateTime von, DBDateTime bis, DBMember member )
     {                 
         this.az = az;
         this.von = von;

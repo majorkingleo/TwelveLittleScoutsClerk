@@ -28,7 +28,7 @@ public class DBMember extends DBStrukt
     
     public DBMember()
     {
-        super( "MEMBERS" );
+        super( "MEMBER" );
         
         add(idx);
         add(az_idx);

@@ -14,18 +14,18 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
  *
  * @author martin
  */
-public class DBAZ extends DBStrukt 
+public class DBBillingPeriod extends DBStrukt 
 {
     public DBInteger idx = new DBInteger("idx");
-    public DBString  title = new DBString("title", "Abrechnunszeitraum", 50 );
-    public DBString  comment = new DBString("comment", "Kommentar", 1000 );
+    public DBString  title = new DBString("title", "Billing Period", 50 );
+    public DBString  comment = new DBString("comment", "Comment", 1000 );
     public DBHistory    hist = new DBHistory("hist");
     public DBFlagInteger locked = new DBFlagInteger("locked");
     
     
-    public DBAZ()
+    public DBBillingPeriod()
     {
-        super( "AZ" );
+        super( "BILLING_PERIOD" );
         
         add(idx);
         add(title);
@@ -42,7 +42,7 @@ public class DBAZ extends DBStrukt
 
     @Override
     public DBStrukt getNewOne() {
-        return new DBAZ();
+        return new DBBillingPeriod();
     }
     
     public boolean isLocked()

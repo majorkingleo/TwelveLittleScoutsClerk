@@ -10,7 +10,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
@@ -256,21 +256,21 @@ public class ImportMemberFromScoreg
                     
                     mainwin.setWaitCursor();
                     
-                    DBAZ az = new DBAZ();
+                    DBBillingPeriod az = new DBBillingPeriod();
                     
                     Transaction trans = mainwin.getTransaction();
                     
-                    List<DBAZ> az_list = trans.fetchTable2(az, "order by " + trans.markColumn("hist_anzeit") + " desc" );
+                    List<DBBillingPeriod> az_list = trans.fetchTable2(az, "order by " + trans.markColumn("hist_anzeit") + " desc" );
                     
                     StringBuilder sb = new StringBuilder();                                       
 
                     boolean error_happened = false;
                     
-                    for( DBAZ current_az : az_list )
+                    for( DBBillingPeriod current_bp : az_list )
                     {                                                                    
-                        if( !importer.run(current_az.idx.getValue()) )
+                        if( !importer.run(current_bp.idx.getValue()) )
                         {                         
-                            sb.append(current_az.title.getValue() + "\n");
+                            sb.append(current_bp.title.getValue() + "\n");
                             sb.append(importer.getErrorMessage() + "\n\n");
                             error_happened = true;
                         }                        

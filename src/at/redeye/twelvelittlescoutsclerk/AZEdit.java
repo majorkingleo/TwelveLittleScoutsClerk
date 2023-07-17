@@ -10,7 +10,7 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.Root;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import javax.swing.JFrame;
 
 /**
@@ -19,20 +19,20 @@ import javax.swing.JFrame;
  */
 public class AZEdit extends BaseDialogDialog {
     
-    DBAZ az;
-    DBAZ az_save;
+    DBBillingPeriod az;
+    DBBillingPeriod az_save;
     boolean something_changed = false;
     /**
      * Creates new form AZEdit
      */
-    public AZEdit(Root root, JFrame parent, DBAZ az )
+    public AZEdit(Root root, JFrame parent, DBBillingPeriod az )
     {
         super( parent, root, "Abrechnungszeitraum Editieren");
         
         initComponents();
         
         this.az = az;
-        az_save = new DBAZ();
+        az_save = new DBBillingPeriod();
         az_save.loadFromCopy(az);
         
         bindVar(jTName, az.title);        

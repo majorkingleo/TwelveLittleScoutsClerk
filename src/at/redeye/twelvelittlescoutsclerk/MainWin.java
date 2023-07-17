@@ -17,7 +17,7 @@ import at.redeye.Setup.dbexport.ImportDialog;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.imports.ImportMemberFromScoreg;
 import at.redeye.twelvelittlescoutsclerk.reports.audit.ReportAudit;
 import java.awt.event.ActionEvent;
@@ -47,7 +47,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     
     Main main;
     String last_path;
-    DBAZ az = new DBAZ();
+    DBBillingPeriod az = new DBBillingPeriod();
     boolean started = false;    
     Audit audit;
     /**
@@ -502,7 +502,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         if( az.idx.getValue() > 0 ) {
             
-            DBAZ other = new DBAZ();
+            DBBillingPeriod other = new DBBillingPeriod();
             other.loadFromCopy(az);
             getTransaction().fetchTableWithPrimkey(other);
             
@@ -668,7 +668,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
                 @Override
                 public void do_stuff() throws Exception {
-                    DBAZ az_new = new DBAZ();
+                    DBBillingPeriod az_new = new DBBillingPeriod();
                     az_new.loadFromCopy(az);
 
                     started = false;
@@ -835,17 +835,17 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         changeAZ(az,true);
     }    
 
-    void changeAZ(DBAZ az_other) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
+    void changeAZ(DBBillingPeriod az_other) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
     {
         changeAZ(az_other,true);
     }    
     
-    void changeAZ(DBAZ az_other,boolean save_current) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
+    void changeAZ(DBBillingPeriod az_other,boolean save_current) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
     {
         changeAZ(az_other,save_current, false);
     }        
     
-    void changeAZ(DBAZ az_other,  boolean save_current, boolean load_first) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
+    void changeAZ(DBBillingPeriod az_other,  boolean save_current, boolean load_first) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
     {
         if( save_current )
             saveCurrentAZ();
@@ -855,14 +855,14 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         
         trans.fetchTableWithPrimkey(az);
 
-        List<DBAZ> jt = getTransaction().fetchTable2(new DBAZ(), "order by " + getTransaction().markColumn("hist_anzeit") + " desc");
+        List<DBBillingPeriod> jt = getTransaction().fetchTable2(new DBBillingPeriod(), "order by " + getTransaction().markColumn("hist_anzeit") + " desc");
 
         jCAZ.removeAllItems();
         
         int preselect = -1;
         int count = 0;
 
-        for (DBAZ j : jt) {
+        for (DBBillingPeriod j : jt) {
             
             if (load_first && preselect < 0) {
                 preselect = count;
@@ -884,7 +884,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         var_to_gui();
     }
 
-    public DBAZ getAZ() {
+    public DBBillingPeriod getAZ() {
         return az;
     }
 

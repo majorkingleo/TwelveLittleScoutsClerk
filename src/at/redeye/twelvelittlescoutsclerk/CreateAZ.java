@@ -12,7 +12,7 @@ import at.redeye.FrameWork.widgets.documentfields.DocumentFieldLimit;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -27,9 +27,9 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
     
     static class AZNameWrapper
     {
-        DBAZ az;
+        DBBillingPeriod az;
         
-        public AZNameWrapper( DBAZ az )
+        public AZNameWrapper( DBBillingPeriod az )
         {
             this.az = az;
         }
@@ -44,8 +44,8 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
         }
     }              
     
-    DBAZ az = new DBAZ();
-    DBAZ az_other = new DBAZ();
+    DBBillingPeriod az = new DBBillingPeriod();
+    DBBillingPeriod az_other = new DBBillingPeriod();
     MainWin mainwin;
     /**
      * Creates new form CreateAZ
@@ -64,12 +64,12 @@ public class CreateAZ extends BaseDialogDialog implements NewSequenceValueInterf
 
             @Override
             public void do_stuff() throws Exception {
-                List<DBAZ> jt = trans.fetchTable2(az, "order by " + trans.markColumn("hist_anzeit") + " desc");
+                List<DBBillingPeriod> jt = trans.fetchTable2(az, "order by " + trans.markColumn("hist_anzeit") + " desc");
 
                 int preselect = -1;
                 int count = 0;
 
-                for( DBAZ j : jt )
+                for( DBBillingPeriod j : jt )
                 {
                     jCold.addItem(new AZNameWrapper(j));
                     if( j.idx.getValue().equals(az.idx.getValue()) )

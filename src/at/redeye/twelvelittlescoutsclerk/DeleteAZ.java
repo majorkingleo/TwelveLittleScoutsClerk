@@ -16,7 +16,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.CreateAZ.AZNameWrapper;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAZ;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -33,7 +33,7 @@ import javax.swing.JTextField;
 public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterface {
          
     
-    private DBAZ az = new DBAZ();
+    private DBBillingPeriod az = new DBBillingPeriod();
     private MainWin mainwin;
     private String MESSAGE_REALLY_DELETE_AZ;
     
@@ -54,13 +54,13 @@ public class DeleteAZ extends BaseDialogDialog implements NewSequenceValueInterf
 
             @Override
             public void do_stuff() throws Exception {
-                List<DBAZ> jt = trans.fetchTable2(az, 
+                List<DBBillingPeriod> jt = trans.fetchTable2(az, 
                         " where " + trans.markColumn(az.idx) + " != " + current_az + " order by " + trans.markColumn("hist_anzeit") + " desc");
 
                 int preselect = -1;
                 int count = 0;
 
-                for( DBAZ j : jt )
+                for( DBBillingPeriod j : jt )
                 {
                     jCold.addItem(new CreateAZ.AZNameWrapper(j));
                     if( j.idx.getValue().equals(az.idx.getValue()) )

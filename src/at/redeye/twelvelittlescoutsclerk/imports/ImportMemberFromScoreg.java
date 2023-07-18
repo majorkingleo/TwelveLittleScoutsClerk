@@ -133,7 +133,7 @@ public class ImportMemberFromScoreg
             trans = main.getNewTransaction();
         }                
                         
-        CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"UTF-8"), ';', '\"');
+        CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"ISO-8859-1"), ';', '\"');
         
         List list = reader.readAll();     
         
@@ -159,7 +159,11 @@ public class ImportMemberFromScoreg
             member.member_registration_number.loadFromString(match.getOrDefault( "Scout-Id", cols ));
             member.forname.loadFromString(match.getOrDefault( "Vorname",cols));
             member.name.loadFromString(match.getOrDefault("Nachname", cols));
-            member.entry_date.loadFromCopy(readDate(match.getOrDefault("Eintrittsdatum",cols)));
+            
+            String date = match.getOrDefault("Eintrittsdatum",cols);
+            if( !date.isEmpty() ) {
+                member.entry_date.loadFromCopy(readDate(date));
+            }
             member.tel.loadFromString(match.getOrDefault("Handy",cols));
                        
             if( ignore_line ) {

@@ -4,6 +4,7 @@
  */
 package at.redeye.twelvelittlescoutsclerk.imports;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,22 +31,42 @@ public class MatchColumn {
         }
     }
         
-    private final HashMap<String,Column> columns;
+    private final HashMap<String,ArrayList<Column>> columns;
     
     public void init( String cols[] )
     {
         for( int idx = 0; idx < cols.length; idx++ ) {
-            columns.put(cols[idx],new Column( cols[idx], idx ));
+            String name = cols[idx];
+            
+            ArrayList<Column> col_array = columns.get(name);
+            
+            if( col_array == null ) {
+                col_array = new ArrayList<>();
+                columns.put(name, col_array);
+            }
+            
+            col_array.add(new Column( cols[idx], idx ));
         }
     }
     
     public String getOrDefault(String name, String[] cols) {
-        Column col = columns.get(name);
+        return getOrDefault(name,cols,0);
+    }
+    
+    public String getOrDefault(String name, String[] cols, int idx) {
         
-        if( col == null ) {
-            return new String();
-        }               
+        ArrayList<Column> col_array = columns.get(name);
         
+        if( col_array == null ) {
+             return new String();
+        }
+        
+        if( col_array.size() <= idx ) {
+             return new String();
+        }
+        
+        Column col = col_array.get(idx);
+               
         return cols[col.idx];
     }
 }

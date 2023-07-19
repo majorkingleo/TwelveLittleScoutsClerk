@@ -260,17 +260,17 @@ public class ImportMemberFromScoreg
                     
                     mainwin.setWaitCursor();
                     
-                    DBBillingPeriod az = new DBBillingPeriod();
+                    DBBillingPeriod bp = new DBBillingPeriod();
                     
                     Transaction trans = mainwin.getTransaction();
                     
-                    List<DBBillingPeriod> az_list = trans.fetchTable2(az, "order by " + trans.markColumn("hist_anzeit") + " desc" );
+                    List<DBBillingPeriod> bp_list = trans.fetchTable2(bp, "order by " + trans.markColumn("hist_anzeit") + " desc" );
                     
                     StringBuilder sb = new StringBuilder();                                       
 
                     boolean error_happened = false;
                     
-                    for( DBBillingPeriod current_bp : az_list )
+                    for( DBBillingPeriod current_bp : bp_list )
                     {                                                                    
                         if( !importer.run(current_bp.idx.getValue()) )
                         {                         

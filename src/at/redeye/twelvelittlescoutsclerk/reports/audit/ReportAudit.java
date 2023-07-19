@@ -75,7 +75,7 @@ public class ReportAudit extends BaseDialog {
                 Transaction trans = getTransaction();                
                                 
                 List<DBMember> members = trans.fetchTable2(member, 
-                        "where " + trans.markColumn(member.az_idx) + " = " + mainwin.getAZIdx()
+                        "where " + trans.markColumn(member.bp_idx) + " = " + mainwin.getAZIdx()
                         + " order by " + trans.markColumn(member.name));                
                                 
                 for( DBMember m : members ) {

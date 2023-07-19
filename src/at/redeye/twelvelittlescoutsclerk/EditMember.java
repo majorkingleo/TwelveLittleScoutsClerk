@@ -128,7 +128,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
             return false;
         }
         
-        List<DBMember> kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.az_idx) + "  = " + kunde.az_idx
+        List<DBMember> kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.bp_idx) + "  = " + kunde.bp_idx
                 + " and " + trans.markColumn(kunde.member_registration_number) + " = '" + kunde.member_registration_number + "'" 
                 + " and " + trans.markColumn(kunde.idx) + " != " + kunde.idx.getValue());
         
@@ -150,7 +150,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
             return false;
         }        
         
-        kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.az_idx) + "  = " + kunde.az_idx
+        kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.bp_idx) + "  = " + kunde.bp_idx
                 + " and " + trans.markColumn(kunde.name) + " = '" + kunde.name + "' "
                 + " and " + trans.markColumn(kunde.forname) + " = '" + kunde.forname + "' "
                 + " and " + trans.markColumn(kunde.idx) + " != " + kunde.idx.getValue());

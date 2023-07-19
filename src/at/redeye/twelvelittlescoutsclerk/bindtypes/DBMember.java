@@ -20,10 +20,10 @@ public class DBMember extends DBStrukt
     public DBString       forname = new DBString("forname", "Forname", 50 );
     public DBDateTime     entry_date = new DBDateTime("entry_date", "Entry Date");
     public DBHistory      hist = new DBHistory( "hist" );
-    public DBInteger      az_idx = new DBInteger( "az_idx" );
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBString       note = new DBString("note", "Notiz", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
-    public DBFlagInteger  inaktiv = new DBFlagInteger("inactiv","Inaktiv");
+    public DBFlagInteger  inaktiv = new DBFlagInteger("inactiv","Inactiv");
     public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");
     
     public DBMember()
@@ -31,7 +31,7 @@ public class DBMember extends DBStrukt
         super( "MEMBER" );
         
         add(idx);
-        add(az_idx);
+        add(bp_idx);
         add(member_registration_number);
         add(name);
         add(forname);
@@ -43,7 +43,7 @@ public class DBMember extends DBStrukt
         add(de_registered);
         
         idx.setAsPrimaryKey();
-        az_idx.shouldHaveIndex();        
+        bp_idx.shouldHaveIndex();        
         
         hist.setTitle(" ");
         

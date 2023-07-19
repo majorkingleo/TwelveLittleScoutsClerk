@@ -64,12 +64,12 @@ public class ReportAuditRenderer extends BaseReportRenderer implements ReportRen
                 
                 DBMember kunden = new DBMember();
                 
-                audit_liste = trans.fetchTable2(audit, " where " + trans.markColumn(kunden.az_idx) + " = " + az.idx 
+                audit_liste = trans.fetchTable2(audit, " where " + trans.markColumn(kunden.bp_idx) + " = " + az.idx 
                         + DateFilter.getVonBisFilter(trans,von,bis,audit.date) + " " + getKundenFilter()
                         + " order by " + trans.markColumn(audit.date));
                         
                 
-                List<DBMember> kunden_liste = trans.fetchTable2(kunden, "where " + trans.markColumn(kunden.az_idx) + " = " + az.idx                       
+                List<DBMember> kunden_liste = trans.fetchTable2(kunden, "where " + trans.markColumn(kunden.bp_idx) + " = " + az.idx                       
                                        + " order by " + trans.markColumn(kunden.name) + ", "  +  trans.markColumn(kunden.forname));                        
 
                 member_map = new HashMap<>();

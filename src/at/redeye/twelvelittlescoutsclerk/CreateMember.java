@@ -226,7 +226,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
             return false;
         }
         
-        List<DBMember> kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.az_idx) + "  = " + member.az_idx
+        List<DBMember> kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + "  = " + member.bp_idx
                 + " and " + trans.markColumn(member.member_registration_number) + " = '" + member.member_registration_number + "'" );
         
         if( !kunden_list.isEmpty() ) {
@@ -247,7 +247,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
             return false;
         }        
         
-        kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.az_idx) + "  = " + member.az_idx
+        kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + "  = " + member.bp_idx
                 + " and " + trans.markColumn(member.name) + " = '" + member.name + "' "
                 + " and " + trans.markColumn(member.forname) + " = '" + member.forname + "' ");
         

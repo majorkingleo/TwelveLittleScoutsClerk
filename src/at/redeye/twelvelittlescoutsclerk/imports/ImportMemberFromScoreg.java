@@ -114,7 +114,7 @@ public class ImportMemberFromScoreg
         HashMap<String,DBMember> kunden_by_kundennr = new HashMap();
         
         DBMember kunden = new DBMember();
-        List<DBMember> kunden_liste = trans.fetchTable2(kunden, "where " + trans.markColumn(kunden.az_idx) + " = " + azidx );
+        List<DBMember> kunden_liste = trans.fetchTable2(kunden, "where " + trans.markColumn(kunden.bp_idx) + " = " + azidx );
         
         for( DBMember kunde : kunden_liste )        
         {
@@ -170,7 +170,7 @@ public class ImportMemberFromScoreg
                 continue;
             }
             
-            member.az_idx.loadFromCopy(main.getAZIdx());
+            member.bp_idx.loadFromCopy(main.getAZIdx());
             member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
             
             trans.insertValues(member);            

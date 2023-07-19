@@ -50,7 +50,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         tm.hide(kunden.hist.an_user);
         tm.hide(kunden.hist.an_zeit);
         tm.hide(kunden.hist.ae_zeit);
-        tm.hide(kunden.az_idx);
+        tm.hide(kunden.bp_idx);
         tm.hide(kunden.idx);
 
         /*
@@ -98,7 +98,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
                 Transaction trans = getTransaction();
                 values = trans.fetchTable2(member,
-                        "where " + trans.markColumn(member.az_idx) + " = " + mainwin.getAZIdx()
+                        "where " + trans.markColumn(member.bp_idx) + " = " + mainwin.getAZIdx()
                         + " order by " + trans.markColumn(member.name));              
                 
                 for (DBMember entry : values) {
@@ -413,7 +413,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
     private void newEntry() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException {
                        
         DBMember member = new DBMember();
-        member.az_idx.loadFromCopy(mainwin.getAZIdx());
+        member.bp_idx.loadFromCopy(mainwin.getAZIdx());
         
         CreateMember create_kunde = new CreateMember(mainwin, this, member);
         

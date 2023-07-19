@@ -75,6 +75,8 @@ public class Main extends BaseModuleLauncher
             root.getBindtypeManager().register(new DBBillingPeriod());
             root.getBindtypeManager().register(new DBMember());            
             root.getBindtypeManager().register(new DBAudit());
+            root.getBindtypeManager().register(new DBContact());
+            root.getBindtypeManager().register(new DBMembers2Contacts());
 
             if( !dbconnection_loaded )
                 autocreateInternalDB();

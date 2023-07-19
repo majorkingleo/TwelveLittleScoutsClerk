@@ -13,14 +13,16 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
  */
 public class DBContact extends DBStrukt 
 {
+     public static final String CONTACT_IDX_SEQUENCE = "CONTACT_IDX_SEQUENCE";
+    
     public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      az_idx = new DBInteger( "bp_idx" );
+    public DBInteger      bz_idx = new DBInteger( "bp_idx" );
     public DBString       name = new DBString("name", "Name", 50 );
     public DBString       forname = new DBString("forname", "Forname", 50 );    
     public DBHistory      hist = new DBHistory( "hist" );    
     public DBString       note = new DBString("note", "Notiz", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
-    public DBString       email = new DBString("email", "Email", 50 );
+    public DBString       email = new DBString("email", "Email", 200 );
     public DBString       bank_account = new DBString("bank_account", "Bank account", 50 );
     
     public DBContact()
@@ -28,7 +30,7 @@ public class DBContact extends DBStrukt
         super("CONTACT");
         
         add(idx);
-        add(az_idx);
+        add(bz_idx);
         add(name);
         add(forname);
         add(hist);

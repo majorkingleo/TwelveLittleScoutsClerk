@@ -11,6 +11,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
@@ -173,7 +174,23 @@ public class ImportMemberFromScoreg
             member.bp_idx.loadFromCopy(main.getAZIdx());
             member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
             
-            trans.insertValues(member);            
+            trans.insertValues(member);
+            
+            for( int j = 0; j < 2; j++ ) {
+                DBContact contact = new DBContact();
+                
+                contact.bz_idx.loadFromCopy(main.getAZIdx());                
+                contact.name.loadFromCopy(match.getOrDefault("Kontakt",cols,j));
+                contact.tel.loadFromCopy(match.getOrDefault("Kontakt Telefon",cols,j));
+                contact.email.loadFromCopy(match.getOrDefault("Kontakt E-Mail",cols,j));
+                        
+                if( !contact.name.isEmptyTrimmed() ) {
+                    contact.idx.loadFromCopy(main.getNewSequenceValue(DBContact.CONTACT_IDX_SEQUENCE));
+                    logger.debug("email " + contact.email.toString());
+                    contact.hist.setAnHist(main.getRoot().getLogin());
+                    trans.insertValues(contact);
+                }
+            }
         }
         
         if( getErrorMessage() != null ) {

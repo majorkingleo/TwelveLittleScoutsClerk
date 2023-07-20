@@ -10,7 +10,7 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
  */
 public class DBMembers2Contacts extends DBStrukt
 {
-    public static final String MEMBERS2CONTACTS_IDX_SEQUENCE = "MEMBERS2CONTACTS_IDX_SEQUENCE";
+    public static final String MEMBERS2CONTACTS_IDX_SEQUENCE = "M2C_IDX_SEQUENCE";
     
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");

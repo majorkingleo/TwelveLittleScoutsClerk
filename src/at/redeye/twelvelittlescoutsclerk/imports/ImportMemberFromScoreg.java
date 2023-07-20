@@ -13,6 +13,7 @@ import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
 import java.io.*;
@@ -173,6 +174,7 @@ public class ImportMemberFromScoreg
             
             member.bp_idx.loadFromCopy(main.getAZIdx());
             member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
+            member.hist.setAnHist(main.getRoot().getLogin());
             
             trans.insertValues(member);
             
@@ -189,6 +191,13 @@ public class ImportMemberFromScoreg
                     logger.debug("email " + contact.email.toString());
                     contact.hist.setAnHist(main.getRoot().getLogin());
                     trans.insertValues(contact);
+                    
+                    DBMembers2Contacts m2c = new DBMembers2Contacts();
+                    m2c.idx.loadFromCopy(main.getNewSequenceValue(DBMembers2Contacts.MEMBERS2CONTACTS_IDX_SEQUENCE));
+                    m2c.contact_idx.loadFromCopy(contact.idx.getValue());
+                    m2c.member_idx.loadFromCopy(member.idx.getValue());
+                    m2c.hist.setAnHist(main.getRoot().getLogin());
+                    trans.insertValues(m2c);
                 }
             }
         }

@@ -77,6 +77,7 @@ public class Main extends BaseModuleLauncher
             root.getBindtypeManager().register(new DBAudit());
             root.getBindtypeManager().register(new DBContact());
             root.getBindtypeManager().register(new DBMembers2Contacts());
+            root.getBindtypeManager().register(new DBGroup());
 
             if( !dbconnection_loaded )
                 autocreateInternalDB();
@@ -96,9 +97,21 @@ public class Main extends BaseModuleLauncher
          
         configureLogging();
                
-        silentCheckTableVersions();
+        silentCheckTableVersions();        
         
-        MainWin mainwin = new MainWin(this,root);     
+        final MainWin mainwin = new MainWin(this,root);     
+        
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                SetupDatabase setup = new ScoutSetup(mainwin);
+
+                if (setup.isEmpty()) {
+                    setup.init();
+                }
+
+            }
+        }; 
         
         closeSplash();
         

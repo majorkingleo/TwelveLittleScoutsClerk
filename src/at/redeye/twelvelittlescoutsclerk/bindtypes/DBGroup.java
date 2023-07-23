@@ -33,7 +33,7 @@ public class DBGroup extends DBStrukt
         
         idx.setAsPrimaryKey();        
     }
-    
+
     
     @Override
     public DBStrukt getNewOne() {

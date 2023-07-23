@@ -12,8 +12,10 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
 import java.io.*;
@@ -111,19 +113,51 @@ public class ImportMemberFromScoreg
     }
     
     
-    private HashMap<String,DBMember> fetchKundenNr() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException
+    private HashMap<String,DBMember> fetchMemberNr() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException
     {
-        HashMap<String,DBMember> kunden_by_kundennr = new HashMap();
+        HashMap<String,DBMember> member_by_membernr = new HashMap();
         
-        DBMember kunden = new DBMember();
-        List<DBMember> kunden_liste = trans.fetchTable2(kunden, "where " + trans.markColumn(kunden.bp_idx) + " = " + azidx );
+        DBMember member = new DBMember();
+        List<DBMember> members_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + " = " + azidx );
         
-        for( DBMember kunde : kunden_liste )        
+        for( DBMember m : members_list )        
         {
-            kunden_by_kundennr.put(kunde.member_registration_number.getValue(), kunde);
+            member_by_membernr.put(m.member_registration_number.getValue(), m);
         }
         
-        return kunden_by_kundennr;
+        return member_by_membernr;
+    }
+    
+    private HashMap<String,DBGroup> fetchGroups() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException
+    {
+        HashMap<String,DBGroup> group_by_abbrv = new HashMap();
+        
+        List<DBGroup> group_list = trans.fetchTable2( new DBGroup() );
+        
+        for( DBGroup g : group_list )        
+        {
+            String name = g.name.getValue();
+            group_by_abbrv.put(name, g);
+            
+            if( name.equals("WiWö") ) {
+                group_by_abbrv.put("WI",g);
+                group_by_abbrv.put("WOE",g);
+            }
+            else if( name.equals("GuSp") ) {
+                group_by_abbrv.put("GU",g);
+                group_by_abbrv.put("SP",g);
+            }
+            else if( name.equals("CaEx") ) {
+                group_by_abbrv.put("CA",g);
+                group_by_abbrv.put("EX",g);
+            }
+            else if( name.equals("RaRo") ) {
+                group_by_abbrv.put("RA",g);
+                group_by_abbrv.put("RO",g);
+            }
+        }
+        
+        return group_by_abbrv;
     }
     
     public boolean run( int azidx ) throws FileNotFoundException, IOException, ParseException, SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException
@@ -141,7 +175,8 @@ public class ImportMemberFromScoreg
         
         MatchColumn match = new MatchColumn();
         
-        HashMap<String, DBMember> kunden_by_kundennr = fetchKundenNr();        
+        HashMap<String, DBMember> kunden_by_kundennr = fetchMemberNr();        
+        HashMap<String,DBGroup> groups_by_abbrv = fetchGroups();
         
         for( int i = 0; i < list.size(); i++ )
         {
@@ -200,6 +235,21 @@ public class ImportMemberFromScoreg
                     trans.insertValues(m2c);
                 }
             }
+            
+            DBGroup group = groups_by_abbrv.get(match.getOrDefault("Stufe",cols));
+            
+            if( group == null ) {
+                group = groups_by_abbrv.get("Leiter");
+            }
+            
+            if( group != null ) {
+                DBMembers2Groups m2g = new DBMembers2Groups();
+                m2g.idx.loadFromCopy(main.getNewSequenceValue(DBMembers2Groups.MEMBERS2GROUPS_IDX_SEQUENCE));
+                m2g.hist.setAnHist(main.getRoot().getLogin());
+                m2g.member_idx.loadFromCopy(member.idx.getValue());
+                m2g.group_idx.loadFromCopy(group.idx.getValue());
+                trans.insertValues(m2g);
+            } 
         }
         
         if( getErrorMessage() != null ) {

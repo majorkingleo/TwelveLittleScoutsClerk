@@ -24,7 +24,7 @@ public class DBMember extends DBStrukt
     public DBString       note = new DBString("note", "Notiz", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
     public DBFlagInteger  inaktiv = new DBFlagInteger("inactiv","Inactiv");
-    public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");
+    public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");    
     
     public DBMember()
     {

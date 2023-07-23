@@ -77,6 +77,7 @@ public class Main extends BaseModuleLauncher
             root.getBindtypeManager().register(new DBAudit());
             root.getBindtypeManager().register(new DBContact());
             root.getBindtypeManager().register(new DBMembers2Contacts());
+            root.getBindtypeManager().register(new DBMembers2Groups());
             root.getBindtypeManager().register(new DBGroup());
 
             if( !dbconnection_loaded )

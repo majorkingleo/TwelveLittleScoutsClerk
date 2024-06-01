@@ -15,6 +15,7 @@ public class DBMembers2Groups extends DBStrukt
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
     public DBInteger      group_idx = new DBInteger("group_idx", "Contact Idx");
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBHistory      hist = new DBHistory( "hist" );
     
     public DBMembers2Groups()
@@ -24,9 +25,11 @@ public class DBMembers2Groups extends DBStrukt
         add(idx);        
         add(member_idx);
         add(group_idx);
+        add(bp_idx);        
         add(hist);
                 
         idx.setAsPrimaryKey();
+        bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
         
         setVersion(1);

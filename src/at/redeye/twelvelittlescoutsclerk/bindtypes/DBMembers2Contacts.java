@@ -15,6 +15,7 @@ public class DBMembers2Contacts extends DBStrukt
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
     public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBHistory      hist = new DBHistory( "hist" );
     
     public DBMembers2Contacts()
@@ -24,9 +25,11 @@ public class DBMembers2Contacts extends DBStrukt
         add(idx);        
         add(member_idx);
         add(contact_idx);
+        add(bp_idx);        
         add(hist);
                 
         idx.setAsPrimaryKey();
+        bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
         
         setVersion(1);

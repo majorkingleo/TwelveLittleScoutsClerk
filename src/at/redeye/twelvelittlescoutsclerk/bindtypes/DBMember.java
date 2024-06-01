@@ -24,7 +24,8 @@ public class DBMember extends DBStrukt
     public DBString       note = new DBString("note", "Notiz", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
     public DBFlagInteger  inaktiv = new DBFlagInteger("inactiv","Inactiv");
-    public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");    
+    public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");
+    public DBString       group = new DBString("group", "Group", 50 );
     
     public DBMember()
     {
@@ -41,6 +42,7 @@ public class DBMember extends DBStrukt
         add(tel);
         add(inaktiv);
         add(de_registered);
+        add(group);
         
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();        

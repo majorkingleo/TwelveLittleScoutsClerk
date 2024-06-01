@@ -235,6 +235,7 @@ public class ImportMemberFromScoreg
                     m2c.idx.loadFromCopy(main.getNewSequenceValue(DBMembers2Contacts.MEMBERS2CONTACTS_IDX_SEQUENCE));
                     m2c.contact_idx.loadFromCopy(contact.idx.getValue());
                     m2c.member_idx.loadFromCopy(member.idx.getValue());
+                    m2c.bp_idx.loadFromCopy(main.getAZIdx());
                     m2c.hist.setAnHist(main.getRoot().getLogin());
                     trans.insertValues(m2c);
                 }
@@ -252,6 +253,7 @@ public class ImportMemberFromScoreg
                 m2g.hist.setAnHist(main.getRoot().getLogin());
                 m2g.member_idx.loadFromCopy(member.idx.getValue());
                 m2g.group_idx.loadFromCopy(group.idx.getValue());
+                m2g.bp_idx.loadFromCopy(main.getAZIdx());
                 trans.insertValues(m2g);
             } 
         }

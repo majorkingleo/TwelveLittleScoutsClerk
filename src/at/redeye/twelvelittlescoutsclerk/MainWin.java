@@ -163,7 +163,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMScoregMemberImport = new javax.swing.JMenuItem();
         jMQuit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
-        jMenuItemKunden = new javax.swing.JMenuItem();
+        jMenuItemMembers = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         jMenu6 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
@@ -280,13 +280,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenu5.setText("Daten");
 
-        jMenuItemKunden.setText("Kunden");
-        jMenuItemKunden.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItemMembers.setText("Mitglieder");
+        jMenuItemMembers.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItemKundenActionPerformed(evt);
+                jMenuItemMembersActionPerformed(evt);
             }
         });
-        jMenu5.add(jMenuItemKunden);
+        jMenu5.add(jMenuItemMembers);
         jMenu5.add(jSeparator3);
 
         jMenuBar1.add(jMenu5);
@@ -548,12 +548,12 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         
     }//GEN-LAST:event_jCAZActionPerformed
 
-    private void jMenuItemKundenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemKundenActionPerformed
+    private void jMenuItemMembersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemMembersActionPerformed
        
         if( checkAz() )
             invokeDialogUnique(new Member(this));
        
-    }//GEN-LAST:event_jMenuItemKundenActionPerformed
+    }//GEN-LAST:event_jMenuItemMembersActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         
@@ -757,7 +757,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItemKunden;
+    private javax.swing.JMenuItem jMenuItemMembers;
     private javax.swing.JRadioButtonMenuItem jRMetal;
     private javax.swing.JRadioButtonMenuItem jRMotif;
     private javax.swing.JRadioButtonMenuItem jRNimbus;

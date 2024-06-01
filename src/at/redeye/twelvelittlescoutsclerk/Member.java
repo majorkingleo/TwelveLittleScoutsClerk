@@ -33,25 +33,25 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
     Audit audit;
 
     public Member(MainWin mainwin) {
-        super( mainwin.getRoot(), "Kunden");                
+        super( mainwin.getRoot(), "Members");
         
         initComponents();
         
         this.mainwin = mainwin;
         
-        DBMember kunden = new DBMember();
+        DBMember members = new DBMember();
         
-        tm = new TableManipulator(root, jTContent, kunden);
+        tm = new TableManipulator(root, jTContent, members);
 
         // tm.hide(kunden.idx);
-        tm.hide(kunden.hist.lo_user);
-        tm.hide(kunden.hist.lo_zeit);        
-        tm.hide(kunden.hist.ae_user);
-        tm.hide(kunden.hist.an_user);
-        tm.hide(kunden.hist.an_zeit);
-        tm.hide(kunden.hist.ae_zeit);
-        tm.hide(kunden.bp_idx);
-        tm.hide(kunden.idx);
+        tm.hide(members.hist.lo_user);
+        tm.hide(members.hist.lo_zeit);        
+        tm.hide(members.hist.ae_user);
+        tm.hide(members.hist.an_user);
+        tm.hide(members.hist.an_zeit);
+        tm.hide(members.hist.ae_zeit);
+        tm.hide(members.bp_idx);
+        tm.hide(members.idx);
 
         /*
         tm.setEditable(kunden.name);
@@ -61,9 +61,9 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         tm.setEditable(kunden.eintrittsdatum);                
         */
         
-        tm.setValidator(kunden.entry_date, new DateValidator());
-        tm.setValidator(kunden.hist.ae_zeit, new DateValidator());
-        tm.setValidator(kunden.hist.an_zeit, new DateValidator());               
+        tm.setValidator(members.entry_date, new DateValidator());
+        tm.setValidator(members.hist.ae_zeit, new DateValidator());
+        tm.setValidator(members.hist.an_zeit, new DateValidator());               
         
         tm.prepareTable();
         

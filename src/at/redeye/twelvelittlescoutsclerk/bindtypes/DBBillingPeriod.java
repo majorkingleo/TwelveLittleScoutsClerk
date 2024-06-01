@@ -31,13 +31,13 @@ public class DBBillingPeriod extends DBStrukt
         add(title);
         add(comment);
         add(hist);
-        add(locked,2);
+        add(locked);
         
         idx.setAsPrimaryKey();       
         
         hist.setTitle(" ");
         
-        setVersion(2);
+        setVersion(1);
     }
 
     @Override

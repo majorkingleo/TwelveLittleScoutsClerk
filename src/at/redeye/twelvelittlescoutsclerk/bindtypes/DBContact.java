@@ -1,7 +1,5 @@
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
-import at.redeye.FrameWork.base.bindtypes.DBDateTime;
-import at.redeye.FrameWork.base.bindtypes.DBFlagInteger;
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;

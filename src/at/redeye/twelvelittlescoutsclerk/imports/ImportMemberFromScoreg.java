@@ -139,21 +139,25 @@ public class ImportMemberFromScoreg
             String name = g.name.getValue();
             group_by_abbrv.put(name, g);
             
-            if( name.equals("WiWö") ) {
-                group_by_abbrv.put("WI",g);
-                group_by_abbrv.put("WOE",g);
-            }
-            else if( name.equals("GuSp") ) {
-                group_by_abbrv.put("GU",g);
-                group_by_abbrv.put("SP",g);
-            }
-            else if( name.equals("CaEx") ) {
-                group_by_abbrv.put("CA",g);
-                group_by_abbrv.put("EX",g);
-            }
-            else if( name.equals("RaRo") ) {
-                group_by_abbrv.put("RA",g);
-                group_by_abbrv.put("RO",g);
+            switch (name) {
+                case "WiWö":
+                    group_by_abbrv.put("WI",g);
+                    group_by_abbrv.put("WOE",g);
+                    break;
+                case "GuSp":
+                    group_by_abbrv.put("GU",g);
+                    group_by_abbrv.put("SP",g);
+                    break;
+                case "CaEx":
+                    group_by_abbrv.put("CA",g);
+                    group_by_abbrv.put("EX",g);
+                    break;
+                case "RaRo":
+                    group_by_abbrv.put("RA",g);
+                    group_by_abbrv.put("RO",g);
+                    break;
+                default:
+                    break;
             }
         }
         

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 import javax.swing.JOptionPane;
@@ -96,37 +95,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         var_to_gui();
         
         started = true;
-        /*
-        AutoMBox ab = new AutoMBox(MainWin.class.getName()) {
 
-                     @Override
-                     public void do_stuff() throws Exception {                         
-                         {
-                             FixPrimeVonBug fix_bug = new FixPrimeVonBug(getTransaction());
-
-                             fix_bug.run();
-
-                             getTransaction().commit();
-                         }
-
-                         {
-                             FixPrimeGebrachtVon fix_bug = new FixPrimeGebrachtVon(getTransaction());
-
-                             fix_bug.run();
-
-                             getTransaction().commit();
-                         }                                                  
-                     }
-                 };
-        
-        if( ab.isFailed() ) {
-            try {
-                getTransaction().rollback();
-            } catch( Exception ex ) {
-                logger.error(ex,ex);
-            }
-        }        
-        */
     }
 
     private void initMessages() {
@@ -136,7 +105,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         MESSAGE_REALLY_IMPORT_DATABASE = MlM("Wollen Sie tasächlich eine andere Datenbank importieren und die existierende Löschen?");
         MESSAGE_REALLY_REALLY_IMPORT_DATABASE = MlM("Die existierende Datenbank wird tatsächlich gelöscht! Wollen Sie trotzdem weitermachen?");
-        MESSAGE_REALLY_RESET_DATABASE = MlM("Wollen Sie tasächlich die Datenbank in den Ursprungszustand zurücksetztn und dabei alle Daten,"
+        MESSAGE_REALLY_RESET_DATABASE = MlM("Wollen Sie tatsächlich die Datenbank in den Ursprungszustand zurücksetztn und dabei alle Daten,"
                 + "die sie nicht exportiert haben verlieren?");
         MESSAGE_REALLY_REALLY_RESET_DATABASE = MlM("Sind Sie sicher?");        
     }    
@@ -164,6 +133,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMQuit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         jMenuItemMembers = new javax.swing.JMenuItem();
+        jMenuItemContacts = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         jMenu6 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
@@ -280,13 +250,21 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenu5.setText("Daten");
 
-        jMenuItemMembers.setText("Mitglieder");
+        jMenuItemMembers.setText("Members");
         jMenuItemMembers.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemMembersActionPerformed(evt);
             }
         });
         jMenu5.add(jMenuItemMembers);
+
+        jMenuItemContacts.setText("Contacts");
+        jMenuItemContacts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemContactsActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItemContacts);
         jMenu5.add(jSeparator3);
 
         jMenuBar1.add(jMenu5);
@@ -704,6 +682,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         ImportMemberFromScoreg.importMember(this);
         
     }//GEN-LAST:event_jMScoregMemberImportActionPerformed
+
+    private void jMenuItemContactsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemContactsActionPerformed
+        
+        if( checkAz() )
+            invokeDialogUnique(new Contact(this));
+        
+    }//GEN-LAST:event_jMenuItemContactsActionPerformed
     
 
     public String getLastOpenPath() {
@@ -757,6 +742,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem7;
+    private javax.swing.JMenuItem jMenuItemContacts;
     private javax.swing.JMenuItem jMenuItemMembers;
     private javax.swing.JRadioButtonMenuItem jRMetal;
     private javax.swing.JRadioButtonMenuItem jRMotif;

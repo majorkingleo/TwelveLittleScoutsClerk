@@ -86,10 +86,18 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItemMembers">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Mitglieder"/>
+                <Property name="text" type="java.lang.String" value="Members"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemMembersActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItemContacts">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Contacts"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemContactsActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">

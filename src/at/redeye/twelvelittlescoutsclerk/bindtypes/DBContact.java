@@ -14,7 +14,7 @@ public class DBContact extends DBStrukt
      public static final String CONTACT_IDX_SEQUENCE = "CONTACT_IDX_SEQUENCE";
     
     public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      bz_idx = new DBInteger( "bp_idx" );
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBString       name = new DBString("name", "Name", 50 );
     public DBString       forname = new DBString("forname", "Forname", 50 );    
     public DBHistory      hist = new DBHistory( "hist" );    
@@ -28,7 +28,7 @@ public class DBContact extends DBStrukt
         super("CONTACT");
         
         add(idx);
-        add(bz_idx);
+        add(bp_idx);
         add(name);
         add(forname);
         add(hist);

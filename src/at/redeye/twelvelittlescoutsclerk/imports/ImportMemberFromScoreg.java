@@ -1,6 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk Scoreg csv file importer
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk.imports;
 
@@ -173,7 +173,7 @@ public class ImportMemberFromScoreg
             trans = main.getNewTransaction();
         }                
                         
-        CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"ISO-8859-1"), ';', '\"');
+        CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"ISO-8859-15"), ';', '\"');
         
         List list = reader.readAll();     
         
@@ -220,7 +220,7 @@ public class ImportMemberFromScoreg
             for( int j = 0; j < 2; j++ ) {
                 DBContact contact = new DBContact();
                 
-                contact.bz_idx.loadFromCopy(main.getAZIdx());                
+                contact.bp_idx.loadFromCopy(main.getAZIdx());                
                 contact.name.loadFromCopy(match.getOrDefault("Kontakt",cols,j));
                 contact.tel.loadFromCopy(match.getOrDefault("Kontakt Telefon",cols,j));
                 contact.email.loadFromCopy(match.getOrDefault("Kontakt E-Mail",cols,j));

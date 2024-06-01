@@ -1,6 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk Dialog for Member table
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk;
 
@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 /**
  *

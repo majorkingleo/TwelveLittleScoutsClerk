@@ -18,10 +18,6 @@ import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JFrame;
 
-/**
- *
- * @author martin
- */
 public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
     MainWin mainwin;

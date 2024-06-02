@@ -18,7 +18,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
-import at.redeye.twelvelittlescoutsclerk.imports.ImportMemberFromScoreg;
+import at.redeye.twelvelittlescoutsclerk.imports.scoreg.ImportMemberFromScoreg;
 import at.redeye.twelvelittlescoutsclerk.reports.audit.ReportAudit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

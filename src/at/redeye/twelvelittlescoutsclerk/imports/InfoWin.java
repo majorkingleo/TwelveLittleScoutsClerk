@@ -1,10 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk Info dialog
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk.imports;
 
-import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.Root;
 

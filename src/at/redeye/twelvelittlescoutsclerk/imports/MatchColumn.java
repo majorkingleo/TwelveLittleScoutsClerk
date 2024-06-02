@@ -1,14 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+/**
+ * TwelveLittleScoutsClerk Helper class for importing CSV file colums by column name
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk.imports;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -33,6 +30,10 @@ public class MatchColumn {
         
     private final HashMap<String,ArrayList<Column>> columns;
     
+    /**
+     * initialize the class with the first line, to know all columns by name
+     * @param cols 
+     */
     public void init( String cols[] )
     {
         for( int idx = 0; idx < cols.length; idx++ ) {
@@ -49,10 +50,26 @@ public class MatchColumn {
         }
     }
     
+    /**
+     * Get the column by name (init() has to be called before).
+     * 
+     * @param name
+     * @param cols
+     * @return 
+     */
     public String getOrDefault(String name, String[] cols) {
         return getOrDefault(name,cols,0);
     }
     
+    /**
+     * Get the column by name (init() has to be called before)
+     * If there a multiple columns with the same name, the idx indicates which one you wan't to get.
+     * 
+     * @param name
+     * @param cols
+     * @param idx
+     * @return 
+     */
     public String getOrDefault(String name, String[] cols, int idx) {
         
         ArrayList<Column> col_array = columns.get(name);

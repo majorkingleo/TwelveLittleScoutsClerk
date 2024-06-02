@@ -2,7 +2,7 @@
  * TwelveLittleScoutsClerk Scoreg csv file importer
  * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-package at.redeye.twelvelittlescoutsclerk.imports;
+package at.redeye.twelvelittlescoutsclerk.imports.scoreg;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -16,6 +16,9 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
+import at.redeye.twelvelittlescoutsclerk.imports.CSVFileFilter;
+import at.redeye.twelvelittlescoutsclerk.imports.InfoWin;
+import at.redeye.twelvelittlescoutsclerk.imports.MatchColumn;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
 import java.io.*;

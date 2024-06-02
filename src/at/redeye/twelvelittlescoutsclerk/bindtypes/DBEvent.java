@@ -1,3 +1,8 @@
+/**
+ * TwelveLittleScoutsClerk list of events
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
+ */
+
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
@@ -6,10 +11,6 @@ import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 
-/**
- *
- * @author martin
- */
 public class DBEvent extends DBStrukt {
     
     public static final String EVENT_IDX_SEQUENCE = "EVENT_IDX_SEQUENCE";

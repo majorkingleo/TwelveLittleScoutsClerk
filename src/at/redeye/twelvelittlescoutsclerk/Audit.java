@@ -12,6 +12,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAudit;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import org.apache.log4j.Logger;
 
@@ -42,10 +43,17 @@ public class Audit {
         return addMessage4Kunde(trans, 0, message);
     }
     
+    public void addMessages( Transaction trans, Collection<String> messages ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
+    {    
+        for( String message : messages ) {
+         addMessage4Kunde(trans, 0, message);
+        }
+    }    
+    
     public DBAudit addMessage4Kunde( Transaction trans, int kunden_idx, String message ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
         DBAudit audit = new DBAudit();
-        audit.az_idx.loadFromCopy(mainwin.getAZIdx());
+        audit.bp_idx.loadFromCopy(mainwin.getBPIdx());
         audit.idx.loadFromCopy(mainwin.getNewSequenceValue(audit.getName()));
         audit.audit_idx.loadFromCopy(audit_idx);
         audit.message.loadFromCopy(message);

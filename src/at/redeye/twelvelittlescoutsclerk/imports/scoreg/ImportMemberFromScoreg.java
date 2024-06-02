@@ -214,7 +214,7 @@ public class ImportMemberFromScoreg
                 continue;
             }
             
-            member.bp_idx.loadFromCopy(main.getAZIdx());
+            member.bp_idx.loadFromCopy(main.getBPIdx());
             member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
             member.hist.setAnHist(main.getRoot().getLogin());
             
@@ -223,7 +223,7 @@ public class ImportMemberFromScoreg
             for( int j = 0; j < 2; j++ ) {
                 DBContact contact = new DBContact();
                 
-                contact.bp_idx.loadFromCopy(main.getAZIdx());                
+                contact.bp_idx.loadFromCopy(main.getBPIdx());                
                 contact.name.loadFromCopy(match.getOrDefault("Kontakt",cols,j));
                 contact.tel.loadFromCopy(match.getOrDefault("Kontakt Telefon",cols,j));
                 contact.email.loadFromCopy(match.getOrDefault("Kontakt E-Mail",cols,j));
@@ -238,7 +238,7 @@ public class ImportMemberFromScoreg
                     m2c.idx.loadFromCopy(main.getNewSequenceValue(DBMembers2Contacts.MEMBERS2CONTACTS_IDX_SEQUENCE));
                     m2c.contact_idx.loadFromCopy(contact.idx.getValue());
                     m2c.member_idx.loadFromCopy(member.idx.getValue());
-                    m2c.bp_idx.loadFromCopy(main.getAZIdx());
+                    m2c.bp_idx.loadFromCopy(main.getBPIdx());
                     m2c.hist.setAnHist(main.getRoot().getLogin());
                     trans.insertValues(m2c);
                 }
@@ -256,7 +256,7 @@ public class ImportMemberFromScoreg
                 m2g.hist.setAnHist(main.getRoot().getLogin());
                 m2g.member_idx.loadFromCopy(member.idx.getValue());
                 m2g.group_idx.loadFromCopy(group.idx.getValue());
-                m2g.bp_idx.loadFromCopy(main.getAZIdx());
+                m2g.bp_idx.loadFromCopy(main.getBPIdx());
                 trans.insertValues(m2g);
             } 
         }

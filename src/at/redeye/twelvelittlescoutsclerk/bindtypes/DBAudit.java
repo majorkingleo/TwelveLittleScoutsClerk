@@ -19,7 +19,7 @@ public class DBAudit extends DBStrukt
     
     public DBInteger idx = new DBInteger("idx", "Idx");
     public DBInteger audit_idx = new DBInteger("audit_idx", "Idx");
-    public DBInteger az_idx = new DBInteger( "az_idx" );
+    public DBInteger bp_idx = new DBInteger( "bp_idx" );
     public DBInteger member_idx = new DBInteger("member_idx", "Idx");
     public DBString  message = new DBString( "message", "Text", 3000 );
     public DBDateTime date = new DBDateTime( "date", "Datum" );
@@ -31,7 +31,7 @@ public class DBAudit extends DBStrukt
         super( "AUDIT" );
         
         add( idx );
-        add( az_idx );
+        add( bp_idx );
         add( member_idx );
         add( message );
         add( audit_idx );
@@ -39,7 +39,7 @@ public class DBAudit extends DBStrukt
         add( user );
         
         idx.setAsPrimaryKey();
-        az_idx.shouldHaveIndex();
+        bp_idx.shouldHaveIndex();
         member_idx.shouldHaveIndex();        
         audit_idx.shouldHaveIndex();
         date.shouldHaveIndex();

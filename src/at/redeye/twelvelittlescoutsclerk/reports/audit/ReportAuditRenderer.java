@@ -25,7 +25,7 @@ import java.util.*;
  */
 public class ReportAuditRenderer extends BaseReportRenderer implements ReportRenderer
 {           
-    protected DBBillingPeriod az;
+    protected DBBillingPeriod bp;
     protected DBDateTime von;
     protected DBDateTime bis;
     protected DBAudit audit;
@@ -36,7 +36,7 @@ public class ReportAuditRenderer extends BaseReportRenderer implements ReportRen
     
     public ReportAuditRenderer(Transaction trans, DBBillingPeriod az, DBDateTime von, DBDateTime bis, DBMember member )
     {                 
-        this.az = az;
+        this.bp = az;
         this.von = von;
         this.bis = bis;        
         this.member = member;
@@ -62,15 +62,15 @@ public class ReportAuditRenderer extends BaseReportRenderer implements ReportRen
             public void do_stuff() throws Exception {
                 result = false;
                 
-                DBMember kunden = new DBMember();
+                DBMember member = new DBMember();
                 
-                audit_liste = trans.fetchTable2(audit, " where " + trans.markColumn(kunden.bp_idx) + " = " + az.idx 
+                audit_liste = trans.fetchTable2(audit, " where " + trans.markColumn(member.bp_idx) + " = " + bp.idx 
                         + DateFilter.getVonBisFilter(trans,von,bis,audit.date) + " " + getKundenFilter()
                         + " order by " + trans.markColumn(audit.date));
                         
                 
-                List<DBMember> kunden_liste = trans.fetchTable2(kunden, "where " + trans.markColumn(kunden.bp_idx) + " = " + az.idx                       
-                                       + " order by " + trans.markColumn(kunden.name) + ", "  +  trans.markColumn(kunden.forname));                        
+                List<DBMember> kunden_liste = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + " = " + bp.idx                       
+                                       + " order by " + trans.markColumn(member.name) + ", "  +  trans.markColumn(member.forname));                        
 
                 member_map = new HashMap<>();
                 
@@ -98,7 +98,7 @@ public class ReportAuditRenderer extends BaseReportRenderer implements ReportRen
 
         html_start();
 
-        html_setTitle( "Audit Abrechnungszeitraum " + az.title);
+        html_setTitle("Audit Abrechnungszeitraum " + bp.title);
 
         for (DBAudit a : audit_liste) {
             

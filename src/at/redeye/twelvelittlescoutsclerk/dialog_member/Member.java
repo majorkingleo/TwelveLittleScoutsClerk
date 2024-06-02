@@ -101,7 +101,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         
         DBMembers2Groups m2g = new DBMembers2Groups();
         List<DBMembers2Groups> m2gs = trans.fetchTable2(m2g,
-                "where " + trans.markColumn(m2g.bp_idx) + " = " + mainwin.getAZIdx());
+                "where " + trans.markColumn(m2g.bp_idx) + " = " + mainwin.getBPIdx());
                 
         HashMap<Integer,DBGroup> map_m2g = new HashMap<Integer,DBGroup>();
         
@@ -127,7 +127,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
                 Transaction trans = getTransaction();
                 values = trans.fetchTable2(member,
-                        "where " + trans.markColumn(member.bp_idx) + " = " + mainwin.getAZIdx()
+                        "where " + trans.markColumn(member.bp_idx) + " = " + mainwin.getBPIdx()
                         + " order by " + trans.markColumn(member.name));
                 
                 HashMap<Integer,DBGroup> m2g = fetch_groups(trans);
@@ -450,7 +450,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
     private void newEntry() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException {
                        
         DBMember member = new DBMember();
-        member.bp_idx.loadFromCopy(mainwin.getAZIdx());
+        member.bp_idx.loadFromCopy(mainwin.getBPIdx());
         
         CreateMember create_kunde = new CreateMember(mainwin, this, member);
         

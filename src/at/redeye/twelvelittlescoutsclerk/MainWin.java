@@ -20,6 +20,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
+import at.redeye.twelvelittlescoutsclerk.dialog_event.Event;
 import at.redeye.twelvelittlescoutsclerk.imports.scoreg.ImportMemberFromScoreg;
 import at.redeye.twelvelittlescoutsclerk.reports.audit.ReportAudit;
 import java.awt.event.ActionEvent;
@@ -136,7 +137,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMenu5 = new javax.swing.JMenu();
         jMenuItemMembers = new javax.swing.JMenuItem();
         jMenuItemContacts = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        jMenuItemEvents = new javax.swing.JMenuItem();
         jMenu6 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -267,7 +268,14 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu5.add(jMenuItemContacts);
-        jMenu5.add(jSeparator3);
+
+        jMenuItemEvents.setText("Events");
+        jMenuItemEvents.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemEventsActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItemEvents);
 
         jMenuBar1.add(jMenu5);
 
@@ -691,6 +699,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             invokeDialogUnique(new Contact(this));
         
     }//GEN-LAST:event_jMenuItemContactsActionPerformed
+
+    private void jMenuItemEventsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemEventsActionPerformed
+          
+        if( checkAz() )
+            invokeDialogUnique(new Event(this));
+        
+    }//GEN-LAST:event_jMenuItemEventsActionPerformed
     
 
     public String getLastOpenPath() {
@@ -745,6 +760,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItemContacts;
+    private javax.swing.JMenuItem jMenuItemEvents;
     private javax.swing.JMenuItem jMenuItemMembers;
     private javax.swing.JRadioButtonMenuItem jRMetal;
     private javax.swing.JRadioButtonMenuItem jRMotif;
@@ -752,7 +768,6 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JRadioButtonMenuItem jRSystem;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JTextArea jTComment;
     // End of variables declaration//GEN-END:variables
 
@@ -891,7 +906,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     }
 
     @Override
-    public Integer getAZIdx() {
+    public Integer getBPIdx() {
         return bp.idx.getValue();
     }
     
@@ -902,7 +917,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     
     public boolean checkAz()
     {
-        if( getAZIdx() == 0 )
+        if( getBPIdx() == 0 )
         {
             JOptionPane.showMessageDialog(this, MlM("Bitte legen sie einen Abrechnungszeitraum fest."));
             jBNewActionPerformed(null);

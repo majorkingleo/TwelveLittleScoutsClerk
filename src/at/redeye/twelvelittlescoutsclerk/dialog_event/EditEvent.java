@@ -1,8 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk Edit an entry in event table
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-package at.redeye.twelvelittlescoutsclerk.dialog_member;
+package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
@@ -17,10 +17,9 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.LocalHelpWinModal;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
-import at.redeye.twelvelittlescoutsclerk.MemberNameCombo;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
-import at.redeye.twelvelittlescoutsclerk.UpdateMember;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -30,19 +29,19 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class EditMember extends BaseDialog implements NewSequenceValueInterface {
+public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
 
-    DBMember kunde;
-    DBMember kunde_old;
+    DBEvent event;
+    DBEvent event_old;
     boolean saved = false;
     MainWin mainwin;
     boolean started = false;
     /**
      * Creates new form EditKunde
      */
-    public EditMember(MainWin mainwin, DBMember kunde) 
+    public EditEvent(MainWin mainwin, DBEvent event) 
     {
-        super( mainwin.root,  getTitle( kunde ));
+        super( mainwin.root,  event.name.getValue() );
         initComponents();
         
         
@@ -51,23 +50,18 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
 
                     @Override
                     public void run() {
-                        invokeDialogModal(new LocalHelpWinModal(root, "EditKunde"));
+                        invokeDialogModal(new LocalHelpWinModal(root, "EditEvent"));
                     }
                 });          
         
-        this.kunde = kunde;
+        this.event = event;
         this.mainwin = mainwin;
         
-        kunde_old = new DBMember();
-        kunde_old.loadFromCopy(kunde);
+        event_old = new DBEvent();
+        event_old.loadFromCopy(event);
         
-        bindVar(jTKundennummer, kunde.member_registration_number);
-        bindVar(jTName, kunde.name);
-        bindVar(jTVorname, kunde.forname);
-        bindVar(jDEintrittsdatum, kunde.entry_date);
-        bindVar(jTtel,kunde.tel);
-        bindVar(jCinaktiv,kunde.inaktiv);
-        bindVar(jCgekuendigt,kunde.de_registered);
+        bindVar(jTName, event.name);
+        bindVar(jTCosts, event.costs);
                
         var_to_gui();
         
@@ -101,10 +95,6 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         field.setDocument(new DocumentFieldDoubleAndNoComma(7));
     }         
     
-    static String getTitle( DBMember kunde )
-    {
-        return MemberNameCombo.getName4Kunde(kunde);
-    }
     
     @Override
     public String getUniqueDialogIdentifier(Object requester) {
@@ -128,45 +118,22 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     {
         Transaction trans = getTransaction();
         
-        if( kunde.member_registration_number.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Die Kundennummer darf nicht leer sein"));
-            jTKundennummer.requestFocus();
-            return false;
-        }
-        
-        List<DBMember> kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.bp_idx) + "  = " + kunde.bp_idx
-                + " and " + trans.markColumn(kunde.member_registration_number) + " = '" + kunde.member_registration_number + "'" 
-                + " and " + trans.markColumn(kunde.idx) + " != " + kunde.idx.getValue());
-        
-        if( !kunden_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Diese Kundennummer ist bereits vorhanden"));
-            jTKundennummer.requestFocus();
-            return false;
-        }
-        
-        if( kunde.name.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Namen eingeben"));
+        if( event.name.isEmptyTrimmed() ) {
+            JOptionPane.showMessageDialog(this, MlM("The event name is mandatory."));
             jTName.requestFocus();
             return false;
         }
-
-        if( kunde.forname.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Vornamen eingeben"));
+        
+        List<DBEvent> event_list = trans.fetchTable2(event, "where " + trans.markColumn(event.bp_idx) + "  = " + event.bp_idx
+                + " and " + trans.markColumn(event.name) + " = '" + event.name + "'"
+                + " and " + trans.markColumn(event.idx) + " != " + event.idx.toString() );
+        
+        if( !event_list.isEmpty() ) {
+            JOptionPane.showMessageDialog(this, MlM("There exists already an event with this name."));
             jTName.requestFocus();
             return false;
-        }        
-        
-        kunden_list = trans.fetchTable2(kunde, "where " + trans.markColumn(kunde.bp_idx) + "  = " + kunde.bp_idx
-                + " and " + trans.markColumn(kunde.name) + " = '" + kunde.name + "' "
-                + " and " + trans.markColumn(kunde.forname) + " = '" + kunde.forname + "' "
-                + " and " + trans.markColumn(kunde.idx) + " != " + kunde.idx.getValue());
-        
-        if( !kunden_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Es existiert bereits ein Kunde mit diesem Namen"));
-            jTName.requestFocus();
-            return false;
-        }                        
-        
+        }
+                
         return true;
     }
     
@@ -179,33 +146,21 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jTKundennummer = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jTName = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTVorname = new javax.swing.JTextField();
+        jTCosts = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jBClose = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
         jBClose1 = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
-        jDEintrittsdatum = new at.redeye.Plugins.JDatePicker.JDatePicker(root);
-        jLabel6 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jTtel = new javax.swing.JTextField();
-        jPanel2 = new javax.swing.JPanel();
-        jCinaktiv = new javax.swing.JCheckBox();
-        jCgekuendigt = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(548, 360));
 
-        jLabel1.setText("Scout ID");
-
         jLabel2.setText("Name");
 
-        jLabel3.setText("Vorname");
+        jLabel3.setText("Costs");
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBClose.setText("Schließen");
@@ -253,43 +208,6 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                 .addContainerGap())
         );
 
-        jLabel4.setText("Eintrittsdatum");
-
-        jDEintrittsdatum.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jDEintrittsdatumActionPerformed(evt);
-            }
-        });
-
-        jLabel6.setText("Attribute");
-
-        jLabel13.setText("Telefonnummer");
-
-        jCinaktiv.setText("inaktiv");
-
-        jCgekuendigt.setText("gekündigt");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCinaktiv)
-                    .addComponent(jCgekuendigt))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jCinaktiv)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCgekuendigt)
-                .addContainerGap(50, Short.MAX_VALUE))
-        );
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -297,25 +215,15 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel13))
-                        .addGap(63, 63, 63)
+                            .addComponent(jLabel3))
+                        .addGap(133, 133, 133)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTName, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jTVorname, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jDEintrittsdatum, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jTKundennummer)
-                            .addComponent(jTtel)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addGap(105, 105, 105)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jTCosts)
+                            .addComponent(jTName))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -323,29 +231,13 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jTKundennummer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jTName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jTVorname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jDEintrittsdatum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTtel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel13))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                    .addComponent(jTCosts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -361,16 +253,16 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
 
         gui_to_var();
 
-        final EditMember parent = this;
+        final EditEvent parent = this;
         
-        new AutoMBox(EditMember.class.getName()) {
+        new AutoMBox(EditEvent.class.getName()) {
 
             @Override
             public void do_stuff() throws Exception {
                 if (check()) {                                                                                         
                     
-                    UpdateMember updaterKunden = new UpdateMember(root, getTransaction(), mainwin.getAudit());
-                    updaterKunden.auditKundenDiffAndUpdate(kunde_old, kunde);                                        
+                    UpdateEvent updaterEvent = new UpdateEvent(root, getTransaction(), mainwin.getAudit());
+                    updaterEvent.auditEventDiffAndUpdate(event_old, event);
                     
                     getTransaction().commit();
                     
@@ -382,10 +274,6 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
 
     }//GEN-LAST:event_jBSaveActionPerformed
 
-    private void jDEintrittsdatumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jDEintrittsdatumActionPerformed
-
-   }//GEN-LAST:event_jDEintrittsdatumActionPerformed
-
     private void jBClose1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBClose1ActionPerformed
         callHelpWin();
     }//GEN-LAST:event_jBClose1ActionPerformed
@@ -395,21 +283,11 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBSave;
-    private javax.swing.JCheckBox jCgekuendigt;
-    private javax.swing.JCheckBox jCinaktiv;
-    private at.redeye.Plugins.JDatePicker.JDatePicker jDEintrittsdatum;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JTextField jTKundennummer;
+    private javax.swing.JTextField jTCosts;
     private javax.swing.JTextField jTName;
-    private javax.swing.JTextField jTVorname;
-    private javax.swing.JTextField jTtel;
     // End of variables declaration//GEN-END:variables
 
 

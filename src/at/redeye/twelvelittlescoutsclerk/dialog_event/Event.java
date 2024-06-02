@@ -1,11 +1,13 @@
 /**
- * TwelveLittleScoutsClerk Dialog for Contact table
+ * TwelveLittleScoutsClerk Dialog for Event table
  * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-package at.redeye.twelvelittlescoutsclerk.dialog_contact;
+package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
+import at.redeye.twelvelittlescoutsclerk.dialog_event.*;
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -15,41 +17,41 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JFrame;
 
-public class Contact extends BaseDialog implements NewSequenceValueInterface {
+public class Event extends BaseDialog implements NewSequenceValueInterface {
 
     MainWin mainwin;
-    List<DBContact> values;
+    List<DBEvent> values;
     TableManipulator tm;
     Audit audit;
 
-    public Contact(MainWin mainwin) {
-        super( mainwin.getRoot(), "Contacts");
+    public Event(MainWin mainwin) {
+        super( mainwin.getRoot(), "Events");
         
         initComponents();
         
         this.mainwin = mainwin;
         
-        DBContact contacts = new DBContact();
+        DBEvent events = new DBEvent();
         
-        tm = new TableManipulator(root, jTContent, contacts);
+        tm = new TableManipulator(root, jTContent, events);
 
-        tm.hide(contacts.hist.lo_user);
-        tm.hide(contacts.hist.lo_zeit);        
-        tm.hide(contacts.hist.ae_user);
-        tm.hide(contacts.hist.an_user);
-        tm.hide(contacts.hist.an_zeit);
-        tm.hide(contacts.hist.ae_zeit);
-        tm.hide(contacts.bp_idx);
-        tm.hide(contacts.idx);        
+        tm.hide(events.hist.lo_user);
+        tm.hide(events.hist.lo_zeit);        
+        tm.hide(events.hist.ae_user);
+        tm.hide(events.hist.an_user);
+        tm.hide(events.hist.an_zeit);
+        tm.hide(events.hist.ae_zeit);
+        tm.hide(events.bp_idx);
+        tm.hide(events.idx);        
         
-        tm.setValidator(contacts.hist.ae_zeit, new DateValidator());
-        tm.setValidator(contacts.hist.an_zeit, new DateValidator());               
+        tm.setValidator(events.hist.ae_zeit, new DateValidator());
+        tm.setValidator(events.hist.an_zeit, new DateValidator());               
         
         tm.prepareTable();
         
@@ -80,14 +82,14 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
                 tm.clear();
                 clearEdited();
 
-                DBContact contact = new DBContact();
+                DBEvent event = new DBEvent();
 
                 Transaction trans = getTransaction();
-                values = trans.fetchTable2(contact,
-                        "where " + trans.markColumn(contact.bp_idx) + " = " + mainwin.getBPIdx()
-                        + " order by " + trans.markColumn(contact.name));
+                values = trans.fetchTable2(event,
+                        "where " + trans.markColumn(event.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " order by " + trans.markColumn(event.name));
                 
-                for (DBContact entry : values) {
+                for (DBEvent entry : values) {
                     tm.add(entry);
                 }
             }
@@ -200,7 +202,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
         );
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        jLabel1.setText("Kunden");
+        jLabel1.setText("Events");
 
         jLInfo.setText(" ");
         jLInfo.setAutoscrolls(true);
@@ -215,7 +217,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -281,7 +283,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
     }//GEN-LAST:event_jBDelActionPerformed
 
     private void jBNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBNewActionPerformed
-        AutoMBox al = new AutoMBox(Contact.class.getName()) {
+        AutoMBox al = new AutoMBox(Event.class.getName()) {
 
                      @Override
                      public void do_stuff() throws Exception {
@@ -307,10 +309,10 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
                 continue;
             }
             
-            DBContact entry = values.get(i);
+            DBEvent entry = values.get(i);
 
             entry.hist.setAeHist(root.getUserName());
-            getTransaction().updateValues(entry);
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(getTransaction(),entry);
         }
 
         getTransaction().commit();
@@ -344,14 +346,14 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
         if (i < 0 || i >= values.size()) {
             return;
         }
-/*
-        final EditMember editkunde = new EditMember(mainwin, values.get(i));
-        editkunde.registerOnCloseListener(new Runnable() {
+
+        final EditEvent editevent = new EditEvent(mainwin, values.get(i));
+        editevent.registerOnCloseListener(new Runnable() {
 
             @Override
             public void run() {
 
-                new AutoMBox(Contact.class.getName()) {
+                new AutoMBox(Event.class.getName()) {
 
                     @Override
                     public void do_stuff() throws Exception {
@@ -365,8 +367,8 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
             }
         });
 
-        invokeDialogUnique(editkunde);
-*/
+        invokeDialogUnique(editevent);
+
     }//GEN-LAST:event_jBEditActionPerformed
 
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
@@ -398,25 +400,25 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
     private void newEntry() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException {
                        
-        DBContact contact = new DBContact();
-        contact.bp_idx.loadFromCopy(mainwin.getBPIdx());
-/*        
-        CreateContact create_contact = new CreateContact(mainwin, this, contact);
+        DBEvent event = new DBEvent();
+        event.bp_idx.loadFromCopy(mainwin.getBPIdx());
         
-        invokeDialogModal(create_contact);
+        CreateEvent create_event = new CreateEvent(mainwin, this, event);
         
-        if( create_contact.pressedSave() )
+        invokeDialogModal(create_event);
+        
+        if( create_event.pressedSave() )
         {        
             mainwin.getAudit().openNewAudit();            
                                                                      
-            tm.add(contact, true, true);
-            values.add(contact);
+            tm.add(event, true, true);
+            values.add(event);
             setEdited();
             save();
             feed_table();
             toFront();
         }
-*/
+
     }    
     
     @Override

@@ -46,7 +46,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
                 
         this.mainwin = mainwin;               
         
-        final Integer current_az = mainwin.getAZIdx();
+        final Integer current_az = mainwin.getBPIdx();
         
         final Transaction trans = getTransaction();
 

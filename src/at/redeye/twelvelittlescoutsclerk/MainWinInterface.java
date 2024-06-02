@@ -17,7 +17,7 @@ import java.sql.SQLException;
  */
 public interface MainWinInterface 
 {
-    public Integer getAZIdx();
+    public Integer getBPIdx();
 
     /**
      * Ermittelt den nächsten Wert für eine gegebene Sequenz

@@ -4,6 +4,7 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import at.redeye.twelvelittlescoutsclerk.dialog_contact.Contact;
 import at.redeye.FrameWork.Plugin.AboutPlugins;
 import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.base.bindtypes.DBString;

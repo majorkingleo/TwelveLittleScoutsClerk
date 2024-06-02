@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package at.redeye.twelvelittlescoutsclerk;
+package at.redeye.twelvelittlescoutsclerk.dialog_member;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
@@ -14,6 +14,12 @@ import at.redeye.FrameWork.widgets.documentfields.DocumentFieldLimit;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
+import at.redeye.twelvelittlescoutsclerk.LocalHelpWinModal;
+import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MemberNameCombo;
+import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
+import at.redeye.twelvelittlescoutsclerk.UpdateMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import java.sql.SQLException;
 import java.util.List;

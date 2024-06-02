@@ -11,7 +11,7 @@ import at.redeye.FrameWork.widgets.helpwindow.HelpWinModal;
  *
  * @author martin
  */
-class LocalHelpWinModal extends HelpWinModal {
+public class LocalHelpWinModal extends HelpWinModal {
 
     public LocalHelpWinModal(Root root, String Module) {
         super( root, "/at/redeye/griesdorn/resources/Help/", Module );

@@ -2,8 +2,9 @@
  * TwelveLittleScoutsClerk Dialog for Member table
  * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-package at.redeye.twelvelittlescoutsclerk;
+package at.redeye.twelvelittlescoutsclerk.dialog_member;
 
+import at.redeye.twelvelittlescoutsclerk.dialog_member.CreateMember;
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
@@ -12,6 +13,9 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.Audit;
+import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
@@ -247,7 +251,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         );
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        jLabel1.setText("Kunden");
+        jLabel1.setText("Members");
 
         jLInfo.setText(" ");
         jLInfo.setAutoscrolls(true);
@@ -262,7 +266,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );

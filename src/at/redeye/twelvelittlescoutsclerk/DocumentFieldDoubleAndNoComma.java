@@ -13,7 +13,7 @@ import javax.swing.text.Document;
  *
  * @author martin
  */
-class DocumentFieldDoubleAndNoComma extends DocumentFieldLimit {
+public class DocumentFieldDoubleAndNoComma extends DocumentFieldLimit {
 
     public DocumentFieldDoubleAndNoComma(int limit) {
         super(limit);

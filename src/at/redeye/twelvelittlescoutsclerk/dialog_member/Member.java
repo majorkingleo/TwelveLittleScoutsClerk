@@ -4,7 +4,6 @@
  */
 package at.redeye.twelvelittlescoutsclerk.dialog_member;
 
-import at.redeye.twelvelittlescoutsclerk.dialog_member.CreateMember;
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
@@ -15,13 +14,12 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.JFrame;
 
@@ -75,8 +73,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         
         tm.autoResize();
         
-        tableFilter1.setFilter(jTContent);
-        
+        tableFilter1.setFilter(jTContent);        
         
         if( mainwin.isAzLocked() ) {
             jBSave.setEnabled(false);
@@ -89,29 +86,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         feed_table(true);
     }
     
-    private HashMap<Integer,DBGroup> fetch_groups( Transaction trans ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
-    {
-        DBGroup group = new DBGroup();                
-        List<DBGroup> groups = trans.fetchTable2(group);        
-        HashMap<Integer,DBGroup> map_g = new HashMap<Integer,DBGroup>();
-        
-        for( DBGroup g : groups ) {
-            map_g.put( g.idx.getValue(), group);
-        }
-        
-        DBMembers2Groups m2g = new DBMembers2Groups();
-        List<DBMembers2Groups> m2gs = trans.fetchTable2(m2g,
-                "where " + trans.markColumn(m2g.bp_idx) + " = " + mainwin.getBPIdx());
-                
-        HashMap<Integer,DBGroup> map_m2g = new HashMap<Integer,DBGroup>();
-        
-        for( DBMembers2Groups m : m2gs ) {
-            DBGroup g = groups.get(m.group_idx.getValue());
-            map_m2g.put( m.member_idx.getValue(), g);
-        }
-        
-        return map_m2g;
-    }
+
 
     private void feed_table(boolean autombox) {
         new AutoMBox(getTitle(), autombox) {
@@ -122,23 +97,10 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                 tm.clear();
                 clearEdited();
 
-                DBMember member = new DBMember();
-
-
                 Transaction trans = getTransaction();
-                values = trans.fetchTable2(member,
-                        "where " + trans.markColumn(member.bp_idx) + " = " + mainwin.getBPIdx()
-                        + " order by " + trans.markColumn(member.name));
-                
-                HashMap<Integer,DBGroup> m2g = fetch_groups(trans);
+                values = MemberHelper.fetch_members( trans, mainwin.getBPIdx() );               
                 
                 for (DBMember entry : values) {
-                    DBGroup group = m2g.get(entry.idx.getValue());
-                    
-                    if( group != null ) {
-                        entry.group.loadFromString(group.name.getValue());
-                    }
-                    
                     tm.add(entry);
                 }                
             }

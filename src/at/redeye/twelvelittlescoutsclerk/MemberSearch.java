@@ -59,8 +59,7 @@ public class MemberSearch extends BaseDialogDialog  {
         feed_table(false);        
         tm.autoResize();
         */
-        
-        tableFilter1.setFilter(jTMember);
+                
     }
     
     @Override
@@ -69,6 +68,8 @@ public class MemberSearch extends BaseDialogDialog  {
         if( is_visible ) {
             feed_table(false);
             tm.autoResize();
+            
+            tableFilter1.setFilter(jTMember);
         }
         
         super.setVisible( is_visible );

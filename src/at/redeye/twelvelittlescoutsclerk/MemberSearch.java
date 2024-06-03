@@ -8,7 +8,6 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.transaction.Transaction;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +18,17 @@ import java.util.Set;
  * @author martin
  */
 public class MemberSearch extends BaseDialogDialog  {
+    
+    public static interface Filter
+    {
+        boolean accept( DBMember member );
+    }
 
     MainWin mainwin;
-    List<DBMember> values;
+    List<DBMember> values = new ArrayList<>();
     TableManipulator tm;
     boolean abort = false;
+    List<Filter> filters = new ArrayList<>();
     /**
      * Creates new form MemberSearch
      */
@@ -50,11 +55,23 @@ public class MemberSearch extends BaseDialogDialog  {
         
         tm.prepareTable();
         
-        feed_table(false);
-        
+        /*
+        feed_table(false);        
         tm.autoResize();
+        */
         
         tableFilter1.setFilter(jTMember);
+    }
+    
+    @Override
+    public void setVisible( boolean is_visible ) {        
+        
+        if( is_visible ) {
+            feed_table(false);
+            tm.autoResize();
+        }
+        
+        super.setVisible( is_visible );
     }
     
     private void feed_table() {
@@ -68,12 +85,30 @@ public class MemberSearch extends BaseDialogDialog  {
             public void do_stuff() throws Exception {
                 
                 tm.clear();
+                values.clear();
                 
                 Transaction trans = getTransaction();
-                values = MemberHelper.fetch_members( trans, mainwin.getBPIdx() );               
                 
-                for (DBMember entry : values) {
+                List<DBMember> table_data = MemberHelper.fetch_members( trans, mainwin.getBPIdx() );               
+                
+                for (DBMember entry : table_data) {
+                    
+                    boolean entry_accepted = true;
+                    
+                    for( Filter filter : filters ) {
+                        if( !filter.accept(entry) ) {
+                            entry_accepted = false;
+                            break;
+                        }
+                    }
+                    
+                    if( !entry_accepted ) {
+                        continue;
+                    }
+                    
+                    values.add(entry);
                     tm.add(entry);
+                    
                 }                
 
             }
@@ -102,6 +137,11 @@ public class MemberSearch extends BaseDialogDialog  {
         }
         
         return selected_members;
+    }
+    
+    public void addFilter( Filter filter )
+    {
+        filters.add(filter);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

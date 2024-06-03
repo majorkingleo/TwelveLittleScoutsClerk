@@ -25,7 +25,9 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
@@ -454,9 +456,28 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         callHelpWin();
     }//GEN-LAST:event_jBClose1ActionPerformed
 
+    private Set<Integer> getMemberIds()
+    {
+        Set<Integer> ret = new HashSet<>();
+        
+        for( DBMember member : values ) {
+            ret.add(member.idx.getValue());
+        }
+        
+        return ret;
+    }
+    
     private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAddMemberActionPerformed
         
         MemberSearch ms = new MemberSearch( mainwin, "Add a new member");
+        Set<Integer> ids = getMemberIds();
+        
+        ms.addFilter( new MemberSearch.Filter() {
+            @Override
+            public boolean accept(DBMember member) {
+                return !ids.contains(member.idx.getValue());
+            }
+        });
         
         invokeDialogModal(ms);
         

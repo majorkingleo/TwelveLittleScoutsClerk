@@ -12,10 +12,10 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 
 public class DBEventMember extends DBStrukt {
     
-    public static final String EVENTMEMBER_IDX_SEQUENCE = "EVENTMEMBER_IDX_SEQUENCE";
+    public static final String EVENTMEMBER_IDX_SEQUENCE = "EVENTMEMBER_IDX_SEQ";
 
     public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      bz_idx = new DBInteger( "bp_idx" );
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBInteger      event_idx = new DBInteger( "event_idx" );
     public DBInteger      member_idx = new DBInteger( "member_idx" );
     public DBInteger      group_idx = new DBInteger( "group_idx" );
@@ -32,7 +32,7 @@ public class DBEventMember extends DBStrukt {
         super("EVENTMEMBERS");
         
         add(idx);
-        add(bz_idx);
+        add(bp_idx);
         add(event_idx);
         add(member_idx);
         add(group_idx);        
@@ -46,7 +46,7 @@ public class DBEventMember extends DBStrukt {
         
         hist.setTitle(" ");
         
-        bz_idx.shouldHaveIndex();
+        bp_idx.shouldHaveIndex();
         idx.setAsPrimaryKey();
     }
     

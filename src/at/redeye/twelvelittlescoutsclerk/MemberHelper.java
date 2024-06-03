@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk;
  */
 
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.SqlDBInterface.SqlDBIO.impl.DBDataType;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
@@ -62,5 +63,21 @@ public class MemberHelper {
         }
         
         return members;
+    }
+    
+    public static Integer fetch_group_idx( Transaction trans, DBMember member) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        DBGroup group = new DBGroup();
+        DBMembers2Groups m2g = new DBMembers2Groups();
+        
+        String stmt = "select " + trans.markColumn(group,group.idx)
+                + " from " + trans.markTable(group) + ", " + trans.markTable(m2g)
+                + " where " +  trans.markColumn(group,group.idx) + " = " + trans.markColumn(m2g,m2g.group_idx)
+                + " and " + trans.markColumn(m2g,m2g.member_idx) + " = '" + member.idx.toString() + "'";
+        
+        
+        List<Integer> data = (List<Integer>) trans.fetchOneColumnValue(stmt, DBDataType.DB_TYPE_INTEGER);
+        
+        return data.get(0);
     }
 }

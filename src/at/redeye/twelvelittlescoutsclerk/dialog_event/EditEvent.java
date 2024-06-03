@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.UniqueDialogHelper;
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
 import at.redeye.FrameWork.base.bindtypes.DBString;
@@ -18,11 +19,14 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.LocalHelpWinModal;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.MemberSearch;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +48,8 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
     MainWin mainwin;
     boolean started = false;
     TableManipulator tm;
-    List<DBMember> values = new ArrayList<>();
+    List<DBEventMember> values = new ArrayList<>();
+    List<DBEventMember> values_to_remove = new ArrayList<>();
     
     /**
      * Creates new form EditKunde
@@ -82,7 +87,7 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         }
         
         
-        DBMember members = new DBMember();
+        DBEventMember members = new DBEventMember();
         
         tm = new TableManipulator(root, jTMembers, members);
      
@@ -94,11 +99,12 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         tm.hide(members.hist.ae_zeit);
         tm.hide(members.bp_idx);
         tm.hide(members.idx);
-        tm.hide(members.entry_date);
-        tm.hide(members.de_registered);
-        tm.hide(members.inaktiv);
-        tm.hide(members.tel);
-        tm.hide(members.note);        
+        tm.hide(members.event_idx);
+        tm.hide(members.member_idx);
+        tm.hide(members.group_idx);
+        
+        tm.setEditable(members.costs);
+        tm.setEditable(members.comment);
         
         tm.prepareTable();
         
@@ -450,10 +456,20 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
             public void do_stuff() throws Exception {
                 if (check()) {                                                                                         
                     
+                    Transaction trans = getTransaction();
+                    
                     UpdateEvent updaterEvent = new UpdateEvent(root, getTransaction(), mainwin.getAudit());
                     updaterEvent.auditEventDiffAndUpdate(event_old, event);
                     
-                    getTransaction().commit();
+                    for( DBEventMember em : values_to_remove ) {
+                        trans.deleteWithPrimarayKey(em);
+                    }
+                    
+                    for( DBEventMember em : values ) {
+                        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
+                    }
+                    
+                    trans.commit();
                     
                     saved = true;
                     close();
@@ -471,11 +487,30 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
     {
         Set<Integer> ret = new HashSet<>();
         
-        for( DBMember member : values ) {
+        for( DBEventMember member : values ) {
             ret.add(member.idx.getValue());
         }
         
         return ret;
+    }
+    
+    DBEventMember createEntry( DBMember member ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
+    {
+        Transaction trans = getTransaction();
+        
+        DBEventMember em = new DBEventMember();
+        em.idx.loadFromCopy(mainwin.getNewSequenceValue(DBEventMember.EVENTMEMBER_IDX_SEQUENCE));        
+        em.bp_idx.loadFromCopy(mainwin.getBPIdx());
+        em.event_idx.loadFromCopy(event.idx.getValue());
+        em.member_idx.loadFromCopy(member.idx.getValue());
+        em.group_idx.loadFromCopy(MemberHelper.fetch_group_idx(trans,member));
+        em.hist.setAnHist("root");
+        em.costs.loadFromCopy(event.costs.getValue());
+        em.name.loadFromCopy(member.name.getValue());
+        em.forname.loadFromCopy(member.forname.getValue());
+        em.group.loadFromCopy(member.group.getValue());       
+        
+        return em;
     }
     
     private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAddMemberActionPerformed
@@ -498,10 +533,20 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
             return;
         }
         
-        for (DBMember entry : selected_members) {
-            values.add(entry);
-            tm.add(entry);
-        }
+        new AutoMBox(EditEvent.class.getName()) {
+
+            @Override
+            public void do_stuff() throws Exception {
+
+                for (DBMember member : selected_members) {
+
+                    DBEventMember entry = createEntry(member);
+
+                    values.add(entry);
+                    tm.add(entry);
+                }
+            }
+        };
         
     }//GEN-LAST:event_jBAddMemberActionPerformed
 
@@ -517,8 +562,10 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         Collections.sort(rows_up_to_down, Collections.reverseOrder());
         
         for( int row : rows_up_to_down ) {
+            values_to_remove.add(values.get(row));
+            
             tm.remove(row);
-            values.remove(row);
+            values.remove(row);            
         }
         
     }//GEN-LAST:event_jBRemoveMemberActionPerformed

@@ -25,6 +25,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,6 +94,11 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         tm.hide(members.hist.ae_zeit);
         tm.hide(members.bp_idx);
         tm.hide(members.idx);
+        tm.hide(members.entry_date);
+        tm.hide(members.de_registered);
+        tm.hide(members.inaktiv);
+        tm.hide(members.tel);
+        tm.hide(members.note);        
         
         tm.prepareTable();
         
@@ -291,6 +297,11 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         });
 
         jBRemoveMember.setText("remove Member");
+        jBRemoveMember.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBRemoveMemberActionPerformed(evt);
+            }
+        });
 
         jBEditMember.setText("edit Member");
 
@@ -493,6 +504,24 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         }
         
     }//GEN-LAST:event_jBAddMemberActionPerformed
+
+    private void jBRemoveMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBRemoveMemberActionPerformed
+        
+        Set<Integer> rows = tm.getSelectedRows();
+        
+        if( rows == null ) {
+            return;
+        }
+        
+        List<Integer> rows_up_to_down = new ArrayList<>(rows);
+        Collections.sort(rows_up_to_down, Collections.reverseOrder());
+        
+        for( int row : rows_up_to_down ) {
+            tm.remove(row);
+            values.remove(row);
+        }
+        
+    }//GEN-LAST:event_jBRemoveMemberActionPerformed
 
   
     // Variables declaration - do not modify//GEN-BEGIN:variables

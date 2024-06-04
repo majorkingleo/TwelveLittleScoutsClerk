@@ -267,7 +267,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
                 
                 values.remove(i);
                 tm.remove(i);
-                setEdited();
+                getTransaction().commit();
             }
         };        
         
@@ -316,10 +316,6 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
             DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans,entry);
         }
         
-        for( DBEvent event : values_to_delete ) {
-            EventHelper.delete_event(trans, event);
-        }
-
         getTransaction().commit();
     }
     

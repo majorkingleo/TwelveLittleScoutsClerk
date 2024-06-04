@@ -73,7 +73,7 @@ public class MemberHelper {
         String stmt = "select " + trans.markColumn(group,group.idx)
                 + " from " + trans.markTable(group) + ", " + trans.markTable(m2g)
                 + " where " +  trans.markColumn(group,group.idx) + " = " + trans.markColumn(m2g,m2g.group_idx)
-                + " and " + trans.markColumn(m2g,m2g.member_idx) + " = '" + member.idx.toString() + "'";
+                + " and " + trans.markColumn(m2g,m2g.member_idx) + " = " + member.idx.toString();
         
         
         List<Integer> data = (List<Integer>) trans.fetchOneColumnValue(stmt, DBDataType.DB_TYPE_INTEGER);

@@ -25,8 +25,8 @@ public class EventHelper
         DBEventMember em = new DBEventMember();
 
         List<DBEventMember> values = trans.fetchTable2(em,
-                "where " + trans.markColumn(em.bp_idx) + " = " + event.bp_idx.getValue()
-                + " and " + trans.markColumn(em.event_idx) + " = '" + event.idx.getValue() + "'"
+                "where " + trans.markColumn(em.bp_idx) + " = " + event.bp_idx.toString()
+                + " and " + trans.markColumn(em.event_idx) + " = " + event.idx.toString()
                 + " order by " + trans.markColumn(em.name));
 
         for (DBEventMember entry : values) {

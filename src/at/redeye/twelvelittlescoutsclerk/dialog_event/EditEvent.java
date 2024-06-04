@@ -131,8 +131,8 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
 
                 Transaction trans = getTransaction();
                 values = trans.fetchTable2(em,
-                        "where " + trans.markColumn(em.bp_idx) + " = " + mainwin.getBPIdx()
-                        + " and " + trans.markColumn(em.event_idx) + " = '" + event.idx.getValue() + "'"
+                        "where " + trans.markColumn(em.bp_idx) + " = " + mainwin.getBPIdx().toString()
+                        + " and " + trans.markColumn(em.event_idx) + " = " + event.idx.toString()
                         + " order by " + trans.markColumn(em.name));
                 
                 for (DBEventMember entry : values) {

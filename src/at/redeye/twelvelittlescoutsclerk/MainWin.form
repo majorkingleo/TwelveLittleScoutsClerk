@@ -69,6 +69,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMScoregMemberImportActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMElbaBookingLineImport">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Import Bookinglines from ELBA"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMElbaBookingLineImportActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMQuit">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Beenden"/>

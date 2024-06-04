@@ -21,6 +21,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.dialog_event.Event;
+import at.redeye.twelvelittlescoutsclerk.imports.elba.ImportBookingLineFromElba;
 import at.redeye.twelvelittlescoutsclerk.imports.scoreg.ImportMemberFromScoreg;
 import at.redeye.twelvelittlescoutsclerk.reports.audit.ReportAudit;
 import java.awt.event.ActionEvent;
@@ -133,6 +134,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jMenuItem12 = new javax.swing.JMenuItem();
         jMScoregMemberImport = new javax.swing.JMenuItem();
+        jMElbaBookingLineImport = new javax.swing.JMenuItem();
         jMQuit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         jMenuItemMembers = new javax.swing.JMenuItem();
@@ -240,6 +242,14 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu1.add(jMScoregMemberImport);
+
+        jMElbaBookingLineImport.setText("Import Bookinglines from ELBA");
+        jMElbaBookingLineImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMElbaBookingLineImportActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMElbaBookingLineImport);
 
         jMQuit.setText("Beenden");
         jMQuit.addActionListener(new java.awt.event.ActionListener() {
@@ -706,6 +716,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             invokeDialogUnique(new Event(this));
         
     }//GEN-LAST:event_jMenuItemEventsActionPerformed
+
+    private void jMElbaBookingLineImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMElbaBookingLineImportActionPerformed
+          ImportBookingLineFromElba.importBookingLine(this);
+    }//GEN-LAST:event_jMElbaBookingLineImportActionPerformed
     
 
     public String getLastOpenPath() {
@@ -743,6 +757,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMDBExport;
     private javax.swing.JMenuItem jMDBImport;
     private javax.swing.JMenuItem jMDatabase;
+    private javax.swing.JMenuItem jMElbaBookingLineImport;
     private javax.swing.JMenuItem jMPlugin;
     private javax.swing.JMenuItem jMQuit;
     private javax.swing.JMenuItem jMResetDB;

@@ -19,7 +19,7 @@ public class DBBookingLine extends DBStrukt {
     
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBHistory      hist = new DBHistory("hist");
-    public DBInteger      bz_idx = new DBInteger( "bp_idx" );
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBString       line = new DBString("line", 500);
     public DBDouble       amount = new DBDouble("amount" );
     public DBString       from_bank_account = new DBString("from_bank_account",255);
@@ -39,7 +39,7 @@ public class DBBookingLine extends DBStrukt {
         add( idx );
         add( date );
         add( hist );
-        add( bz_idx );
+        add( bp_idx );
         add( line );
         add( amount );
         add( from_bank_account );        

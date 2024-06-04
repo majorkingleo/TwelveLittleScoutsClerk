@@ -4,7 +4,6 @@
  */
 package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
-import at.redeye.twelvelittlescoutsclerk.dialog_event.*;
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
@@ -132,7 +131,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         jScrollPane1.setViewportView(jTContent);
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -140,7 +139,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         });
 
         jBDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edittrash.gif"))); // NOI18N
-        jBDel.setText("Löschen");
+        jBDel.setText("Delete");
         jBDel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBDelActionPerformed(evt);
@@ -148,7 +147,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         });
 
         jBNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
-        jBNew.setText("Neu");
+        jBNew.setText("New");
         jBNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBNewActionPerformed(evt);
@@ -156,7 +155,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -164,7 +163,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         });
 
         jBEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edit.png"))); // NOI18N
-        jBEdit.setText("Bearbeiten");
+        jBEdit.setText("Edit");
         jBEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBEditActionPerformed(evt);
@@ -184,7 +183,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
                 .addComponent(jBEdit)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBDel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 215, Short.MAX_VALUE)
                 .addComponent(jBClose)
                 .addContainerGap())
         );
@@ -261,25 +260,25 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         final JFrame parent = this;
         AutoMBox al = new AutoMBox(getTitle()) {
 
-                     @Override
-                     public void do_stuff() throws Exception {
-                                                  
-                         values.remove(i);
-                         tm.remove(i);
-                         setEdited();
-                         save();
-                         feed_table();
-                     }
-                 };
+            @Override
+            public void do_stuff() throws Exception {
+
+                EventHelper.delete_event(getTransaction(), values.get(i));
+                
+                values.remove(i);
+                tm.remove(i);
+                setEdited();
+            }
+        };        
         
-        if( al.isFailed() )
-        {
+        if( al.isFailed() ) {
             try {
-                getTransaction().rollback();                
+                getTransaction().rollback();
             } catch( Exception ex ) {
-              logger.error(ex,ex);
+                logger.error(ex,ex);
             }
         }
+        
     }//GEN-LAST:event_jBDelActionPerformed
 
     private void jBNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBNewActionPerformed
@@ -303,6 +302,8 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
 
     private void save() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
+        Transaction trans = getTransaction();
+        
         for (Integer i : tm.getEditedRows()) {
 
             if( i < 0 ) {
@@ -312,7 +313,11 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
             DBEvent entry = values.get(i);
 
             entry.hist.setAeHist(root.getUserName());
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(getTransaction(),entry);
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans,entry);
+        }
+        
+        for( DBEvent event : values_to_delete ) {
+            EventHelper.delete_event(trans, event);
         }
 
         getTransaction().commit();

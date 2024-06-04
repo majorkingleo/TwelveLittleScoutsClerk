@@ -127,12 +127,13 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
                 tm.clear();
                 clearEdited();
 
-                DBEventMember event = new DBEventMember();
+                DBEventMember em = new DBEventMember();
 
                 Transaction trans = getTransaction();
-                values = trans.fetchTable2(event,
-                        "where " + trans.markColumn(event.bp_idx) + " = " + mainwin.getBPIdx()
-                        + " order by " + trans.markColumn(event.name));
+                values = trans.fetchTable2(em,
+                        "where " + trans.markColumn(em.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(em.event_idx) + " = '" + event.idx.getValue() + "'"
+                        + " order by " + trans.markColumn(em.name));
                 
                 for (DBEventMember entry : values) {
                     tm.add(entry);
@@ -473,7 +474,7 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
                     updaterEvent.auditEventDiffAndUpdate(event_old, event);
                     
                     for( DBEventMember em : values_to_remove ) {
-                        trans.deleteWithPrimarayKey(em);
+                        trans.deleteWithPrimaryKey(em);
                     }
                     
                     for( DBEventMember em : values ) {

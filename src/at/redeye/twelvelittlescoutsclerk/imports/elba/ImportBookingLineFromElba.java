@@ -12,14 +12,8 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import at.redeye.twelvelittlescoutsclerk.imports.CSVFileFilter;
 import at.redeye.twelvelittlescoutsclerk.imports.InfoWin;
-import at.redeye.twelvelittlescoutsclerk.imports.MatchColumn;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
 import java.io.*;
@@ -27,9 +21,6 @@ import java.math.BigInteger;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -69,17 +60,17 @@ public class ImportBookingLineFromElba
     }
     
     public static String cutBOM(String value) {
-    // UTF-8 BOM is EF BB BF, see https://en.wikipedia.org/wiki/Byte_order_mark
-    String bom = String.format("%x", new BigInteger(1, value.substring(0,3).getBytes()));
-    if (bom.equals("efbbbf"))
-        // UTF-8
-        return value.substring(3, value.length());
-    else if (bom.substring(0, 2).equals("feff") || bom.substring(0, 2).equals("ffe"))
-        // UTF-16BE or UTF16-LE
-        return value.substring(2, value.length());
-    else
-        return value;
-}
+        // UTF-8 BOM is EF BB BF, see https://en.wikipedia.org/wiki/Byte_order_mark
+        String bom = String.format("%x", new BigInteger(1, value.substring(0,3).getBytes()));
+        if (bom.equals("efbbbf"))
+            // UTF-8
+            return value.substring(3, value.length());
+        else if (bom.substring(0, 2).equals("feff") || bom.substring(0, 2).equals("ffe"))
+            // UTF-16BE or UTF16-LE
+            return value.substring(2, value.length());
+        else
+            return value;
+    }
           
     
     public boolean run( int azidx ) throws FileNotFoundException, IOException, ParseException, SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException
@@ -91,9 +82,10 @@ public class ImportBookingLineFromElba
             trans = main.getNewTransaction();
         }                
                         
+        //CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"UTF-8"), ';', '\"');
         CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"UTF-8"), ';', '\"');
         
-        List list = reader.readAll();            
+        List list = reader.readAll();
         
         for( int i = 0; i < list.size(); i++ )
         {

@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.log4j.Logger;
 
 /**
@@ -80,10 +82,16 @@ public class ImportBookingLineFromElba
         
         if( trans == null ) {
             trans = main.getNewTransaction();
-        }                
+        }               
                         
+        FileInputStream in = new FileInputStream(csv_file);
+        BOMInputStream bomIn = BOMInputStream.builder()
+            .setInputStream(in)
+            .setByteOrderMarks(ByteOrderMark.UTF_8,ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE, ByteOrderMark.UTF_32LE, ByteOrderMark.UTF_32BE)
+            .get();
+        
         //CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"UTF-8"), ';', '\"');
-        CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csv_file),"UTF-8"), ';', '\"');
+        CSVReader reader = new CSVReader( new InputStreamReader(bomIn), ';', '\"' );
         
         List list = reader.readAll();
         
@@ -106,7 +114,7 @@ public class ImportBookingLineFromElba
             line.idx.loadFromCopy(main.getNewSequenceValue(DBBookingLine.BOOKING_LINE_IDX_SEQUENCE));
             line.data_source.loadFromString("ELBA");
             line.line.loadFromCopy(cols[1]);
-            line.amount.loadFromCopy(cols[3]);
+            line.amount.loadFromCopy(Double.valueOf(cols[3].replaceFirst(",", ".")));
             line.hist.setAnHist(main.getRoot().getLogin());
             
             trans.insertValues(line);                     

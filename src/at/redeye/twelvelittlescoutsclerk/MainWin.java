@@ -20,6 +20,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
+import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_event.Event;
 import at.redeye.twelvelittlescoutsclerk.imports.elba.ImportBookingLineFromElba;
 import at.redeye.twelvelittlescoutsclerk.imports.scoreg.ImportMemberFromScoreg;
@@ -137,6 +138,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMElbaBookingLineImport = new javax.swing.JMenuItem();
         jMQuit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItemMembers = new javax.swing.JMenuItem();
         jMenuItemContacts = new javax.swing.JMenuItem();
         jMenuItemEvents = new javax.swing.JMenuItem();
@@ -262,6 +264,14 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMenuBar1.add(jMenu1);
 
         jMenu5.setText("Daten");
+
+        jMenuItem2.setText("Booking Lines");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItem2);
 
         jMenuItemMembers.setText("Members");
         jMenuItemMembers.addActionListener(new java.awt.event.ActionListener() {
@@ -720,6 +730,11 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private void jMElbaBookingLineImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMElbaBookingLineImportActionPerformed
           ImportBookingLineFromElba.importBookingLine(this);
     }//GEN-LAST:event_jMElbaBookingLineImportActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        if( checkAz() )
+            invokeDialogUnique(new BookingLine(this));
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
     
 
     public String getLastOpenPath() {
@@ -772,6 +787,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem12;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItemContacts;

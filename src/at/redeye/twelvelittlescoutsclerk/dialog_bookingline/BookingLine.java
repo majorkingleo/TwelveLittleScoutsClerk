@@ -149,11 +149,6 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 jTContentMouseClicked(evt);
             }
         });
-        jTContent.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                jTContentPropertyChange(evt);
-            }
-        });
         jScrollPane1.setViewportView(jTContent);
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
@@ -508,10 +503,6 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         current_value.loadFromCopy(values.get(row));
         var_to_gui();        
     }//GEN-LAST:event_jTContentMouseClicked
-
-    private void jTContentPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jTContentPropertyChange
-        System.out.println(evt.toString());
-    }//GEN-LAST:event_jTContentPropertyChange
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

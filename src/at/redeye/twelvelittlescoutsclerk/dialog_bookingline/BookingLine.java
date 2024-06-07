@@ -25,6 +25,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
     MainWin mainwin;
     List<DBBookingLine> values;
+    DBBookingLine current_value = new DBBookingLine();
     TableManipulator tm;
     Audit audit;
 
@@ -65,7 +66,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             jBDel.setEnabled(false);
             jBNew.setEnabled(false);
         }
-                
+        
+        bindVar(jTFrom, current_value.from_name);
+        bindVar(jTBankAccount, current_value.from_bank_account);
+        bindVar(jTDate, current_value.date);
+        bindVar(jTLine, current_value.line);
+        bindVar(jTComment, current_value.comment);                
+        bindVar(jTDataSource, current_value.data_source);
     }
     
     private void feed_table() {
@@ -110,6 +117,19 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jTFrom = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jTBankAccount = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jTDate = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        jTComment = new javax.swing.JTextField();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTLine = new javax.swing.JTextArea();
+        jLabel6 = new javax.swing.JLabel();
+        jTDataSource = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -127,6 +147,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jTContent.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTContentMouseClicked(evt);
+            }
+        });
+        jTContent.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jTContentPropertyChange(evt);
             }
         });
         jScrollPane1.setViewportView(jTContent);
@@ -209,15 +234,86 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
+        jLabel2.setText("From:");
+
+        jLabel3.setText("Bank account:");
+
+        jLabel4.setText("Date:");
+
+        jLabel5.setText("Comment:");
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Booking Line"));
+
+        jTLine.setEditable(false);
+        jTLine.setColumns(20);
+        jTLine.setLineWrap(true);
+        jTLine.setRows(5);
+        jTLine.setWrapStyleWord(true);
+        jScrollPane2.setViewportView(jTLine);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+        );
+
+        jLabel6.setText("Data source:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTDataSource)
+                            .addComponent(jTFrom)
+                            .addComponent(jTBankAccount)
+                            .addComponent(jTDate)
+                            .addComponent(jTComment))))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jTBankAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jTDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jTComment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addComponent(jTDataSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -249,7 +345,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                         .addComponent(jLabel1)
                         .addComponent(jLInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -393,15 +489,29 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
         
+        /*
         if (evt.getClickCount() == 2) {
-            /*
+            
              JTable target = (JTable)evt.getSource();
              int row = target.getSelectedRow();
              int column = target.getSelectedColumn();
-             */
+             
             jBEditActionPerformed(null);
+        }*/
+        
+        int row = tm.getSelectedRow();
+        
+        if( row < 0 ) {
+            return;
         }
+        
+        current_value.loadFromCopy(values.get(row));
+        var_to_gui();        
     }//GEN-LAST:event_jTContentMouseClicked
+
+    private void jTContentPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jTContentPropertyChange
+        System.out.println(evt.toString());
+    }//GEN-LAST:event_jTContentPropertyChange
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -412,10 +522,23 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JButton jBSave;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jTBankAccount;
+    private javax.swing.JTextField jTComment;
     private javax.swing.JTable jTContent;
+    private javax.swing.JTextField jTDataSource;
+    private javax.swing.JTextField jTDate;
+    private javax.swing.JTextField jTFrom;
+    private javax.swing.JTextArea jTLine;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter1;
     // End of variables declaration//GEN-END:variables
 

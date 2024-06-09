@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class BookingLine extends BaseDialog implements NewSequenceValueInterface {
 
@@ -73,6 +75,12 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         bindVar(jTLine, current_value.line);
         bindVar(jTComment, current_value.comment);                
         bindVar(jTDataSource, current_value.data_source);
+        
+        jTContent.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+        public void valueChanged(ListSelectionEvent event) {
+            onBookingLineSelectionChanged();
+        }
+    });
     }
     
     private void feed_table() {
@@ -113,9 +121,6 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jBNew = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
         jBEdit = new javax.swing.JButton();
-        tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
-        jLabel1 = new javax.swing.JLabel();
-        jLInfo = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jTFrom = new javax.swing.JTextField();
@@ -130,6 +135,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jTLine = new javax.swing.JTextArea();
         jLabel6 = new javax.swing.JLabel();
         jTDataSource = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
+        jLabel1 = new javax.swing.JLabel();
+        jLInfo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -152,7 +161,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jScrollPane1.setViewportView(jTContent);
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -160,7 +169,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         });
 
         jBDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edittrash.gif"))); // NOI18N
-        jBDel.setText("Löschen");
+        jBDel.setText("Delete");
         jBDel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBDelActionPerformed(evt);
@@ -168,7 +177,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         });
 
         jBNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
-        jBNew.setText("Neu");
+        jBNew.setText("New");
         jBNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBNewActionPerformed(evt);
@@ -176,7 +185,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -184,48 +193,12 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         });
 
         jBEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edit.png"))); // NOI18N
-        jBEdit.setText("Bearbeiten");
+        jBEdit.setText("Edit");
         jBEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBEditActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jBSave)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jBNew)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jBEdit)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jBDel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
-                .addComponent(jBClose)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBSave)
-                    .addComponent(jBNew)
-                    .addComponent(jBClose)
-                    .addComponent(jBDel)
-                    .addComponent(jBEdit))
-                .addContainerGap())
-        );
-
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        jLabel1.setText("Bookinglines");
-
-        jLInfo.setText(" ");
-        jLInfo.setAutoscrolls(true);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -254,10 +227,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         jLabel6.setText("Data source:");
+
+        jTDataSource.setEditable(false);
+
+        jButton1.setText("Apply");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -280,7 +257,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                             .addComponent(jTFrom)
                             .addComponent(jTBankAccount)
                             .addComponent(jTDate)
-                            .addComponent(jTComment))))
+                            .addComponent(jTComment)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton1)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -308,8 +288,51 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     .addComponent(jTDataSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jBSave)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBNew)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBEdit)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBDel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 165, Short.MAX_VALUE)
+                        .addComponent(jBClose))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBSave)
+                    .addComponent(jBNew)
+                    .addComponent(jBClose)
+                    .addComponent(jBDel)
+                    .addComponent(jBEdit))
+                .addContainerGap())
+        );
+
+        jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jLabel1.setText("Bookinglines");
+
+        jLInfo.setText(" ");
+        jLInfo.setAutoscrolls(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -319,16 +342,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -340,9 +358,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                         .addComponent(jLabel1)
                         .addComponent(jLInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -482,6 +498,19 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 */
     }//GEN-LAST:event_jBEditActionPerformed
 
+    private void onBookingLineSelectionChanged()
+    {
+            
+        int row = tm.getSelectedRow();
+        
+        if( row < 0 ) {
+            return;
+        }
+        
+        current_value.loadFromCopy(values.get(row));
+        var_to_gui();    
+    }
+    
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
         
         /*
@@ -493,15 +522,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
              
             jBEditActionPerformed(null);
         }*/
-        
-        int row = tm.getSelectedRow();
-        
-        if( row < 0 ) {
-            return;
-        }
-        
-        current_value.loadFromCopy(values.get(row));
-        var_to_gui();        
+        onBookingLineSelectionChanged();
     }//GEN-LAST:event_jTContentMouseClicked
 
 
@@ -511,6 +532,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JButton jBEdit;
     private javax.swing.JButton jBNew;
     private javax.swing.JButton jBSave;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

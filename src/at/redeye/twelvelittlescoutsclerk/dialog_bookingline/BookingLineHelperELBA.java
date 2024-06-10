@@ -4,23 +4,30 @@
  */
 package at.redeye.twelvelittlescoutsclerk.dialog_bookingline;
 
-import at.redeye.FrameWork.base.BindVarInterface.Pair;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 
 public class BookingLineHelperELBA 
 {       
+    public static final String DATA_SOURCE = "ELBA";
+    
+    static final String KEYWORD_IBAN_AUFTRAGGEBER = "IBAN Auftraggeber:";
+    static final String KEYWORD_BIX_AUFTRAGGEBER = "BIC Auftraggeber:";
+    static final String KEYWORD_AUFTRAGGEBER = "Auftraggeber:";
+    static final String KEYWORD_ZAHLUNGSREFERENZ = "Zahlungsreferenz:";
+    static final String KEYWORD_VERWENDUNGSZWECK = "Verwendungszweck:";
+    
     static ArrayList<String> splitKeyWords = new ArrayList<String>( Arrays.asList(
-        "IBAN Auftraggeber:",
-        "BIC Auftraggeber:",
-        "Auftraggeber:",
-        "Zahlungsreferenz:"
+        KEYWORD_IBAN_AUFTRAGGEBER,
+        KEYWORD_BIX_AUFTRAGGEBER,
+        KEYWORD_AUFTRAGGEBER,
+        KEYWORD_ZAHLUNGSREFERENZ,
+        KEYWORD_VERWENDUNGSZWECK
          ) );   
     
     private static class Index
@@ -75,7 +82,29 @@ public class BookingLineHelperELBA
        
        for( Index idx : indexes ) {
            System.out.println( String.format("idx: %d - %d: '%s' = '%s'", idx.start, idx.end, idx.keyword, idx.text ) );
-       }
+           switch( idx.keyword )
+           {
+               case KEYWORD_IBAN_AUFTRAGGEBER:
+                   line.from_bank_account_iban.loadFromString(idx.text.trim());
+                   break;
+                   
+               case KEYWORD_BIX_AUFTRAGGEBER:
+                   line.from_bank_account_bic.loadFromString(idx.text.trim());
+                   break;
+                   
+               case KEYWORD_AUFTRAGGEBER:
+                   line.from_name.loadFromString(idx.text.trim());
+                   break;
+                   
+               case KEYWORD_ZAHLUNGSREFERENZ:
+                   line.reference.loadFromString(idx.text.trim());
+                   break;
+                   
+               case KEYWORD_VERWENDUNGSZWECK:
+                   line.reference.loadFromString(idx.text.trim());
+                   break;                   
+           }
+       }              
     }
     
     private static Map.Entry<Integer,String> findFirstOf( String line, int start_idx, Collection<String> words )
@@ -87,7 +116,7 @@ public class BookingLineHelperELBA
             if( w_idx >= 0 ) {
                 if( ret == null || ret.getKey() > w_idx ) {
                     ret = new SimpleEntry( w_idx, keyword );
-                }                
+                }
             }
         }
         
@@ -97,10 +126,14 @@ public class BookingLineHelperELBA
     
     public static void main( String args[] )
     {
+        String test1 = "Auftraggeber: Hans Müller Zahlungsreferenz: Müller Franz, GuSp, SoLa 2020 IBAN Auftraggeber: AT235321235511212311 BIC Auftraggeber: KALTEDASXEK";
+        String test2 = "Auftraggeber: Hans Müller Verwendungszweck: Müller Franz, GuSp, SoLa 2020 IBAN Auftraggeber: AT235321235511212311 BIC Auftraggeber: KALTEDASXEK";
+        
         BookingLineHelperELBA elba = new BookingLineHelperELBA();
         DBBookingLine line = new DBBookingLine();
-        line.line.loadFromString("Auftraggeber: Hans Müller Zahlungsreferenz: Müller Franz, GuSp, SoLa 2020 IBAN Auftraggeber: AT235321235511212311 BIC Auftraggeber: KALTEDASXEK");
-        
+        line.line.loadFromString(test2);        
         elba.parseBookingLineText(line);
+        System.out.println( "from_name: " + line.from_name.toString() );
+        
     }
 }

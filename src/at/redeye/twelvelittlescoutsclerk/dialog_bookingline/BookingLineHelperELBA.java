@@ -48,7 +48,7 @@ public class BookingLineHelperELBA
      * 
      * @param line 
      */
-    void parseBookingLineText( DBBookingLine line )
+    public static void parseBookingLineText( DBBookingLine line )
     {
        // example line:
        // Auftraggeber: Hans Müller Zahlungsreferenz: Müller Franz, GuSp, SoLa 2020 IBAN Auftraggeber: AT235321235511212311 BIC Auftraggeber: KALTEDASXEK

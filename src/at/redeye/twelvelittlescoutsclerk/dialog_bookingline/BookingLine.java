@@ -235,7 +235,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 4, Short.MAX_VALUE))
         );
 
         jLabel6.setText("Data source:");
@@ -326,7 +328,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     .addComponent(jTDataSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addGap(11, 11, 11)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
@@ -573,8 +575,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             public void do_stuff() throws Exception {
                 if( current_value.data_source.getValue().equals(BookingLineHelperELBA.DATA_SOURCE) )
                 {
-                    new BookingLineHelperELBA().parseBookingLineText(current_value);            
+                    BookingLineHelperELBA.parseBookingLineText(current_value);
                 }
+                
+                ContactHelper.findContactsFor(getTransaction(), current_value);
 
                var_to_gui();       
             }

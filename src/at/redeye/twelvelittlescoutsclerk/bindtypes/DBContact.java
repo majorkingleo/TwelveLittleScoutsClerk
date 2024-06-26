@@ -39,6 +39,11 @@ public class DBContact extends DBStrukt
         add(bank_account_iban);
         add(bank_account_bic);
         
+        idx.setAsPrimaryKey();
+        bp_idx.shouldHaveIndex();        
+        
+        hist.setTitle(" ");
+        
         setVersion(1);
     }
     

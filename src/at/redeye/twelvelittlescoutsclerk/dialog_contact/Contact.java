@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_contact;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -308,9 +309,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
             }
             
             DBContact entry = values.get(i);
-
-            entry.hist.setAeHist(root.getUserName());
-            getTransaction().updateValues(entry);
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(getTransaction(), entry, entry.hist, root.getUserName());
         }
 
         getTransaction().commit();
@@ -400,7 +399,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
                        
         DBContact contact = new DBContact();
         contact.bp_idx.loadFromCopy(mainwin.getBPIdx());
-/*        
+        
         CreateContact create_contact = new CreateContact(mainwin, this, contact);
         
         invokeDialogModal(create_contact);
@@ -416,7 +415,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
             feed_table();
             toFront();
         }
-*/
+
     }    
     
     @Override

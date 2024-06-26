@@ -1,8 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk Dialog for creating a new entry in contact table
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-package at.redeye.twelvelittlescoutsclerk.dialog_member;
+package at.redeye.twelvelittlescoutsclerk.dialog_contact;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialogDialog;
@@ -17,9 +17,8 @@ import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.LocalHelpWinModal;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -28,9 +27,9 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class CreateMember extends BaseDialogDialog implements NewSequenceValueInterface {
+public class CreateContact extends BaseDialogDialog implements NewSequenceValueInterface {
 
-     DBMember member;
+     DBContact contact;
      boolean saved  = false;
      MainWin mainwin;
     
@@ -38,33 +37,25 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
     /**
      * Creates new form CreateKunde
      */
-    public CreateMember(MainWin mainwin, Member members, final DBMember member) {
-        super( members.getRoot(), "Neuer Kunde");
+    public CreateContact(MainWin mainwin, Contact contacts, final DBContact contact) {
+        super( contacts.getRoot(), "New Contact");
         initComponents();
         
-        this.member = member;      
+        this.contact = contact;      
         this.mainwin = mainwin;
-        
-        if( member.entry_date.getValue().getTime() < 10000 && 
-            member.idx.getValue() == 0) {
-            member.entry_date.loadFromCopy(new Date());
-        }
-        
+           
         
         registerHelpWin(
                 new Runnable() {
 
                     @Override
                     public void run() {
-                        invokeDialogModal(new LocalHelpWinModal(root, "CreateKunde"));
+                        invokeDialogModal(new LocalHelpWinModal(root, "CreateContact"));
                     }
                 });     
-                       
-                            
-        bindVar(jTKundennummer,member.member_registration_number);
-        bindVar(jTVorname,member.forname);
-        bindVar(jTName,member.name);
-        bindVar(jDEintrittsdatum,member.entry_date);                
+                                                  
+        bindVar(jTForname,contact.forname);
+        bindVar(jTName,contact.name);          
         
         var_to_gui();
     }
@@ -84,14 +75,10 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jTKundennummer = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jTName = new javax.swing.JTextField();
-        jTVorname = new javax.swing.JTextField();
-        jDEintrittsdatum = new at.redeye.Plugins.JDatePicker.JDatePicker(root);
+        jTForname = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jBClose = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
@@ -100,19 +87,9 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(456, 336));
 
-        jLabel1.setText("Scout ID");
-
         jLabel2.setText("Name");
 
-        jLabel3.setText("Eintrittsdatum");
-
         jLabel4.setText("Vorname");
-
-        jDEintrittsdatum.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jDEintrittsdatumActionPerformed(evt);
-            }
-        });
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBClose.setText("Schließen");
@@ -143,7 +120,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jBSave)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 253, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jBClose1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBClose))
@@ -169,16 +146,12 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3)
                             .addComponent(jLabel4))
-                        .addGap(59, 59, 59)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                            .addComponent(jTVorname, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                            .addComponent(jDEintrittsdatum, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                            .addComponent(jTKundennummer, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))))
+                            .addComponent(jTForname)
+                            .addComponent(jTName))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -186,20 +159,12 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jTKundennummer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jTName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jTVorname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(3, 3, 3)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jDEintrittsdatum, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTForname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(6, 6, 6))
@@ -207,10 +172,6 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jDEintrittsdatumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jDEintrittsdatumActionPerformed
-
-    }//GEN-LAST:event_jDEintrittsdatumActionPerformed
 
     private void jBCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCloseActionPerformed
 
@@ -220,40 +181,19 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
     private boolean check() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
     {
         Transaction trans = getTransaction();
-        
-        if( member.member_registration_number.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Die Kundennummer darf nicht leer sein"));
-            jTKundennummer.requestFocus();
-            return false;
-        }
-        
-        List<DBMember> kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + "  = " + member.bp_idx
-                + " and " + trans.markColumn(member.member_registration_number) + " = '" + member.member_registration_number + "'" );
-        
-        if( !kunden_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Diese Kundennummer ist bereits vorhanden"));
-            jTKundennummer.requestFocus();
-            return false;
-        }
-        
-        if( member.name.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Namen eingeben"));
+               
+        if( contact.name.isEmptyTrimmed() ) {
+            JOptionPane.showMessageDialog(this, MlM("Please enter a name"));
             jTName.requestFocus();
             return false;
-        }
-
-        if( member.forname.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Vornamen eingeben"));
-            jTName.requestFocus();
-            return false;
-        }        
+        }    
         
-        kunden_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + "  = " + member.bp_idx
-                + " and " + trans.markColumn(member.name) + " = '" + member.name + "' "
-                + " and " + trans.markColumn(member.forname) + " = '" + member.forname + "' ");
+        List<DBContact> contacts = trans.fetchTable2(contact, "where " + trans.markColumn(contact.bp_idx) + "  = " + contact.bp_idx
+                + " and " + trans.markColumn(contact.name) + " = '" + contact.name + "' "
+                + " and " + trans.markColumn(contact.forname) + " = '" + contact.forname + "' ");
         
-        if( !kunden_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Es existiert bereits ein Kunde mit diesem Namen"));
+        if( !contacts.isEmpty() ) {
+            JOptionPane.showMessageDialog(this, MlM("This name already exists"));
             jTName.requestFocus();
             return false;
         }                        
@@ -266,7 +206,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
 
         gui_to_var();
 
-        new AutoMBox(CreateMember.class.getName()) {
+        new AutoMBox(CreateContact.class.getName()) {
 
             @Override
             public void do_stuff() throws Exception {
@@ -290,15 +230,11 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBSave;
-    private at.redeye.Plugins.JDatePicker.JDatePicker jDEintrittsdatum;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField jTKundennummer;
+    private javax.swing.JTextField jTForname;
     private javax.swing.JTextField jTName;
-    private javax.swing.JTextField jTVorname;
     // End of variables declaration//GEN-END:variables
 
     boolean pressedSave() {

@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_member;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -320,9 +321,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                 continue;
             
             DBMember entry = values.get(i);
-
-            entry.hist.setAeHist(root.getUserName());
-            getTransaction().updateValues(entry);
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(getTransaction(), entry, entry.hist, root.getUserName());
         }
 
         getTransaction().commit();
@@ -414,11 +413,11 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         DBMember member = new DBMember();
         member.bp_idx.loadFromCopy(mainwin.getBPIdx());
         
-        CreateMember create_kunde = new CreateMember(mainwin, this, member);
+        CreateMember create_member = new CreateMember(mainwin, this, member);
         
-        invokeDialogModal(create_kunde);
+        invokeDialogModal(create_member);
         
-        if( create_kunde.pressedSave() )
+        if( create_member.pressedSave() )
         {        
             mainwin.getAudit().openNewAudit();            
                                                                      

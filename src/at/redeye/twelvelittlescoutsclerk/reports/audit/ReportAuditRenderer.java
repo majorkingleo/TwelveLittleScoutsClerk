@@ -107,7 +107,7 @@ public class ReportAuditRenderer extends BaseReportRenderer implements ReportRen
             text.append("</i> ");
             
             if (a.member_idx.getValue() > 0) {
-                html_bold(MemberNameCombo.getName4Kunde(member_map.get(a.member_idx.getValue())));
+                html_bold(MemberNameCombo.getName4Member(member_map.get(a.member_idx.getValue())));
                 html_normal_text(" ");
             }
             

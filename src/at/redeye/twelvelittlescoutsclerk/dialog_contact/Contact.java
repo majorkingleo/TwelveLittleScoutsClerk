@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JTable;
 
 public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
@@ -343,9 +344,9 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
         if (i < 0 || i >= values.size()) {
             return;
         }
-/*
-        final EditMember editkunde = new EditMember(mainwin, values.get(i));
-        editkunde.registerOnCloseListener(new Runnable() {
+
+        final EditContact editcontact = new EditContact(mainwin, values.get(i));
+        editcontact.registerOnCloseListener(new Runnable() {
 
             @Override
             public void run() {
@@ -364,18 +365,13 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
             }
         });
 
-        invokeDialogUnique(editkunde);
-*/
+        invokeDialogUnique(editcontact);
+
     }//GEN-LAST:event_jBEditActionPerformed
 
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
         
-        if (evt.getClickCount() == 2) {
-            /*
-             JTable target = (JTable)evt.getSource();
-             int row = target.getSelectedRow();
-             int column = target.getSelectedColumn();
-             */
+        if (evt.getClickCount() == 2) {             
             jBEditActionPerformed(null);
         }
     }//GEN-LAST:event_jTContentMouseClicked

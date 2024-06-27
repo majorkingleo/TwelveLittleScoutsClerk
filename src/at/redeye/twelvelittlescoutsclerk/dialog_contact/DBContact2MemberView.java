@@ -2,36 +2,36 @@
  * TwelveLittleScoutsClerk Member search dialog
  * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-package at.redeye.twelvelittlescoutsclerk.dialog_member;
+package at.redeye.twelvelittlescoutsclerk.dialog_contact;
 import at.redeye.FrameWork.base.bindtypes.*;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 
 /**
  *
  * @author martin
  */
-public class DBMember2ContactView extends DBStrukt
+public class DBContact2MemberView extends DBStrukt
 { 
     DBMembers2Contacts m2c = new DBMembers2Contacts();
-    DBContact contact = new DBContact();
+    DBMember member = new DBMember();
     
-    public DBMember2ContactView()
+    public DBContact2MemberView()
     {
-        super("Member2ContactView");
+        super("Contact2MemberView");
         
         add( m2c );
-        add( contact );
+        add( member );
         
         m2c.setTitle(" ");
-        contact.setTitle(" ");        
+        member.setTitle(" ");
         
         setVersion(1);
     }
 
     @Override
     public DBStrukt getNewOne() {
-        return new DBMember2ContactView();
+        return new DBContact2MemberView();
     }
     
     

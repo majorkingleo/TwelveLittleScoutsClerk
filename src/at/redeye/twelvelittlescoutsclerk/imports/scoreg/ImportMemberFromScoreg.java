@@ -45,9 +45,9 @@ public class ImportMemberFromScoreg
     Transaction trans;
     File csv_file;
     SimpleDateFormat sdf_date;
-    ArrayList<String> kundennummern ;
-    ArrayList<String> doppelte_kundennummern;
-    ArrayList<String> unbekannte_kunden;
+    ArrayList<String> scoutids ;
+    ArrayList<String> double_scoutids;
+    ArrayList<String> unknown_members;
     int azidx;
     
     public ImportMemberFromScoreg( MainWin main, File csv_file )
@@ -55,46 +55,46 @@ public class ImportMemberFromScoreg
         this.main = main;
         this.csv_file = csv_file;       
         sdf_date = new SimpleDateFormat("dd.MM.yy");
-        kundennummern = new ArrayList();
-        doppelte_kundennummern = new ArrayList();       
-        unbekannte_kunden = new ArrayList();
+        scoutids = new ArrayList();
+        double_scoutids = new ArrayList();       
+        unknown_members = new ArrayList();
         trans = main.getNewTransaction();
     }
     
     public void clear()
     {
-        kundennummern.clear();
-        doppelte_kundennummern.clear();
-        unbekannte_kunden.clear();
+        scoutids.clear();
+        double_scoutids.clear();
+        unknown_members.clear();
     }
 
     public String getErrorMessage()
     {        
-        if( doppelte_kundennummern.isEmpty() && unbekannte_kunden.isEmpty() )
+        if( double_scoutids.isEmpty() && unknown_members.isEmpty() )
             return null;
         
         StringBuilder sb = new StringBuilder();
 
-        if (!doppelte_kundennummern.isEmpty()) 
+        if (!double_scoutids.isEmpty()) 
         {
-            sb.append("Folgende Kundennummern wurden doppelt vergeben:\n");
+            sb.append("Following ScoutIds are already in use:\n");
 
-            for (String kunr : doppelte_kundennummern) {
-                sb.append(kunr);
+            for (String scoutid : double_scoutids) {
+                sb.append(scoutid);
                 sb.append("\n");
             }
         }
         
         
-        if (!unbekannte_kunden.isEmpty()) 
+        if (!unknown_members.isEmpty()) 
         {
             if( sb.length() != 0 )
                 sb.append("\n");
             
-            sb.append("Folgende Kundennummern sind unbekannt:\n");
+            sb.append("Following ScoutIds are unknown:\n");
 
-            for (String kunr : unbekannte_kunden) {
-                sb.append(kunr);
+            for (String scoutid : unknown_members) {
+                sb.append(scoutid);
                 sb.append("\n");
             }
         }     
@@ -102,14 +102,14 @@ public class ImportMemberFromScoreg
         return sb.toString();
     }
     
-    private boolean checkKundenNummer( String kundennummer, String message_text )
+    private boolean checkScoutID( String scoutid, String message_text )
     {
-        if( kundennummern.contains(kundennummer) )
+        if( scoutids.contains(scoutid) )
         {
             // doppelte_kundennummern.add(message_text);
             return true;
         } else {
-            kundennummern.add(kundennummer);
+            scoutids.add(scoutid);
         }              
         
         return false;
@@ -371,7 +371,7 @@ public class ImportMemberFromScoreg
                     
                     if( error_happened )
                     {
-                        InfoWin infowin = new InfoWin(mainwin.getRoot(), "Warnung", sb.toString() );
+                        InfoWin infowin = new InfoWin(mainwin.getRoot(), "Warning", sb.toString() );
                         infowin.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
                         infowin.setVisible(true);
                         infowin.toFront();
@@ -380,7 +380,7 @@ public class ImportMemberFromScoreg
                         if( infowin.pressedYes() )
                             do_commit = true;
                     } else {
-                        JOptionPane.showMessageDialog(mainwin, "Der Datenimport war erfolgreich");
+                        JOptionPane.showMessageDialog(mainwin, "Dataimport was successful!");
                         do_commit = true;
                     }
                     

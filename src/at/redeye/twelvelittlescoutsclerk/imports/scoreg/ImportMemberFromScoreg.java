@@ -5,6 +5,8 @@
 package at.redeye.twelvelittlescoutsclerk.imports.scoreg;
 
 import at.redeye.FrameWork.base.AutoMBox;
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
+import at.redeye.FrameWork.base.bindtypes.DBValue;
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
@@ -167,6 +169,40 @@ public class ImportMemberFromScoreg
         return group_by_abbrv;
     }
     
+    private void merge( DBValue val1, DBValue val2 )
+    {
+        if( val1.toString().isEmpty() ) {
+            val1.loadFromCopy(val2.getValue());
+        }
+    }
+    
+    private boolean findContact( DBContact contact ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        List<DBContact> contacts = null;
+        
+        if( contact.forname.isEmptyTrimmed() ) {
+            contacts = trans.fetchTable2(contact, 
+                    "where " + trans.markColumn(contact.name) + " = '" + contact.name.toString() + "' "
+                            + " and " + trans.markColumn(contact.bp_idx) + " = " + contact.bp_idx.getValue() );            
+        } else {
+            contacts = trans.fetchTable2(contact, 
+                    "where " + trans.markColumn(contact.name) + " = '" + contact.name.toString() + "' "
+                            + trans.markColumn(contact.forname) + " = '" + contact.forname.toString() + "' "
+                            + " and " + trans.markColumn(contact.bp_idx) + " = " + contact.bp_idx.getValue() );
+        }
+        
+        if( contacts.isEmpty() ) {
+            return false;
+        }
+        
+        for( DBContact contact_in_db : contacts ) {
+            contact.loadFromCopy(contact_in_db);
+            return true;
+        }
+        
+        return false;
+    }
+    
     public boolean run( int azidx ) throws FileNotFoundException, IOException, ParseException, SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException
     {
         this.azidx = azidx;
@@ -228,11 +264,14 @@ public class ImportMemberFromScoreg
                 contact.tel.loadFromCopy(match.getOrDefault("Kontakt Telefon",cols,j));
                 contact.email.loadFromCopy(match.getOrDefault("Kontakt E-Mail",cols,j));
                         
-                if( !contact.name.isEmptyTrimmed() ) {
+                if( !findContact( contact ) ) {
                     contact.idx.loadFromCopy(main.getNewSequenceValue(DBContact.CONTACT_IDX_SEQUENCE));
+                }
+                
+                if( !contact.name.isEmptyTrimmed() ) {
+                    
                     logger.debug("email " + contact.email.toString());
-                    contact.hist.setAnHist(main.getRoot().getLogin());
-                    trans.insertValues(contact);
+                    DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, contact, contact.hist, ImportMemberFromScoreg.class.getSimpleName() );
                     
                     DBMembers2Contacts m2c = new DBMembers2Contacts();
                     m2c.idx.loadFromCopy(main.getNewSequenceValue(DBMembers2Contacts.MEMBERS2CONTACTS_IDX_SEQUENCE));

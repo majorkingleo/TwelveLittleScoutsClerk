@@ -29,7 +29,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLInfo" pref="277" max="32767" attributes="0"/>
+              <Component id="jLInfo" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="tableFilter1" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -95,7 +95,7 @@
                           <Component id="jBEdit" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jBDel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="165" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                           <Component id="jBClose" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="jPanel2" alignment="1" max="32767" attributes="0"/>
@@ -216,9 +216,13 @@
                                   <Component id="jTComment" alignment="0" max="32767" attributes="0"/>
                                   <Component id="jTReference" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                          <Component id="jTFrom" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="jTBankAccountIBAN" alignment="0" pref="205" max="32767" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="jTBankAccountIBAN" min="-2" pref="205" max="-2" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Component id="jTFrom" min="-2" pref="169" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="jBCreateNewContact" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -250,6 +254,7 @@
                           <Component id="jTFrom" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jCContact" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jCMember" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jBCreateNewContact" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -331,7 +336,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jScrollPane2" alignment="0" pref="599" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" alignment="0" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -423,6 +428,14 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="jBCreateNewContact">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="create new Contact"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCreateNewContactActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

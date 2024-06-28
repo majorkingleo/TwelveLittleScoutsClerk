@@ -13,10 +13,12 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
+import at.redeye.twelvelittlescoutsclerk.ContactHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -163,6 +165,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jTReference = new javax.swing.JTextField();
         jCContact = new javax.swing.JComboBox<>();
         jCMember = new javax.swing.JComboBox<>();
+        jBCreateNewContact = new javax.swing.JButton();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -250,7 +253,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE)
+            .addComponent(jScrollPane2)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -283,6 +286,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
         jCMember.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        jBCreateNewContact.setText("create new Contact");
+        jBCreateNewContact.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBCreateNewContactActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -311,9 +321,12 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                             .addComponent(jTComment)
                             .addComponent(jTReference)
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jTFrom, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTBankAccountIBAN, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jTBankAccountIBAN, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jTFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jBCreateNewContact)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -334,7 +347,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     .addComponent(jLabel2)
                     .addComponent(jTFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jCContact, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jCMember, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jCMember, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBCreateNewContact))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -381,7 +395,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                         .addComponent(jBEdit)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jBDel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 165, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jBClose))
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -417,7 +431,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -634,10 +648,34 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         setEdited();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jBCreateNewContactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCreateNewContactActionPerformed
+        
+       gui_to_var();
+       Transaction trans = getTransaction();
+        
+       new AutoMBox(this.getClass().getSimpleName(), true) {
+           @Override
+           public void do_stuff() throws Exception {
+
+               DBContact contact = new DBContact();
+               contact.bp_idx.loadFromCopy(mainwin.getBPIdx());
+               contact.bank_account_bic.loadFromString(current_value.from_bank_account_bic.toString());
+               contact.bank_account_iban.loadFromString(current_value.from_bank_account_iban.toString());
+               contact.name.loadFromString(current_value.from_name.toString());
+               contact.idx.loadFromCopy(getNewSequenceValue(DBContact.CONTACT_IDX_SEQUENCE));
+               
+               EditContact ec = new EditContact(mainwin, contact);
+               invokeDialogModal(ec);                              
+           }
+       };
+        
+    }//GEN-LAST:event_jBCreateNewContactActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAutoDetect;
     private javax.swing.JButton jBClose;
+    private javax.swing.JButton jBCreateNewContact;
     private javax.swing.JButton jBDel;
     private javax.swing.JButton jBEdit;
     private javax.swing.JButton jBNew;

@@ -14,19 +14,21 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
+import at.redeye.twelvelittlescoutsclerk.ContactHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
-import javax.swing.JTable;
 
 public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
     MainWin mainwin;
     List<DBContact> values;
+    List<DBContact> values_to_remove = new ArrayList<>();
     TableManipulator tm;
     Audit audit;
 
@@ -263,9 +265,10 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
                      @Override
                      public void do_stuff() throws Exception {
-                                                  
+                                      
+                         values_to_remove.add(values.get(i));
                          values.remove(i);
-                         tm.remove(i);
+                         tm.remove(i);                         
                          setEdited();
                          save();
                          feed_table();
@@ -303,6 +306,12 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
     private void save() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
+        Transaction trans = getTransaction();
+        
+        for( DBContact contact : values_to_remove ) {
+            ContactHelper.remove_contact( trans, contact );
+        }            
+        
         for (Integer i : tm.getEditedRows()) {
 
             if( i < 0 ) {
@@ -310,7 +319,7 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
             }
             
             DBContact entry = values.get(i);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(getTransaction(), entry, entry.hist, root.getUserName());
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, entry, entry.hist, root.getUserName());
         }
 
         getTransaction().commit();

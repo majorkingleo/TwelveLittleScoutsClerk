@@ -21,8 +21,8 @@ public class DBContact extends DBStrukt
     public DBString       note = new DBString("note", "Notiz", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
     public DBString       email = new DBString("email", "Email", 200 );
-    public DBString       bank_account_iban = new DBString("bank_account", "Bank account IBAN", 50 );
-    public DBString       bank_account_bic = new DBString("bank_account", "Bank account BIC", 50 );
+    public DBString       bank_account_iban = new DBString("bank_account_iban", "Bank account IBAN", 50 );
+    public DBString       bank_account_bic = new DBString("bank_account_bic", "Bank account BIC", 50 );
     
     public DBContact()
     {

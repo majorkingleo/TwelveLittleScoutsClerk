@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_contact;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.UniqueDialogHelper;
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
@@ -39,7 +40,7 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class EditContact extends BaseDialog implements NewSequenceValueInterface {
+public class EditContact extends BaseDialogDialog implements NewSequenceValueInterface {
 
     DBContact contact;
     DBContact contact_old;
@@ -77,6 +78,10 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
         bindVar(jTName, contact.name);
         bindVar(jTVorname, contact.forname);
         bindVar(jTtel,contact.tel);
+        bindVar(jTEmail,contact.email);
+        bindVar(jTBIC,contact.bank_account_bic);
+        bindVar(jTIBAN,contact.bank_account_iban);
+        bindVar(jTNote,contact.note);
         
         
         DBContact2MemberView c2m = new DBContact2MemberView();
@@ -264,6 +269,14 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
         jTC2M = new javax.swing.JTable();
         jBAddContact = new javax.swing.JButton();
         jBRemoveMember = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jTEmail = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jTBIC = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        jTIBAN = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jTNote = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(548, 360));
@@ -273,7 +286,7 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
         jLabel3.setText("Vorname");
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -281,7 +294,7 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -368,33 +381,50 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
                 .addComponent(jBAddContact)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRemoveMember)
-                .addContainerGap(94, Short.MAX_VALUE))
+                .addContainerGap(115, Short.MAX_VALUE))
         );
+
+        jLabel1.setText("Email");
+
+        jLabel4.setText("BIC");
+
+        jLabel5.setText("IBAN");
+
+        jLabel6.setText("Note");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(133, 133, 133)
-                        .addComponent(jTName))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(111, 111, 111)
-                        .addComponent(jTVorname))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel13)
-                        .addGap(63, 63, 63)
-                        .addComponent(jTtel)))
-                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6))
+                        .addGap(68, 68, 68)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTName)
+                            .addComponent(jTVorname)
+                            .addComponent(jTtel)
+                            .addComponent(jTEmail)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jTBIC, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTIBAN))
+                            .addComponent(jTNote))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -412,7 +442,22 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
                     .addComponent(jLabel13)
                     .addComponent(jTtel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jTEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jTBIC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel5)
+                        .addComponent(jTIBAN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addComponent(jTNote, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -554,14 +599,22 @@ public class EditContact extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTBIC;
     private javax.swing.JTable jTC2M;
+    private javax.swing.JTextField jTEmail;
+    private javax.swing.JTextField jTIBAN;
     private javax.swing.JTextField jTName;
+    private javax.swing.JTextField jTNote;
     private javax.swing.JTextField jTVorname;
     private javax.swing.JTextField jTtel;
     // End of variables declaration//GEN-END:variables

@@ -11,6 +11,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -142,6 +143,6 @@ public class ContactHelper {
         }
         
         return result;
-    }
+    }   
     
 }

@@ -5,14 +5,18 @@
 package at.redeye.twelvelittlescoutsclerk;
 
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.DBDataType;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -78,5 +82,22 @@ public class MemberHelper {
         List<Integer> data = (List<Integer>) trans.fetchOneColumnValue(stmt, DBDataType.DB_TYPE_INTEGER);
         
         return data.get(0);
+    }
+    
+    public static List<DBMember> findMembersFor( Transaction trans, DBContact contact ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {        
+        DBMember member = new DBMember();
+        DBMembers2Contacts m2c = new DBMembers2Contacts();
+                
+        
+        List<DBMember> members = trans.fetchTable2(member, 
+            "where " + trans.markColumn(member.bp_idx) + " = " + contact.bp_idx.toString() +
+            " and exists ( select 1 from " + trans.markTable(m2c) + " where " + trans.markColumn(m2c.bp_idx) + " = " + trans.markColumn(member,member.bp_idx) +
+            "       and " + trans.markColumn(m2c.contact_idx) + " = " + contact.idx.toString() +
+            "       and " + trans.markColumn(m2c.member_idx) + " = " + trans.markColumn(member,member.idx) + " ) " );
+        
+        System.out.println(StringUtils.autoLineBreak(trans.getSql()));
+        
+        return members;
     }
 }

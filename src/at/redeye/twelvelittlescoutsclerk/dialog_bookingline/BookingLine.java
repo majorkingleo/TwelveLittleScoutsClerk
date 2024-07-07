@@ -15,9 +15,11 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
 import at.redeye.twelvelittlescoutsclerk.ContactHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -43,6 +45,23 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             return contact.forname.toString() + " " + contact.name.toString();
         }
     }
+    
+    static class MemberDescr
+    {
+        public DBMember member;
+        
+        public MemberDescr( DBMember member )
+        {
+            this.member = member;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return member.forname.toString() + " " + member.name.toString();
+        }
+    }
+        
     
     MainWin mainwin;
     List<DBBookingLine> values;
@@ -284,7 +303,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
         jLabel8.setText("Reference:");
 
-        jCMember.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jCContact.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCContactActionPerformed(evt);
+            }
+        });
 
         jBCreateNewContact.setText("create new Contact");
         jBCreateNewContact.addActionListener(new java.awt.event.ActionListener() {
@@ -671,6 +694,25 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
     }//GEN-LAST:event_jBCreateNewContactActionPerformed
 
+    private void jCContactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCContactActionPerformed
+                  
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                ContactDescr descr = (ContactDescr)jCContact.getSelectedItem();
+
+                List<DBMember> members = MemberHelper.findMembersFor(getTransaction(), descr.contact);
+                
+                jCMember.removeAllItems();
+                for( DBMember member : members ) {
+                    jCMember.addItem(new MemberDescr( member ));
+                }
+
+            }
+        };
+        
+    }//GEN-LAST:event_jCContactActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAutoDetect;
@@ -682,7 +724,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JButton jBSave;
     private javax.swing.JButton jButton1;
     private javax.swing.JComboBox<ContactDescr> jCContact;
-    private javax.swing.JComboBox<String> jCMember;
+    private javax.swing.JComboBox<MemberDescr> jCMember;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

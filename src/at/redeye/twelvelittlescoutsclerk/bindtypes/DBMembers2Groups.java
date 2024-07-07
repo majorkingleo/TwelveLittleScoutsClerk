@@ -1,3 +1,7 @@
+/**
+ * TwelveLittleScoutsClerk connection table from bookingline to event
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
+ */
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.DBHistory;

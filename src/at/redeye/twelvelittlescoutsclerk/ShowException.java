@@ -1,12 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * ShowException.java
- *
- * Created on 26.02.2013, 10:30:58
+/**
+ * TwelveLittleScoutsClerk common functions on table Member 
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk;
 

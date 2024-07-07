@@ -1,6 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk Helper class for importing CSV file colums by column name
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk.dialog_member;
 

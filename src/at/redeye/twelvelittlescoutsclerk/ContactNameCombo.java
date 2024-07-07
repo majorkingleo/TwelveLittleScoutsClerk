@@ -1,6 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * TwelveLittleScoutsClerk connection table from bookingline to event
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 package at.redeye.twelvelittlescoutsclerk;
 
@@ -24,11 +24,11 @@ public class ContactNameCombo extends Pair {
     JComboBox combo;
     DBContact selected_contact;
 
-    public ContactNameCombo(JComboBox combo, List<DBContact> kunden_list, DBContact selected_contact) {
-        this(combo, kunden_list, selected_contact, false );
+    public ContactNameCombo(JComboBox combo, List<DBContact> contacts_list, DBContact selected_contact) {
+        this(combo, contacts_list, selected_contact, false );
     }
     
-    public ContactNameCombo(JComboBox combo, List<DBContact> kunden_list, DBContact selected_contact, boolean emty_at_begin) {
+    public ContactNameCombo(JComboBox combo, List<DBContact> contacts_list, DBContact selected_contact, boolean emty_at_begin) {
         this.combo = combo;
         contacts = new HashMap();
         this.selected_contact = selected_contact;
@@ -37,7 +37,7 @@ public class ContactNameCombo extends Pair {
             combo.addItem("");
         }
         
-        for (DBContact contact : kunden_list) {
+        for (DBContact contact : contacts_list) {
             String name = getName4Contact(contact);
             contacts.put(name, contact);
             combo.addItem(name);

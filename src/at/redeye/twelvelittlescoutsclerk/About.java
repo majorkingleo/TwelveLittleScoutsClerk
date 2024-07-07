@@ -1,9 +1,7 @@
-/*
- * About.java
- *
- * Created on 14. Juli 2009, 20:39
+/**
+ * TwelveLittleScoutsClerk common functions on table Member 
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-
 package at.redeye.twelvelittlescoutsclerk;
 
 import at.redeye.FrameWork.base.BaseDialog;
@@ -18,11 +16,11 @@ public class About extends BaseDialog {
     /** Creates new form About */
     public About(Root root) 
     {
-        super(root,"Über");
+        super(root,"About");
         initComponents();
         
         jLVersion.setText(MlM("Version") + " " + Version.getVersion());
-        jLTitle.setText(MlM("Über") + " " + MlM(root.getAppTitle()));
+        jLTitle.setText(MlM("About") + " " + MlM(root.getAppTitle()));
     }
 
     @Override
@@ -43,7 +41,7 @@ public class About extends BaseDialog {
 
         jLTitle.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         jLTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLTitle.setText("Über Redeye Barcode Editor");
+        jLTitle.setText("About Twelve Little Scouts Clerk");
 
         jBCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBCancel.setText("Schließen");
@@ -61,7 +59,7 @@ public class About extends BaseDialog {
         jLVersion.setText("Version");
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Martin Oberzalek <oberzalek@gmx.at>");
+        jLabel2.setText("Martin Oberzalek <kingleo@gmx.at>");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

@@ -1,9 +1,8 @@
-package at.redeye.twelvelittlescoutsclerk;
-
 /**
  * TwelveLittleScoutsClerk common functions on table Member 
  * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
+package at.redeye.twelvelittlescoutsclerk;
 
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.DBDataType;

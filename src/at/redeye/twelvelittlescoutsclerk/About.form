@@ -73,7 +73,7 @@
           <Font name="Dialog" size="18" style="1"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="&#xdc;ber Redeye Barcode Editor"/>
+        <Property name="text" type="java.lang.String" value="About Twelve Little Scouts Clerk"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jBCancel">
@@ -107,7 +107,7 @@
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="Martin Oberzalek &lt;oberzalek@gmx.at&gt;"/>
+        <Property name="text" type="java.lang.String" value="Martin Oberzalek &lt;kingleo@gmx.at&gt;"/>
       </Properties>
     </Component>
   </SubComponents>

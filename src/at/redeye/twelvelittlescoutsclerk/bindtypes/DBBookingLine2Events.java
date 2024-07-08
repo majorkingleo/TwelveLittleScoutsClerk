@@ -17,6 +17,7 @@ public class DBBookingLine2Events extends DBStrukt
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      bl_idx = new DBInteger("bl_idx", "Booking line Idx");
     public DBInteger      event_idx = new DBInteger("event_idx", "Event Idx");
+    public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBHistory      hist = new DBHistory( "hist" );
     
@@ -27,7 +28,8 @@ public class DBBookingLine2Events extends DBStrukt
         add(idx);        
         add(bl_idx);
         add(event_idx);
-        add(bp_idx);        
+        add(bp_idx);
+        add(member_idx);
         add(hist);
                 
         idx.setAsPrimaryKey();

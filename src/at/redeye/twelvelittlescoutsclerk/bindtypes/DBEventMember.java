@@ -23,7 +23,7 @@ public class DBEventMember extends DBStrukt {
     public DBString       forname = new DBString("forname", "Forname", 50 ); // copy of member
     public DBString       group = new DBString("group", "Group", 50 );       // copy of group name
     public DBHistory      hist = new DBHistory( "hist" );
-    public DBDouble       costs = new DBDouble( "costs" );                   // got a discount? So this value can be vary
+    public DBDouble       costs = new DBDouble( "costs" );                   // got a discount? So this value can vary
     public DBDouble       paid = new DBDouble( "piad" );  
     public DBString       comment = new DBString("comment", "Comment", 255 );
     

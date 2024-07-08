@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_bookingline;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -19,6 +20,7 @@ import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
@@ -27,6 +29,7 @@ import at.redeye.twelvelittlescoutsclerk.dialog_event.EditEvent;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.event.ListSelectionEvent;
@@ -87,6 +90,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     MainWin mainwin;
     List<DBBookingLine> values;
     DBBookingLine current_value = new DBBookingLine();
+    HashMap<Integer,DBBookingLine2Events> bl2es = new HashMap<>();
     TableManipulator tm;
     Audit audit;    
 
@@ -593,6 +597,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
     private void save() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
+        Transaction trans = getTransaction();
+        
         for (Integer i : tm.getEditedRows()) {
 
             if( i < 0 ) {
@@ -602,10 +608,22 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             DBBookingLine entry = values.get(i);
 
             entry.hist.setAeHist(root.getUserName());
-            getTransaction().updateValues(entry);
+            getTransaction().updateValues(entry);                       
+        }
+        
+        if( bl2es.size() > 0 ) {
+            
+            for( DBBookingLine2Events bl2e : bl2es.values() ) {
+                if( bl2e.idx.getValue() != 0 ) {
+                    bl2e.idx.loadFromCopy(getNewSequenceValue(DBBookingLine2Events.BOOKINGLINE2EVENTS_IDX_SEQUENCE));
+                }
+
+                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl2e);
+            }
         }
 
-        getTransaction().commit();
+
+        trans.commit();
     }
     
     private void jBSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSaveActionPerformed
@@ -721,6 +739,26 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
         
         values.get(row).loadFromCopy(current_value);
+        
+        bl2es.remove(current_value.idx.getValue());
+        
+        EventDescr event_descr = (EventDescr) jCEvent.getSelectedItem();
+        if( event_descr == null ) {
+            return;
+        }
+
+        MemberDescr member_descr = (MemberDescr) jCMember.getSelectedItem();
+        if( member_descr == null ) {
+            return;
+        }
+        
+        DBBookingLine2Events bl2e = new DBBookingLine2Events();
+        bl2e.bl_idx.loadFromCopy(current_value.idx.getValue());
+        bl2e.bp_idx.loadFromCopy(current_value.bp_idx.getValue());
+        bl2e.event_idx.loadFromCopy(event_descr.event.idx.getValue());
+        bl2e.member_idx.loadFromCopy(member_descr.member.idx.getValue());
+        bl2es.put(current_value.idx.getValue(), bl2e);
+        
         setEdited();
     }//GEN-LAST:event_jBApplyBookingLineActionPerformed
 

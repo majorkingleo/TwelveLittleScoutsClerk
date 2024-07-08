@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.UniqueDialogHelper;
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
@@ -40,7 +41,7 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
+public class EditEvent extends BaseDialogDialog implements NewSequenceValueInterface {
 
     DBEvent event;
     DBEvent event_old;
@@ -115,7 +116,7 @@ public class EditEvent extends BaseDialog implements NewSequenceValueInterface {
         tableFilter1.setFilter(jTMembers);
     }
     
-        private void feed_table() {
+    private void feed_table() {
         feed_table(true);
     }
 

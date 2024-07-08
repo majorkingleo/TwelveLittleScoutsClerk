@@ -23,6 +23,8 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
+import at.redeye.twelvelittlescoutsclerk.dialog_event.EditEvent;
+import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -324,12 +326,22 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
         jLabel8.setText("Reference:");
 
+        jCContact.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jCContactMousePressed(evt);
+            }
+        });
         jCContact.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCContactActionPerformed(evt);
             }
         });
 
+        jCMember.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jCMemberMousePressed(evt);
+            }
+        });
         jCMember.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCMemberActionPerformed(evt);
@@ -340,6 +352,12 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jBCreateNewContact.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCreateNewContactActionPerformed(evt);
+            }
+        });
+
+        jCEvent.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jCEventMousePressed(evt);
             }
         });
 
@@ -774,6 +792,55 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         };
         
     }//GEN-LAST:event_jCMemberActionPerformed
+
+    private void jCEventMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCEventMousePressed
+                
+        if( evt.getButton() != 3)  {
+            return;
+        }
+        
+        EventDescr descr = (EventDescr) jCEvent.getSelectedItem();
+        
+        if( descr == null ) {
+            return;
+        }
+        
+        EditEvent editevent = new EditEvent(mainwin,descr.event);
+        invokeDialog(editevent);               
+        
+    }//GEN-LAST:event_jCEventMousePressed
+
+    private void jCContactMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCContactMousePressed
+        
+        if( evt.getButton() != 3)  {
+            return;
+        }
+        
+        ContactDescr descr = (ContactDescr) jCContact.getSelectedItem();
+        
+        if( descr == null ) {
+            return;
+        }
+        
+        EditContact editcontact = new EditContact(mainwin,descr.contact);
+        invokeDialog(editcontact); 
+    }//GEN-LAST:event_jCContactMousePressed
+
+    private void jCMemberMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCMemberMousePressed
+        
+        if( evt.getButton() != 3)  {
+            return;
+        }
+        
+        MemberDescr descr = (MemberDescr) jCMember.getSelectedItem();
+        
+        if( descr == null ) {
+            return;
+        }
+        
+        EditMember editmember = new EditMember(mainwin,descr.member);
+        invokeDialog(editmember); 
+    }//GEN-LAST:event_jCMemberMousePressed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -414,6 +414,9 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
                                                                      
             tm.add(event, true, true);
             values.add(event);
+            
+            event.idx.loadFromCopy(getNewSequenceValue(DBEvent.EVENT_IDX_SEQUENCE));
+            
             setEdited();
             save();
             feed_table();

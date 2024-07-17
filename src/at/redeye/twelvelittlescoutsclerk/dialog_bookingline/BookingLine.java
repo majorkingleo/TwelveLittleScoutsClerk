@@ -7,6 +7,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_bookingline;
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
+import at.redeye.FrameWork.base.Setup;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -25,18 +26,21 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
-import at.redeye.twelvelittlescoutsclerk.dialog_event.EditEvent;
-import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JPopupMenu;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.apache.log4j.Logger;
 
 public class BookingLine extends BaseDialog implements NewSequenceValueInterface {
 
+    private static final Logger logger = Logger.getLogger(BookingLine.class.getName());
+    
     static class ContactDescr
     {
         public DBContact contact;
@@ -831,54 +835,66 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
     }//GEN-LAST:event_jCMemberActionPerformed
 
-    private void jCEventMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCEventMousePressed
-                
-        if( evt.getButton() != 3)  {
-            return;
-        }
-        
-        EventDescr descr = (EventDescr) jCEvent.getSelectedItem();
-        
-        if( descr == null ) {
-            return;
-        }
-        
-        EditEvent editevent = new EditEvent(mainwin,descr.event);
-        invokeDialog(editevent);               
-        
-    }//GEN-LAST:event_jCEventMousePressed
-
     private void jCContactMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCContactMousePressed
         
-        if( evt.getButton() != 3)  {
+        boolean do_popup = evt.isPopupTrigger();
+
+        if (!do_popup && Setup.is_win_system()) {
+            if (evt.getButton() == MouseEvent.BUTTON3) {
+                do_popup = true;
+            }
+        }
+        
+        if( !do_popup ) {
             return;
         }
         
         ContactDescr descr = (ContactDescr) jCContact.getSelectedItem();
         
-        if( descr == null ) {
-            return;
-        }
-        
-        EditContact editcontact = new EditContact(mainwin,descr.contact);
-        invokeDialog(editcontact); 
+        JPopupMenu popup = new ActionPopupContacts(mainwin, descr);
+        popup.show(evt.getComponent(), evt.getX(), evt.getY());                
     }//GEN-LAST:event_jCContactMousePressed
 
     private void jCMemberMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCMemberMousePressed
         
-        if( evt.getButton() != 3)  {
+        boolean do_popup = evt.isPopupTrigger();
+
+        if (!do_popup && Setup.is_win_system()) {
+            if (evt.getButton() == MouseEvent.BUTTON3) {
+                do_popup = true;
+            }
+        }
+        
+        if( !do_popup ) {
             return;
         }
         
-        MemberDescr descr = (MemberDescr) jCMember.getSelectedItem();
+        MemberDescr descr = (MemberDescr) jCMember.getSelectedItem();       
         
-        if( descr == null ) {
-            return;
-        }
-        
-        EditMember editmember = new EditMember(mainwin,descr.member);
-        invokeDialog(editmember); 
+        JPopupMenu popup = new ActionPopupMembers(mainwin, descr);
+        popup.show(evt.getComponent(), evt.getX(), evt.getY());
     }//GEN-LAST:event_jCMemberMousePressed
+
+    private void jCEventMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jCEventMousePressed
+                
+        boolean do_popup = evt.isPopupTrigger();
+
+        if (!do_popup && Setup.is_win_system()) {
+            if (evt.getButton() == MouseEvent.BUTTON3) {
+                do_popup = true;
+            }
+        }
+        
+        if( !do_popup ) {
+            return;
+        }
+        
+        EventDescr descr = (EventDescr) jCEvent.getSelectedItem();        
+        
+        JPopupMenu popup = new ActionPopupEvents(mainwin, descr);
+        popup.show(evt.getComponent(), evt.getX(), evt.getY());
+        
+    }//GEN-LAST:event_jCEventMousePressed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

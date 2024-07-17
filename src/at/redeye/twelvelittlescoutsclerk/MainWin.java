@@ -48,10 +48,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
     private static final String CONFIG_LAST_AZ = "last_bp";
     
-    private String MESSAGE_REALLY_IMPORT_DATABASE;
-    private String MESSAGE_REALLY_REALLY_IMPORT_DATABASE;    
-    private String MESSAGE_REALLY_RESET_DATABASE;    
-    private String MESSAGE_REALLY_REALLY_RESET_DATABASE;    
+    public String MESSAGE_REALLY_IMPORT_DATABASE;
+    public String MESSAGE_REALLY_REALLY_IMPORT_DATABASE;    
+    public String MESSAGE_REALLY_RESET_DATABASE;    
+    public String MESSAGE_REALLY_REALLY_RESET_DATABASE;
+    public String MESSAGE_GOTO_EVENTS_DIALOG;
+    public String MESSAGE_EDIT_EVENT_S;
+    public String MESSAGE_GOTO_MEMBERS_DIALOG;
+    public String MESSAGE_EDIT_MEMBER_S;
+    public String MESSAGE_GOTO_CONTACTS_DIALOG;
+    public String MESSAGE_EDIT_CONTACT_S;
     
     Main main;
     String last_path;
@@ -112,7 +118,15 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         MESSAGE_REALLY_REALLY_IMPORT_DATABASE = MlM("Die existierende Datenbank wird tatsächlich gelöscht! Wollen Sie trotzdem weitermachen?");
         MESSAGE_REALLY_RESET_DATABASE = MlM("Wollen Sie tatsächlich die Datenbank in den Ursprungszustand zurücksetztn und dabei alle Daten,"
                 + "die sie nicht exportiert haben verlieren?");
-        MESSAGE_REALLY_REALLY_RESET_DATABASE = MlM("Sind Sie sicher?");        
+        MESSAGE_REALLY_REALLY_RESET_DATABASE = MlM("Sind Sie sicher?");    
+        MESSAGE_GOTO_EVENTS_DIALOG = MlM("open Events dialog");
+        MESSAGE_EDIT_EVENT_S = MlM("edit event: '%s'");
+        
+        MESSAGE_GOTO_MEMBERS_DIALOG = MlM("open Members dialog");
+        MESSAGE_EDIT_MEMBER_S = MlM("edit member: '%s'");
+        
+        MESSAGE_GOTO_CONTACTS_DIALOG = MlM("open Contacts dialog");
+        MESSAGE_EDIT_CONTACT_S = MlM("edit contact: '%s'");        
     }    
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

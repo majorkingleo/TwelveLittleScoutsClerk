@@ -70,7 +70,17 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         
         tm.prepareTable();
         
-        feed_table(false);   
+        feed_table(false);
+        
+        final Transaction trans = getTransaction();
+        
+        new AutoMBox(Member.class.getName(), false) {
+            @Override
+            public void do_stuff() throws Exception {
+                MemberHelper.updateMemberMissingFields(trans, values);
+                trans.commit();
+            }
+        };
         
         tm.autoResize();
         
@@ -275,7 +285,11 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
                      @Override
                      public void do_stuff() throws Exception {
-                                                  
+                                     
+                         DBMember member = values.get(i);
+                         
+                         MemberHelper.deleteMember(getTransaction(), member);
+                         
                          values.remove(i);
                          tm.remove(i);
                          setEdited();

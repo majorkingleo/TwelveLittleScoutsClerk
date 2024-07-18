@@ -4,8 +4,8 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.transaction.Transaction;
-import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.DBDataType;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
@@ -15,12 +15,17 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 
 public class MemberHelper {
+    
+    private static final Logger logger = Logger.getLogger(MemberHelper.class.getName());
+    
     
     public static HashMap<Integer,DBGroup> fetch_groups( Transaction trans, int bpidx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
     {
@@ -29,7 +34,7 @@ public class MemberHelper {
         HashMap<Integer,DBGroup> map_g = new HashMap<Integer,DBGroup>();
         
         for( DBGroup g : groups ) {
-            map_g.put( g.idx.getValue(), group);
+            map_g.put( g.idx.getValue(), g);
         }
         
         DBMembers2Groups m2g = new DBMembers2Groups();
@@ -39,8 +44,8 @@ public class MemberHelper {
         HashMap<Integer,DBGroup> map_m2g = new HashMap<Integer,DBGroup>();
         
         for( DBMembers2Groups m : m2gs ) {
-            DBGroup g = groups.get(m.group_idx.getValue());
-            map_m2g.put( m.member_idx.getValue(), g);
+            DBGroup g = map_g.get(m.group_idx.getValue());
+            map_m2g.put( m.member_idx.getValue(), g);            
         }
         
         return map_m2g;
@@ -56,11 +61,11 @@ public class MemberHelper {
                 
         HashMap<Integer,DBGroup> m2g = fetch_groups(trans, bpidx);
 
-        for (DBMember entry : members) {
-            DBGroup group = m2g.get(entry.idx.getValue());
-
+        for (DBMember m : members) {
+            DBGroup group = m2g.get(m.idx.getValue());
+            
             if( group != null ) {
-                entry.group.loadFromString(group.name.getValue());
+                m.group.loadFromString(group.name.getValue());
             }                    
         }
         
@@ -93,10 +98,20 @@ public class MemberHelper {
             "where " + trans.markColumn(member.bp_idx) + " = " + contact.bp_idx.toString() +
             " and exists ( select 1 from " + trans.markTable(m2c) + " where " + trans.markColumn(m2c.bp_idx) + " = " + trans.markColumn(member,member.bp_idx) +
             "       and " + trans.markColumn(m2c.contact_idx) + " = " + contact.idx.toString() +
-            "       and " + trans.markColumn(m2c.member_idx) + " = " + trans.markColumn(member,member.idx) + " ) " );
-        
-        System.out.println(StringUtils.autoLineBreak(trans.getSql()));
+            "       and " + trans.markColumn(m2c.member_idx) + " = " + trans.markColumn(member,member.idx) + " ) " );              
         
         return members;
+    }
+    
+    public static void deleteMember( Transaction trans, DBMember member )  throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException
+    {
+        trans.deleteWithPrimaryKey(member);
+    }
+    
+    public static void updateMemberMissingFields( Transaction trans, List<DBMember> members )  throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException
+    {
+        for( DBMember member : members ) {
+            trans.updateValues(member);
+        }
     }
 }

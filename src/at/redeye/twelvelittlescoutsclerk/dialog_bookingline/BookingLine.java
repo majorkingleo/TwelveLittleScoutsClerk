@@ -664,8 +664,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             public void do_stuff() throws Exception {
                 
                 save();
-                close();
-                //feed_table();
+                //close();
+                feed_table();
             }
         };
     }//GEN-LAST:event_jBSaveActionPerformed
@@ -709,6 +709,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
     private void onBookingLineSelectionChanged()
     {
+        jCContact.removeAllItems();
+        jCMember.removeAllItems();
+        jCEvent.removeAllItems();
+        
             
         int row = tm.getSelectedRow();
         
@@ -720,11 +724,45 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         var l2e = bl2es.get(current_value.idx.getValue());
         
-        if( l2e != null ) {
-            
-        }
+        new AutoMBox(BookingLine.class.getName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                
+                if( l2e != null ) {                                    
+                    int contact_idx = l2e.contact_idx.getValue();            
+                    fillJCContact( contact_idx );
+                } else {
+                    fillJCContact( -1 );
+                }               
+            }
+        };
+        
         
         var_to_gui();    
+    }
+    
+    private void fillJCContact( int selected_contact_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
+    {
+        Transaction trans = getTransaction();
+        DBContact contact = new DBContact();
+        
+        var contacts = trans.fetchTable2(contact, "where " + trans.markColumn(contact, contact.bp_idx) + " = " + mainwin.getBPIdx() + 
+                " order by " + trans.markColumn(contact,contact.name) + " " + trans.markColumn(contact, contact.forname) );
+        
+        int idx = -1 ;
+        
+        for( int i = 0; i < contacts.size(); i++ ) {
+            var c = contacts.get(i);
+            
+            jCContact.addItem( new ContactDescr(c) );
+            if( c.idx.getValue() == selected_contact_idx ) {
+                idx = i;
+            }
+        }
+        
+        if( idx >= 0 ) {
+            jCContact.setSelectedIndex(idx);
+        }
     }
     
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
@@ -804,6 +842,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         bl2es.put(current_value.idx.getValue(), bl2e);
         
+        tm.setEdited(row);        
         setEdited();
     }//GEN-LAST:event_jBApplyBookingLineActionPerformed
 

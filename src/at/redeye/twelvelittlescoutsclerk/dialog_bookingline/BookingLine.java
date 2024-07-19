@@ -8,6 +8,7 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.Setup;
+import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ListSelectionEvent;
@@ -44,7 +46,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     
     static class ContactDescr
     {
-        public DBContact contact;
+        public DBContact contact;        
         
         public ContactDescr( DBContact contact )
         {
@@ -78,7 +80,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     static class EventDescr
     {
         public DBEvent event;
-        
+                
         public EventDescr( DBEvent event )
         {
             this.event = event;
@@ -728,11 +730,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             @Override
             public void do_stuff() throws Exception {
                 
-                if( l2e != null ) {                                    
-                    int contact_idx = l2e.contact_idx.getValue();            
-                    fillJCContact( contact_idx );
+                if( l2e != null ) {
+                    fillJCContact( l2e.contact_idx.getValue() );
+                    fillJCMember( l2e.member_idx.getValue() );
+                    fillJCEvent( l2e.event_idx.getValue() );
                 } else {
                     fillJCContact( -1 );
+                    fillJCMember(-1);
+                    fillJCEvent(-1);
                 }               
             }
         };
@@ -740,14 +745,16 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         var_to_gui();    
     }
-    
+        
     private void fillJCContact( int selected_contact_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
     {
+        jCContact.removeAllItems();
+        
         Transaction trans = getTransaction();
         DBContact contact = new DBContact();
         
         var contacts = trans.fetchTable2(contact, "where " + trans.markColumn(contact, contact.bp_idx) + " = " + mainwin.getBPIdx() + 
-                " order by " + trans.markColumn(contact,contact.name) + " " + trans.markColumn(contact, contact.forname) );
+                " order by " + trans.markColumn(contact,contact.name) + ", " + trans.markColumn(contact, contact.forname) );
         
         int idx = -1 ;
         
@@ -762,8 +769,69 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         if( idx >= 0 ) {
             jCContact.setSelectedIndex(idx);
+        } else {
+            jCContact.insertItemAt(null,0);
+            jCContact.setSelectedIndex(0);
         }
     }
+    
+    private void fillJCMember( int selected_member_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
+    {
+        jCMember.removeAllItems();
+        
+        Transaction trans = getTransaction();
+        DBMember member = new DBMember();
+        
+        var members = trans.fetchTable2(member, "where " + trans.markColumn(member, member.bp_idx) + " = " + mainwin.getBPIdx() + 
+                " order by " + trans.markColumn(member,member.name) + ", " + trans.markColumn(member, member.forname) );
+        
+        int idx = -1 ;
+        
+        for( int i = 0; i < members.size(); i++ ) {
+            var c = members.get(i);
+            
+            jCMember.addItem( new MemberDescr(c) );
+            if( c.idx.getValue() == selected_member_idx ) {
+                idx = i;
+            }
+        }
+        
+        if( idx >= 0 ) {
+            jCMember.setSelectedIndex(idx);
+        } else {
+            jCMember.insertItemAt(null,0);
+            jCMember.setSelectedIndex(0);
+        }
+    }    
+    
+    private void fillJCEvent( int selected_event_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
+    {
+        jCEvent.removeAllItems();
+        
+        Transaction trans = getTransaction();
+        DBEvent event = new DBEvent();
+        
+        var events = trans.fetchTable2(event, "where " + trans.markColumn(event, event.bp_idx) + " = " + mainwin.getBPIdx() + 
+                " order by " + trans.markColumn(event,event.name) );
+        
+        int idx = -1 ;
+        
+        for( int i = 0; i < events.size(); i++ ) {
+            var c = events.get(i);
+            
+            jCEvent.addItem( new EventDescr(c) );
+            if( c.idx.getValue() == selected_event_idx ) {
+                idx = i;
+            }
+        }
+        
+        if( idx >= 0 ) {
+            jCEvent.setSelectedIndex(idx);
+        } else {
+            jCEvent.insertItemAt(null,0);
+            jCEvent.setSelectedIndex(0);
+        }
+    }        
     
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
         

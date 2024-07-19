@@ -26,6 +26,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
+import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -94,6 +95,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     MainWin mainwin;
     List<DBBookingLine> values;
     DBBookingLine current_value = new DBBookingLine();
+    
+    // Key = DBBookingLine.idx
     HashMap<Integer,DBBookingLine2Events> bl2es = new HashMap<>();
     TableManipulator tm;
     Audit audit;    
@@ -128,8 +131,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         tm.autoResize();
         
         tableFilter1.setFilter(jTContent);
-        
-        
+                                
         if( mainwin.isAzLocked() ) {
             jBSave.setEnabled(false);
             jBDel.setEnabled(false);
@@ -164,6 +166,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             public void do_stuff() throws Exception {
 
                 tm.clear();
+                tm.resetAllCellColors();
                 clearEdited();
 
                 DBBookingLine bookingline = new DBBookingLine();
@@ -175,6 +178,27 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 
                 for (DBBookingLine entry : values) {
                     tm.add(entry);
+                }
+                
+                DBBookingLine2Events bl2e = new DBBookingLine2Events();
+                
+                List<DBBookingLine2Events> l_ble = trans.fetchTable2(bl2e,
+                        "where " + trans.markColumn(bl2e.bp_idx) + " = " + mainwin.getBPIdx());
+                
+                for( var l2e : l_ble ) {
+                    bl2es.put(l2e.bl_idx.getValue(),l2e);                                        
+                }
+                
+                // color lines, with an assigned event
+                for( int idx = 0; idx < values.size(); idx++ ) {
+                    final var value = values.get(idx);
+                    var l2e = bl2es.get(value.idx.getValue());
+
+                    if( l2e != null ) {
+                        for( var col : value.getAllValues() ) {
+                            tm.setCellColor(col, idx, idx % 2 == 0 ? Color.YELLOW : Color.ORANGE);
+                        }
+                    }
                 }
             }
         };
@@ -693,6 +717,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
         
         current_value.loadFromCopy(values.get(row));
+        
+        var l2e = bl2es.get(current_value.idx.getValue());
+        
+        if( l2e != null ) {
+            
+        }
+        
         var_to_gui();    
     }
     
@@ -755,12 +786,22 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         if( member_descr == null ) {
             return;
         }
+
+        ContactDescr contact_descr = (ContactDescr) jCContact.getSelectedItem();
+        if( contact_descr == null ) {
+            return;
+        }
         
         DBBookingLine2Events bl2e = new DBBookingLine2Events();
         bl2e.bl_idx.loadFromCopy(current_value.idx.getValue());
         bl2e.bp_idx.loadFromCopy(current_value.bp_idx.getValue());
         bl2e.event_idx.loadFromCopy(event_descr.event.idx.getValue());
         bl2e.member_idx.loadFromCopy(member_descr.member.idx.getValue());
+        
+        if( contact_descr != null ) {
+            bl2e.contact_idx.loadFromCopy(contact_descr.contact.idx.getValue());
+        }
+        
         bl2es.put(current_value.idx.getValue(), bl2e);
         
         setEdited();

@@ -8,7 +8,6 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.Setup;
-import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -33,7 +32,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ListSelectionEvent;
@@ -148,6 +146,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         bindVar(jTComment, current_value.comment);                
         bindVar(jTDataSource, current_value.data_source);
         bindVar(jTReference, current_value.reference);
+        bindVar(jTAmount, current_value.amount);
         
         jTContent.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
         @Override
@@ -242,6 +241,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jBCreateNewContact = new javax.swing.JButton();
         jCEvent = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jTAmount = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        jtAlreadyPaid = new javax.swing.JTextField();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -397,6 +400,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
         jLabel9.setText("Event:");
 
+        jLabel10.setText("Amount:");
+
+        jTAmount.setEditable(false);
+
+        jLabel11.setText("Already paid:");
+
+        jtAlreadyPaid.setEditable(false);
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -421,8 +432,6 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                             .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTDataSource)
-                            .addComponent(jTDate)
                             .addComponent(jTComment)
                             .addComponent(jTReference)
                             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -442,7 +451,18 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                                         .addComponent(jCContact, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jCMember, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addComponent(jCEvent, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(jCEvent, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jTDate)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jTDataSource, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jtAlreadyPaid)))))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -476,7 +496,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTDataSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel10)
+                    .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11)
+                    .addComponent(jtAlreadyPaid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jCEvent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1059,6 +1083,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JComboBox<MemberDescr> jCMember;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1072,6 +1098,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jTAmount;
     private javax.swing.JTextField jTBankAccountBIC;
     private javax.swing.JTextField jTBankAccountIBAN;
     private javax.swing.JTextField jTComment;
@@ -1081,6 +1108,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JTextField jTFrom;
     private javax.swing.JTextArea jTLine;
     private javax.swing.JTextField jTReference;
+    private javax.swing.JTextField jtAlreadyPaid;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter1;
     // End of variables declaration//GEN-END:variables
 

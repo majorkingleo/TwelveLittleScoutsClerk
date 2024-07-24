@@ -30,7 +30,9 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
@@ -674,10 +676,36 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl2e);
             }
+            
+            List<DBEvent> events = getEvents4Update(); 
+        
+            for( var event : events ) {
+                EventHelper.calc_paid_values_4_event( trans, event );
+            }
         }
 
-
         trans.commit();
+    }
+    
+    /** returns an empty list if empty */
+    private List<DBEvent> getEvents4Update() throws UnsupportedDBDataTypeException, WrongBindFileFormatException, SQLException, TableBindingNotRegisteredException, IOException
+    {
+        HashSet<Integer> events = new HashSet<>();
+        
+        for( var bl2 : bl2es.values() ) {
+            events.add(bl2.event_idx.getValue());
+        }
+        
+        List<DBEvent> ret = new ArrayList<>();
+        
+        for( var event_idx : events ) {
+            DBEvent ev = new DBEvent();
+            ev.idx.loadFromCopy(event_idx);
+            getTransaction().fetchTableWithPrimkey(ev);
+            ret.add(ev);
+        }
+        
+        return ret;
     }
     
     private void jBSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSaveActionPerformed

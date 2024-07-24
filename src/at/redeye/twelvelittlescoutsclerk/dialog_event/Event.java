@@ -14,6 +14,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
+import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;

@@ -24,8 +24,10 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
+import at.redeye.twelvelittlescoutsclerk.dialog_member.DBMember2ContactView;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -97,6 +99,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     MainWin mainwin;
     List<DBBookingLine> values;
     DBBookingLine current_value = new DBBookingLine();
+    DBEventMember current_event_member = new DBEventMember();
     
     // Key = DBBookingLine.idx
     HashMap<Integer,DBBookingLine2Events> bl2es = new HashMap<>();
@@ -149,6 +152,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         bindVar(jTDataSource, current_value.data_source);
         bindVar(jTReference, current_value.reference);
         bindVar(jTAmount, current_value.amount);
+        bindVar(jtAlreadyPaid, current_event_member.paid);
         
         jTContent.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
         @Override
@@ -397,6 +401,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jCEvent.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 jCEventMousePressed(evt);
+            }
+        });
+        jCEvent.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCEventActionPerformed(evt);
             }
         });
 
@@ -664,13 +673,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             DBBookingLine entry = values.get(i);
 
             entry.hist.setAeHist(root.getUserName());
-            getTransaction().updateValues(entry);                       
+            trans.updateValues(entry);                       
         }
         
         if( bl2es.size() > 0 ) {
             
             for( DBBookingLine2Events bl2e : bl2es.values() ) {
-                if( bl2e.idx.getValue() != 0 ) {
+                if( bl2e.idx.getValue() == 0 ) {
                     bl2e.idx.loadFromCopy(getNewSequenceValue(DBBookingLine2Events.BOOKINGLINE2EVENTS_IDX_SEQUENCE));
                 }
 
@@ -765,7 +774,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     {
         jCContact.removeAllItems();
         jCMember.removeAllItems();
-        jCEvent.removeAllItems();
+        jCEvent.removeAllItems();        
         
             
         int row = tm.getSelectedRow();
@@ -775,6 +784,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
         
         current_value.loadFromCopy(values.get(row));
+        current_event_member.loadFromCopy(new DBEventMember());
         
         var l2e = bl2es.get(current_value.idx.getValue());
         
@@ -1095,6 +1105,35 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         popup.show(evt.getComponent(), evt.getX(), evt.getY());
         
     }//GEN-LAST:event_jCEventMousePressed
+
+    private void jCEventActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCEventActionPerformed
+                    
+        var event_descr = (EventDescr)jCEvent.getSelectedItem();
+        
+        if( event_descr == null ) {
+            return;
+        }
+        
+        var member_descr = (MemberDescr)jCMember.getSelectedItem();
+        
+        if( member_descr == null ) {
+            return;
+        }
+        
+        final Transaction trans = getTransaction();
+        
+        new AutoMBox(BookingLine.class.getName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                var event_member = EventHelper.get_event_member(trans, member_descr.member, event_descr.event);
+        
+                if( event_member != null ) {
+                    current_event_member.loadFromCopy(event_member);
+                }   
+            }
+        };
+                     
+    }//GEN-LAST:event_jCEventActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

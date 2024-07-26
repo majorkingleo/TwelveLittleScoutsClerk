@@ -128,5 +128,31 @@ public class EventHelper {
             trans.updateValues(em);
         }
     }
-            
+    
+    /**
+     * 
+     * @param trans
+     * @param member
+     * @param event
+     * @return null if not found
+     * @throws SQLException
+     * @throws TableBindingNotRegisteredException
+     * @throws UnsupportedDBDataTypeException
+     * @throws WrongBindFileFormatException
+     * @throws IOException 
+     */
+    public static DBEventMember get_event_member( Transaction trans, DBMember member, DBEvent event ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException
+    {
+        DBEventMember em = new DBEventMember();
+        
+        List<DBEventMember> ems = trans.fetchTable2(em, 
+                " where " + trans.markColumn(em, em.member_idx) + " = " + member.idx.toString() +
+                " and " + trans.markColumn(em, em.event_idx) + " = " + event.idx.toString() );
+                
+        if( ems.isEmpty() ) {
+            return null;
+        }
+        
+        return ems.get(0);
+    }
 }

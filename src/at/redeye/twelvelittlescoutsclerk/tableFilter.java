@@ -36,6 +36,11 @@ public class tableFilter extends javax.swing.JPanel {
     public void requestFocus() {
         jTFilter.requestFocus();
     }
+    
+    public TableFilterHelper getHelper()
+    {
+        return helper;
+    }
 
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

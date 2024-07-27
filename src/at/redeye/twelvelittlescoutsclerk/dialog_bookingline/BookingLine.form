@@ -31,6 +31,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLInfo" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="jCIn" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jCOut" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="tableFilter1" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -38,12 +42,16 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="tableFilter1" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLInfo" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="jCOut" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jCIn" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -519,6 +527,22 @@
         <Property name="text" type="java.lang.String" value=" "/>
         <Property name="autoscrolls" type="boolean" value="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCOut">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Outgoing"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCOutActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCIn">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Incoming"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCInActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

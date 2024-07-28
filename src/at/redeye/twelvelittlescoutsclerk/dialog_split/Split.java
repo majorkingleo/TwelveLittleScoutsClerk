@@ -253,6 +253,7 @@ public class Split extends BaseDialogDialog {
     private void jBCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCloseActionPerformed
 
         lines.clear();
+        lines = null;
         close();
         
     }//GEN-LAST:event_jBCloseActionPerformed

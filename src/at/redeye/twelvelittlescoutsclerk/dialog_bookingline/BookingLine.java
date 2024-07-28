@@ -15,6 +15,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
+import at.redeye.twelvelittlescoutsclerk.BookingLineHelper;
 import at.redeye.twelvelittlescoutsclerk.ContactHelper;
 import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
@@ -1237,12 +1238,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
                 var lines = dlg_split.getLines();
 
-                if( lines == null || lines.isEmpty() ) {
+                if( lines == null ) {
                     return;
                 }
                   
                 HashSet<Integer> sLineIdx = new HashSet<>();
-                parent.splitpos.loadFromCopy(1);
+                
+                parent.splitpos.loadFromCopy(lines.isEmpty() ? 0 : 1);
                 
                 trans.updateValues(parent);
                 
@@ -1265,10 +1267,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     for( DBBookingLine child : childs )
                     {
                         if( !sLineIdx.contains(child.idx.getValue()) ) {
-                            trans.deleteWithPrimaryKey(child);
+                            BookingLineHelper.delete_bookingline(trans, child);
                         }
                     }
-                }
+                }                               
                 
                 save();
                 

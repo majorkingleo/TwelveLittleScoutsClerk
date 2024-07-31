@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ListSelectionEvent;
@@ -107,6 +109,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     TableManipulator tm;
     Audit audit;    
 
+    ArrayList<JCheckBox> filters = new ArrayList<>();
+    
     public BookingLine(MainWin mainwin) {
         super( mainwin.getRoot(), "BookingLines");
         
@@ -156,11 +160,36 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         bindVar(jtAlreadyPaid, current_event_member.paid);
         
         jTContent.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-        @Override
-        public void valueChanged(ListSelectionEvent event) {
-            onBookingLineSelectionChanged();
-        }
-    });
+            @Override
+            public void valueChanged(ListSelectionEvent event) {
+                onBookingLineSelectionChanged();
+            }
+        });  
+        
+        filters.add(jCIn);
+        filters.add(jCOut);
+        filters.add(jCAssigned);
+        filters.add(jCUnassigned);
+        
+        for( int i = 0; i < filters.size(); i++ )
+        {
+            String check_filter = getUniqueDialogIdentifier("Filter").concat(String.format(".Filter[%d]",i));
+            if( Boolean.parseBoolean(root.getSetup().getLocalConfig(check_filter,"False")) ) {
+                filters.get(i).setSelected(true);
+            }
+        }        
+    }
+    
+    @Override
+    public void close()
+    {
+        for( int i = 0; i < filters.size(); i++ )
+        {
+            String check_filter = getUniqueDialogIdentifier("Filter").concat(String.format(".Filter[%d]",i));
+            root.getSetup().setLocalConfig(check_filter,Boolean.toString(filters.get(i).isSelected()));
+        }       
+
+        super.close();
     }
     
     private void feed_table() {

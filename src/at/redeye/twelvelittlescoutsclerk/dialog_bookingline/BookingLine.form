@@ -31,6 +31,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLInfo" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="jCAssigned" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jCUnassigned" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="jCIn" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jCOut" min="-2" max="-2" attributes="0"/>
@@ -52,6 +56,8 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jCOut" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jCIn" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jCUnassigned" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jCAssigned" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -242,7 +248,7 @@
                                                       <Component id="jTBankAccountBIC" max="32767" attributes="0"/>
                                                   </Group>
                                                   <Group type="102" attributes="0">
-                                                      <Component id="jCContact" max="32767" attributes="0"/>
+                                                      <Component id="jCContact" pref="267" max="32767" attributes="0"/>
                                                       <EmptySpace max="-2" attributes="0"/>
                                                       <Component id="jCMember" min="-2" pref="147" max="-2" attributes="0"/>
                                                   </Group>
@@ -556,6 +562,22 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCInActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCUnassigned">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="unassigned"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCUnassignedActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCAssigned">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="assigned"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCAssignedActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

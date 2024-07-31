@@ -194,6 +194,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     sql.append(" and ").append(trans.markColumn(bookingline.amount)).append(" <= 0 ");
                 }
                 
+                if( jCUnassigned.isSelected() ) {
+                    sql.append(" and ").append(trans.markColumn(bookingline.assigned)).append(" = 0 ");
+                }
+                
+                if( jCAssigned.isSelected() ) {
+                    sql.append(" and ").append(trans.markColumn(bookingline.assigned)).append(" = 1 ");
+                }                
+                
                 sql.append( " order by " + trans.markColumn(bookingline.date));
                                 
                 values = trans.fetchTable2(bookingline, sql.toString() );
@@ -272,6 +280,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jLInfo = new javax.swing.JLabel();
         jCOut = new javax.swing.JCheckBox();
         jCIn = new javax.swing.JCheckBox();
+        jCUnassigned = new javax.swing.JCheckBox();
+        jCAssigned = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -487,7 +497,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(jTBankAccountBIC))
                                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                                .addComponent(jCContact, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(jCContact, 0, 267, Short.MAX_VALUE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(jCMember, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))))
                                     .addComponent(jCEvent, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -609,6 +619,20 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             }
         });
 
+        jCUnassigned.setText("unassigned");
+        jCUnassigned.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCUnassignedActionPerformed(evt);
+            }
+        });
+
+        jCAssigned.setText("assigned");
+        jCAssigned.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCAssignedActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -620,6 +644,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCAssigned)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCUnassigned)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCIn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -638,7 +666,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                         .addComponent(jLInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jCOut)
-                        .addComponent(jCIn)))
+                        .addComponent(jCIn)
+                        .addComponent(jCUnassigned)
+                        .addComponent(jCAssigned)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1280,6 +1310,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
     }//GEN-LAST:event_jBSplitActionPerformed
 
+    private void jCUnassignedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCUnassignedActionPerformed
+        feed_table(true);
+    }//GEN-LAST:event_jCUnassignedActionPerformed
+
+    private void jCAssignedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCAssignedActionPerformed
+        feed_table(true);
+    }//GEN-LAST:event_jCAssignedActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBApplyBookingLine;
@@ -1291,11 +1329,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JButton jBNew;
     private javax.swing.JButton jBSave;
     private javax.swing.JButton jBSplit;
+    private javax.swing.JCheckBox jCAssigned;
     private javax.swing.JComboBox<ContactDescr> jCContact;
     private javax.swing.JComboBox<EventDescr> jCEvent;
     private javax.swing.JCheckBox jCIn;
     private javax.swing.JComboBox<MemberDescr> jCMember;
     private javax.swing.JCheckBox jCOut;
+    private javax.swing.JCheckBox jCUnassigned;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

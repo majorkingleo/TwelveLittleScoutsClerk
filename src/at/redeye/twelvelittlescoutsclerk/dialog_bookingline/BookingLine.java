@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -773,16 +774,33 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     {
         Transaction trans = getTransaction();
         
+        Set<Integer> events2update = new HashSet<>();
+        
         for (Integer i : tm.getEditedRows()) {
 
             if( i < 0 ) {
                 continue;
             }
             
-            DBBookingLine entry = values.get(i);
+            DBBookingLine entry = values.get(i);            
+            DBBookingLine2Events bl2e = bl2es.get(entry.idx.getValue());
+            
+            if( bl2e == null ) {
+                DBBookingLine2Events bl2 = new DBBookingLine2Events();
+                List<DBBookingLine2Events> to_delete = trans.fetchTable2(bl2," where " + trans.markColumn(bl2,bl2.bl_idx) + " = " + entry.idx.toString() );
+                
+                for( var td : to_delete ) {
+                    events2update.add(td.event_idx.getValue());
+                    trans.deleteWithPrimaryKey(td);
+                }
+                
+                entry.assigned.loadFromCopy(0);
+            } else {
+                entry.assigned.loadFromCopy(1);
+            }
 
             entry.hist.setAeHist(root.getUserName());
-            trans.updateValues(entry);                       
+            trans.updateValues(entry);         
         }
         
         if( bl2es.size() > 0 ) {
@@ -793,22 +811,24 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 }
 
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl2e);
-            }
-            
-            List<DBEvent> events = getEvents4Update(); 
-        
-            for( var event : events ) {
-                EventHelper.calc_paid_values_4_event( trans, event );
-            }
+            }            
         }
+        
+        List<DBEvent> events = getEvents4Update(events2update); 
+
+        for( var event : events ) {
+            EventHelper.calc_paid_values_4_event( trans, event );
+        }
+
 
         trans.commit();
     }
     
     /** returns an empty list if empty */
-    private List<DBEvent> getEvents4Update() throws UnsupportedDBDataTypeException, WrongBindFileFormatException, SQLException, TableBindingNotRegisteredException, IOException
+    private List<DBEvent> getEvents4Update( Set<Integer> events2update ) throws UnsupportedDBDataTypeException, WrongBindFileFormatException, SQLException, TableBindingNotRegisteredException, IOException
     {
         HashSet<Integer> events = new HashSet<>();
+        events.addAll(events2update);
         
         for( var bl2 : bl2es.values() ) {
             events.add(bl2.event_idx.getValue());
@@ -998,8 +1018,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         if( idx >= 0 ) {
             jCEvent.setSelectedIndex(idx);
-        } else {
             jCEvent.insertItemAt(null,0);
+        } else {
+            jCEvent.insertItemAt(null,0);            
             jCEvent.setSelectedIndex(0);
         }
     }        
@@ -1056,6 +1077,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         EventDescr event_descr = (EventDescr) jCEvent.getSelectedItem();
         if( event_descr == null ) {
+            tm.setEdited(row);        
+            setEdited();
             return;
         }
 

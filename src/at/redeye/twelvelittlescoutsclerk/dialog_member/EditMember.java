@@ -116,12 +116,16 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         
         tm.autoResize();
                
+        jCGroup.insertItemAt(null, 0);
+        
         var_to_gui();
         
-        started = true;
+        started = true;               
         
         if( mainwin.isAzLocked() )
             jBSave.setEnabled(false);
+        
+
     }        
 
     @Override
@@ -132,9 +136,33 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     @Override
     public void var_to_gui()
     {
+        jCGroup.setSelectedIndex(0);
+        
+        for( int i = 0; i < jCGroup.getItemCount(); i++ ) {
+            String item = jCGroup.getItemAt(i);
+            
+            if( item != null && item.equals(member.group.getValue()) ) {
+                jCGroup.setSelectedIndex(i);
+                break;
+            }
+        }                            
+        
         super.var_to_gui();
     }
     
+    @Override
+    public void gui_to_var()
+    {
+        Object ogroup = jCGroup.getSelectedItem();
+        if( ogroup == null ) {
+            member.group.loadFromString("");
+        } else {
+            String group = (String)ogroup;
+            member.group.loadFromString(group);
+        }
+        
+        super.gui_to_var();
+    }
        
     final public void bindVar( JTextField field, DBString var )
     {
@@ -298,6 +326,8 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         jTM2C = new javax.swing.JTable();
         jBAddContact = new javax.swing.JButton();
         jBRemoveContact = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jCGroup = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(548, 360));
@@ -388,7 +418,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                 .addComponent(jCinaktiv)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCgekuendigt)
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Contacts"));
@@ -439,8 +469,12 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                 .addComponent(jBAddContact)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRemoveContact)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(97, Short.MAX_VALUE))
         );
+
+        jLabel5.setText("Group");
+
+        jCGroup.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "WiWö", "GuSp", "CaEx", "RaRo", "Leiter" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -457,18 +491,20 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel13))
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel5))
                         .addGap(63, 63, 63)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jTName, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jTVorname, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jDEintrittsdatum, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jTKundennummer)
-                            .addComponent(jTtel)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addGap(105, 105, 105)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jTtel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jCGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -496,8 +532,13 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                     .addComponent(jLabel13))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jCGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5)))
+                    .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -646,6 +687,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBRemoveContact;
     private javax.swing.JButton jBSave;
+    private javax.swing.JComboBox<String> jCGroup;
     private javax.swing.JCheckBox jCgekuendigt;
     private javax.swing.JCheckBox jCinaktiv;
     private at.redeye.Plugins.JDatePicker.JDatePicker jDEintrittsdatum;
@@ -654,6 +696,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

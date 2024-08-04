@@ -62,6 +62,12 @@ public class UpdateMember
             messages.add(String.format(root.MlM("Änderung des Eintrittsdatums von '%s' auf '%s'"),
                     kunden_old.entry_date.getDateStr(), kunden_new.entry_date.getDateStr()));
         }
+        
+        if( !kunden_old.group.getValue().equals(kunden_new.group.getValue() )) {
+            differs = true;
+            messages.add(String.format(root.MlM("Änderung der Gruppe von '%s' auf '%s'"),
+                    kunden_old.group.getValue(), kunden_new.group.getValue()));
+        }        
                
         if( differs )
         {                        

@@ -12,12 +12,15 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author martin
  */
 public class MemberSearch extends BaseDialogDialog  {
+    
+    private static final Logger logger = Logger.getLogger(MemberSearch.class.getName());
     
     public static interface Filter
     {
@@ -96,7 +99,8 @@ public class MemberSearch extends BaseDialogDialog  {
                     
                     boolean entry_accepted = true;
                     
-                    for( Filter filter : filters ) {
+                    for( Filter filter : filters ) {                                               
+                        
                         if( !filter.accept(entry) ) {
                             entry_accepted = false;
                             break;

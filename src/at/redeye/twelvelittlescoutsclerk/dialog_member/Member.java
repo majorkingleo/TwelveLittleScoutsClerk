@@ -45,8 +45,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         DBMember members = new DBMember();
         
         tm = new TableManipulator(root, jTContent, members);
-
-        // tm.hide(kunden.idx);
+       
         tm.hide(members.hist.lo_user);
         tm.hide(members.hist.lo_zeit);        
         tm.hide(members.hist.ae_user);
@@ -54,7 +53,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
         tm.hide(members.hist.an_zeit);
         tm.hide(members.hist.ae_zeit);
         tm.hide(members.bp_idx);
-        tm.hide(members.idx);
+//        tm.hide(members.idx);
 
         /*
         tm.setEditable(kunden.name);

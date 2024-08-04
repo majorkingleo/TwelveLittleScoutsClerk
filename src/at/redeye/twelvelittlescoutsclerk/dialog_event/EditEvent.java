@@ -501,7 +501,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         Set<Integer> ret = new HashSet<>();
         
         for( DBEventMember member : values ) {
-            ret.add(member.idx.getValue());
+            ret.add(member.member_idx.getValue());
         }
         
         return ret;
@@ -530,7 +530,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         MemberSearch ms = new MemberSearch( mainwin, "Add a new member");
         Set<Integer> ids = getMemberIds();
-        
+               
         ms.addFilter( new MemberSearch.Filter() {
             @Override
             public boolean accept(DBMember member) {

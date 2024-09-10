@@ -14,13 +14,16 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.Audit;
+import at.redeye.twelvelittlescoutsclerk.GroupHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.JFrame;
 
@@ -328,13 +331,40 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
     private void save() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
+        final DBMembers2Groups m2g = new DBMembers2Groups();
+        final Transaction trans = getTransaction();
+        final HashMap<String, DBGroup> groups_by_name = GroupHelper.fetch_groups_by_name( trans, mainwin.getBPIdx() );
+        
         for (Integer i : tm.getEditedRows()) {
 
             if( i < 0 )
                 continue;
             
             DBMember entry = values.get(i);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(getTransaction(), entry, entry.hist, root.getUserName());
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, entry, entry.hist, root.getUserName());            
+                  
+            List<DBMembers2Groups> m2gs = trans.fetchTable2(m2g, " where " + trans.markColumn(m2g, m2g.bp_idx) + " = " + entry.bp_idx.toString()
+                    + " and " + trans.markColumn(m2g, m2g.member_idx) + " = " + entry.idx.toString() );                        
+                    
+            boolean found_group = false;
+            int group_idx = groups_by_name.get(entry.group.getValue()).idx.getValue();
+            
+            for( DBMembers2Groups m : m2gs ) {                
+                if( group_idx != m.group_idx.getValue() ) {
+                    found_group = true;
+                } else {
+                    trans.deleteWithPrimaryKey(entry);
+                }
+            }
+            
+            if( !found_group ) {
+                m2g.idx.loadFromCopy(getNewSequenceValue(DBMembers2Groups.MEMBERS2GROUPS_IDX_SEQUENCE));
+                m2g.hist.setAnHist(getRoot().getLogin());
+                m2g.member_idx.loadFromCopy(entry.idx.getValue());
+                m2g.group_idx.loadFromCopy(groups_by_name.get(entry.group.getValue()).idx.getValue());
+                m2g.bp_idx.loadFromCopy(entry.bp_idx.getValue());
+                trans.insertValues(m2g);
+            }
         }
 
         getTransaction().commit();
@@ -370,8 +400,8 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
             return;
         }
 
-        final EditMember editkunde = new EditMember(mainwin, values.get(i));
-        editkunde.registerOnCloseListener(new Runnable() {
+        final EditMember editmember = new EditMember(mainwin, values.get(i));
+        editmember.registerOnCloseListener(new Runnable() {
 
             @Override
             public void run() {
@@ -380,6 +410,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
 
                     @Override
                     public void do_stuff() throws Exception {
+                        tm.setEdited(i);
                         setEdited();
                         save();
                         feed_table();
@@ -390,7 +421,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
             }
         });
 
-        invokeDialogUnique(editkunde);
+        invokeDialogUnique(editmember);
 
     }//GEN-LAST:event_jBEditActionPerformed
 

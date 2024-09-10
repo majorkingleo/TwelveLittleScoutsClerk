@@ -343,17 +343,11 @@
     <Component class="javax.swing.JComboBox" name="jCGroup">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="5">
-            <StringItem index="0" value="WiW&#xf6;"/>
-            <StringItem index="1" value="GuSp"/>
-            <StringItem index="2" value="CaEx"/>
-            <StringItem index="3" value="RaRo"/>
-            <StringItem index="4" value="Leiter"/>
-          </StringArray>
+          <StringArray count="0"/>
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;GroupDescr&gt;"/>
       </AuxValues>
     </Component>
   </SubComponents>

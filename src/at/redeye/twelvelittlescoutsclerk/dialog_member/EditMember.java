@@ -24,8 +24,10 @@ import at.redeye.twelvelittlescoutsclerk.MemberNameCombo;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,6 +44,22 @@ import javax.swing.JTextField;
  */
 public class EditMember extends BaseDialog implements NewSequenceValueInterface {
 
+    static class GroupDescr
+    {
+        public DBGroup group;
+                
+        public GroupDescr( DBGroup group )
+        {
+            this.group = group;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return group.name.toString();
+        }
+    }  
+    
     DBMember member;
     DBMember member_old;
     boolean saved = false;
@@ -115,8 +133,8 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         feed_m2c_table(false);   
         
         tm.autoResize();
-               
-        jCGroup.insertItemAt(null, 0);
+                               
+        feed_groups();
         
         var_to_gui();
         
@@ -127,6 +145,26 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         
 
     }        
+    
+    public void feed_groups()
+    {
+        Transaction trans = getTransaction();
+        
+         jCGroup.addItem(null);
+        
+        new AutoMBox(EditMember.class.getName(), false) {
+            @Override
+            public void do_stuff() throws Exception {
+               DBGroup group = new DBGroup();
+                
+               List<DBGroup> groups = trans.fetchTable2(group);
+               
+               for( var g : groups ) {
+                   jCGroup.addItem(new GroupDescr(g));
+               }
+            }
+        };
+    }
 
     @Override
     public boolean openWithLastWidthAndHeight() {
@@ -139,13 +177,14 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         jCGroup.setSelectedIndex(0);
         
         for( int i = 0; i < jCGroup.getItemCount(); i++ ) {
-            String item = jCGroup.getItemAt(i);
+            GroupDescr item = jCGroup.getItemAt(i);
             
-            if( item != null && item.equals(member.group.getValue()) ) {
+            
+            if( item != null && item.group.name.toString().equals(member.group.toString()) ) {
                 jCGroup.setSelectedIndex(i);
                 break;
             }
-        }                            
+        }                        
         
         super.var_to_gui();
     }
@@ -157,8 +196,8 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
         if( ogroup == null ) {
             member.group.loadFromString("");
         } else {
-            String group = (String)ogroup;
-            member.group.loadFromString(group);
+            GroupDescr group = (GroupDescr)ogroup;
+            member.group.loadFromString(group.group.name.toString());
         }
         
         super.gui_to_var();
@@ -474,8 +513,6 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
 
         jLabel5.setText("Group");
 
-        jCGroup.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "WiWö", "GuSp", "CaEx", "RaRo", "Leiter" }));
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -576,6 +613,34 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                     
                     for( DBMember2ContactView m2 : m2csv ) {
                         DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, m2.m2c, m2.m2c.hist, "root" );
+                    }
+                    
+                    {
+                        DBMembers2Groups m2g = new DBMembers2Groups();
+                        var m2gs = trans.fetchTable2(m2g, " where " + trans.markColumn( m2g, m2g.member_idx ) + " = " + member.idx.getValue() );
+                        
+                        GroupDescr g = (GroupDescr) jCGroup.getSelectedItem();
+                        DBGroup group = null;
+                        
+                        if( g != null ) {
+                            group = g.group;
+                        }
+                        
+                        boolean group_already_inserted = false;
+                        
+                        for( var m : m2gs ) {
+                            if( group == null || m.group_idx.getValue() != group.idx.getValue() ) {
+                                trans.deleteWithPrimaryKey(m);
+                            } else if( group != null && m.group_idx.getValue() == group.idx.getValue() ) {
+                                group_already_inserted = true;
+                            }
+                        }
+                        
+                        if( group != null && !group_already_inserted ) {
+                            m2g = new DBMembers2Groups();
+                            m2g.idx.loadFromCopy( getNewSequenceValue(DBMembers2Groups.MEMBERS2GROUPS_IDX_SEQUENCE) );
+                            trans.insertValues(m2g);
+                        }
                     }
                     
                     trans.commit();
@@ -687,7 +752,7 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBRemoveContact;
     private javax.swing.JButton jBSave;
-    private javax.swing.JComboBox<String> jCGroup;
+    private javax.swing.JComboBox<GroupDescr> jCGroup;
     private javax.swing.JCheckBox jCgekuendigt;
     private javax.swing.JCheckBox jCinaktiv;
     private at.redeye.Plugins.JDatePicker.JDatePicker jDEintrittsdatum;

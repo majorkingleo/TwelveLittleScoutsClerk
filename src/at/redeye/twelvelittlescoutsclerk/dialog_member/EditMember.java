@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_member;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.UniqueDialogHelper;
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
@@ -20,10 +21,12 @@ import at.redeye.twelvelittlescoutsclerk.ContactSearch;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.LocalHelpWinModal;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.MemberNameCombo;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
@@ -42,7 +45,7 @@ import javax.swing.JTextField;
  *
  * @author martin
  */
-public class EditMember extends BaseDialog implements NewSequenceValueInterface {
+public class EditMember extends BaseDialogDialog implements NewSequenceValueInterface {
 
     static class GroupDescr
     {
@@ -640,6 +643,25 @@ public class EditMember extends BaseDialog implements NewSequenceValueInterface 
                             m2g = new DBMembers2Groups();
                             m2g.idx.loadFromCopy( getNewSequenceValue(DBMembers2Groups.MEMBERS2GROUPS_IDX_SEQUENCE) );
                             trans.insertValues(m2g);
+                        }
+                    }
+                    
+                    {
+                        DBEventMember em = new DBEventMember();
+                        var ems = trans.fetchTable2(em, "where " + trans.markColumn(em.member_idx) + " = " + member.idx.toString());
+                        int group_idx = MemberHelper.fetch_group_idx(trans, member);
+                        DBGroup group = new DBGroup();
+                        group.idx.loadFromCopy(group_idx);
+                        
+                        if( trans.fetchTableWithPrimkey(group) ) {
+                            for( DBEventMember e : ems ) {
+                                if( e.group_idx.getValue() != group_idx ) {
+                                    e.group_idx.loadFromCopy(group_idx);
+                                    e.group.loadFromCopy(group.name.getValue());
+                                    
+                                    trans.updateValues(e);
+                                }
+                            }
                         }
                     }
                     

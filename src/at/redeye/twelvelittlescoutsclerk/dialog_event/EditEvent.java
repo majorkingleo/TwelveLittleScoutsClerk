@@ -5,7 +5,6 @@
 package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
 import at.redeye.FrameWork.base.AutoMBox;
-import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.UniqueDialogHelper;
@@ -27,6 +26,7 @@ import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -324,6 +324,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         });
 
         jBEditMember.setText("edit Member");
+        jBEditMember.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBEditMemberActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -582,6 +587,34 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         }
         
     }//GEN-LAST:event_jBRemoveMemberActionPerformed
+
+    private void jBEditMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBEditMemberActionPerformed
+                
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                Set<Integer> rows = tm.getSelectedRows();
+
+                if( rows == null ) {
+                    return;
+                }
+
+                for( int row : rows ) {            
+                    DBEventMember em = values.get(row);
+                    DBMember member = new DBMember();
+                    member.idx.loadFromCopy(em.member_idx.getValue());
+
+                    getTransaction().fetchTableWithPrimkey(member);
+                    var dialog = new EditMember( mainwin, member );
+                    mainwin.invokeDialogModal(dialog);
+                    if( dialog.pressedSave() ) {
+                        
+                    }
+                }                
+            }
+        };
+               
+    }//GEN-LAST:event_jBEditMemberActionPerformed
 
   
     // Variables declaration - do not modify//GEN-BEGIN:variables

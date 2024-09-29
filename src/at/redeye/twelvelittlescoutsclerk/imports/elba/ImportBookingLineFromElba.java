@@ -110,14 +110,22 @@ public class ImportBookingLineFromElba
             DBBookingLine line = new DBBookingLine();            
             
             line.date.loadFromCopy(sdf_date.parse(cols[0]));           
-            line.bp_idx.loadFromCopy(azidx);
-            line.idx.loadFromCopy(main.getNewSequenceValue(DBBookingLine.BOOKING_LINE_IDX_SEQUENCE));
+            line.bp_idx.loadFromCopy(azidx);            
             line.data_source.loadFromString("ELBA");
             line.line.loadFromCopy(cols[1]);
             line.amount.loadFromCopy(Double.valueOf(cols[3].replaceFirst(",", ".")));
-            line.hist.setAnHist(main.getRoot().getLogin());
+                        
+            var lines = trans.fetchTable2(line, " where "
+                    + trans.markColumn(line,line.line) + " = '" + line.line.toString() + "' "
+                    + " and " + trans.markColumn(line,line.bp_idx) + " = " + azidx
+                    + " and " + trans.markColumn(line,line.data_source) + " = 'ELBA' "
+            );
             
-            trans.insertValues(line);                     
+            if( lines == null || lines.isEmpty() ) {
+                line.idx.loadFromCopy(main.getNewSequenceValue(DBBookingLine.BOOKING_LINE_IDX_SEQUENCE));
+                line.hist.setAnHist(main.getRoot().getLogin());
+                trans.insertValues(line);
+            }
         }
         
         if( getErrorMessage() != null ) {

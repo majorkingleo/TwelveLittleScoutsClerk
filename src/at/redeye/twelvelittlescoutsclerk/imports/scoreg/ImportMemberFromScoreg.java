@@ -260,9 +260,9 @@ public class ImportMemberFromScoreg
                 DBContact contact = new DBContact();
                 
                 contact.bp_idx.loadFromCopy(main.getBPIdx());                
-                contact.name.loadFromCopy(match.getOrDefault("Kontakt",cols,j));
-                contact.tel.loadFromCopy(match.getOrDefault("Kontakt Telefon",cols,j));
-                contact.email.loadFromCopy(match.getOrDefault("Kontakt E-Mail",cols,j));
+                contact.name.loadFromCopy(match.getOrDefault( String.format( "Kontakt %d", j+1 ), cols));
+                contact.tel.loadFromCopy(match.getOrDefault(  String.format( "Kontakt %d Telefon", j+1 ), cols));
+                contact.email.loadFromCopy(match.getOrDefault(String.format( "Kontakt %d E-Mail", j+1 ), cols));
                         
                 if( !findContact( contact ) ) {
                     contact.idx.loadFromCopy(main.getNewSequenceValue(DBContact.CONTACT_IDX_SEQUENCE));

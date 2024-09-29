@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
@@ -52,6 +53,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     TableManipulator tm;
     List<DBEventMember> values = new ArrayList<>();
     List<DBEventMember> values_to_remove = new ArrayList<>();
+    ArrayList<JCheckBox> filters = new ArrayList<>();
     
     /**
      * Creates new form EditKunde
@@ -111,6 +113,16 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         tm.prepareTable();
         
+        filters.add(jCCacheOpen);
+        
+        for( int i = 0; i < filters.size(); i++ )
+        {
+            String check_filter = getUniqueDialogIdentifier("Filter").concat(String.format(".Filter[%d]",i));
+            if( Boolean.parseBoolean(root.getSetup().getLocalConfig(check_filter,"False")) ) {
+                filters.get(i).setSelected(true);
+            }
+        }        
+        
         feed_table(false);
         
         tm.autoResize();
@@ -133,10 +145,17 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 DBEventMember em = new DBEventMember();
 
                 Transaction trans = getTransaction();
-                values = trans.fetchTable2(em,
-                        "where " + trans.markColumn(em.bp_idx) + " = " + mainwin.getBPIdx().toString()
-                        + " and " + trans.markColumn(em.event_idx) + " = " + event.idx.toString()
-                        + " order by " + trans.markColumn(em.name));
+                
+                String where = "where " + trans.markColumn(em.bp_idx) + " = " + mainwin.getBPIdx().toString()
+                        + " and " + trans.markColumn(em.event_idx) + " = " + event.idx.toString();
+                
+                if( jCCacheOpen.isSelected() ) {
+                    where += " and " + trans.markColumn(em,em.paid) + " + " + trans.markColumn(em,em.paid_cash) + " < " + trans.markColumn(em,em.costs);
+                }
+                
+                where += " order by " + trans.markColumn(em.name);
+                
+                values = trans.fetchTable2(em, where );                                                
                 
                 for (DBEventMember entry : values) {
                     tm.add(entry);
@@ -145,15 +164,27 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 
                 for( int idx = 0; idx < values.size(); ++idx ) {
                     var line = values.get(idx);
-                    if( Math.abs((line.paid.getValue() + line.paid_cash.getValue()) - line.costs.getValue()) < 0.001 ) {
+                    if( line.paid.getValue() + line.paid_cash.getValue() >= line.costs.getValue() ) {
                         for( var col : line.getAllValues() ) {
                             tm.setCellColor(col, idx, idx % 2 == 0 ? Color.YELLOW : Color.ORANGE);
-                        }                        
+                        }
                     }
                 }
             }
         };
     }     
+    
+    @Override
+    public void close()
+    {
+        for( int i = 0; i < filters.size(); i++ )
+        {
+            String check_filter = getUniqueDialogIdentifier("Filter").concat(String.format(".Filter[%d]",i));
+            root.getSetup().setLocalConfig(check_filter,Boolean.toString(filters.get(i).isSelected()));
+        }       
+
+        super.close();
+    }
 
     @Override
     public boolean openWithLastWidthAndHeight() {
@@ -248,6 +279,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBEditMember = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jCCacheOpen = new javax.swing.JCheckBox();
         jPanel5 = new javax.swing.JPanel();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
 
@@ -363,11 +395,18 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addComponent(jBRemoveMember)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBEditMember)
-                .addContainerGap(193, Short.MAX_VALUE))
+                .addContainerGap(189, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
         jLabel1.setText("Members");
+
+        jCCacheOpen.setText("cache open");
+        jCCacheOpen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCCacheOpenActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -375,13 +414,17 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addComponent(jLabel1)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCCacheOpen)
+                .addGap(0, 6, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jCCacheOpen))
                 .addContainerGap(12, Short.MAX_VALUE))
         );
 
@@ -390,7 +433,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addGap(0, 40, Short.MAX_VALUE)
+                .addGap(0, 101, Short.MAX_VALUE)
                 .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel5Layout.setVerticalGroup(
@@ -411,7 +454,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -628,6 +671,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                
     }//GEN-LAST:event_jBEditMemberActionPerformed
 
+    private void jCCacheOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCCacheOpenActionPerformed
+        feed_table(true);
+    }//GEN-LAST:event_jCCacheOpenActionPerformed
+
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAddMember;
@@ -636,6 +683,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;
+    private javax.swing.JCheckBox jCCacheOpen;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

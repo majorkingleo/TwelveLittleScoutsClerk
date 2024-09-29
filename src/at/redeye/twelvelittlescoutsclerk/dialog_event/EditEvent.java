@@ -107,6 +107,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         tm.setEditable(members.costs);
         tm.setEditable(members.comment);
+        tm.setEditable(members.paid_cash);
         
         tm.prepareTable();
         
@@ -144,7 +145,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 
                 for( int idx = 0; idx < values.size(); ++idx ) {
                     var line = values.get(idx);
-                    if( Math.abs(line.paid.getValue() - line.costs.getValue()) < 0.001 ) {
+                    if( Math.abs((line.paid.getValue() + line.paid_cash.getValue()) - line.costs.getValue()) < 0.001 ) {
                         for( var col : line.getAllValues() ) {
                             tm.setCellColor(col, idx, idx % 2 == 0 ? Color.YELLOW : Color.ORANGE);
                         }                        

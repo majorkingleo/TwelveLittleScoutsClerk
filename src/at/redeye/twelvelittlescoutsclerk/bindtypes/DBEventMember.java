@@ -24,7 +24,8 @@ public class DBEventMember extends DBStrukt {
     public DBString       group = new DBString("group", "Group", 50 );       // copy of group name
     public DBHistory      hist = new DBHistory( "hist" );
     public DBDouble       costs = new DBDouble( "costs" );                   // got a discount? So this value can vary
-    public DBDouble       paid = new DBDouble( "piad" );  
+    public DBDouble       paid = new DBDouble( "piad" );
+    public DBDouble       paid_cash = new DBDouble( "piad_cash", "Cash" );
     public DBString       comment = new DBString("comment", "Comment", 255 );
     
     public DBEventMember()
@@ -42,12 +43,15 @@ public class DBEventMember extends DBStrukt {
         add(hist);
         add(costs);
         add(paid);
+        add(paid_cash,2);
         add(comment);
         
         hist.setTitle(" ");
         
         bp_idx.shouldHaveIndex();
         idx.setAsPrimaryKey();
+        
+        setVersion(2);
     }
     
     @Override

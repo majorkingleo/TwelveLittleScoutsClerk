@@ -237,6 +237,14 @@ public class ImportMemberFromScoreg
             DBMember member = new DBMember();            
             
             member.member_registration_number.loadFromString(match.getOrDefault( "Scout-Id", cols ));
+            
+            var members = trans.fetchTable2( member, " where " + trans.markColumn(member,member.member_registration_number) + " = '" + member.member_registration_number.toString() + "'" 
+                    + " and " + trans.markColumn(member,member.bp_idx) + " = " + main.getBPIdx() );
+            
+            if( members != null && !members.isEmpty() ) {
+                member.loadFromCopy(members.get(0));
+            }
+            
             member.forname.loadFromString(match.getOrDefault( "Vorname",cols));
             member.name.loadFromString(match.getOrDefault("Nachname", cols));
             
@@ -251,10 +259,22 @@ public class ImportMemberFromScoreg
             }
             
             member.bp_idx.loadFromCopy(main.getBPIdx());
-            member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
+            
+            boolean insert = false;
+            
+            if( member.idx.getValue() == 0 ) {
+                insert = true;
+                member.idx.loadFromCopy(main.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
+            }
+            
+            
             member.hist.setAnHist(main.getRoot().getLogin());
             
-            trans.insertValues(member);
+            if( insert ) {
+                trans.insertValues(member);
+            } else {
+                trans.updateValues(member);
+            }
             
             for( int j = 0; j < 2; j++ ) {
                 DBContact contact = new DBContact();

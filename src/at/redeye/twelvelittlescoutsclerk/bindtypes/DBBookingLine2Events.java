@@ -7,6 +7,7 @@ package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
+import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 
 
@@ -20,6 +21,8 @@ public class DBBookingLine2Events extends DBStrukt
     public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
     public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
+    public DBString       member_name = new DBString( "member_name", 50 );
+    public DBString       event_name = new DBString( "event_name", 50 );
     public DBHistory      hist = new DBHistory( "hist" );
     
     public DBBookingLine2Events()
@@ -32,13 +35,15 @@ public class DBBookingLine2Events extends DBStrukt
         add(bp_idx);
         add(member_idx);
         add(contact_idx);
+        add(member_name,2);
+        add(event_name,2);
         add(hist);
                 
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
         
-        setVersion(1);
+        setVersion(2);
     }
     
     @Override

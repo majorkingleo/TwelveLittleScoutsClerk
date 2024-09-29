@@ -107,6 +107,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     
     // Key = DBBookingLine.idx
     HashMap<Integer,DBBookingLine2Events> bl2es = new HashMap<>();
+    List<DBBookingLine2Events> bles_to_remove = new ArrayList<>();
     TableManipulator tm;
     Audit audit;    
 
@@ -245,7 +246,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 List<DBBookingLine2Events> l_ble = trans.fetchTable2(bl2e,
                         "where " + trans.markColumn(bl2e.bp_idx) + " = " + mainwin.getBPIdx());
                 
-                for( var l2e : l_ble ) {
+                for( var l2e : l_ble ) {                    
                     bl2es.put(l2e.bl_idx.getValue(),l2e);                                        
                 }
                 
@@ -774,6 +775,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     {
         Transaction trans = getTransaction();
         
+        for( var le : bles_to_remove ) {
+            trans.deleteWithPrimaryKey(le);
+        }
+        
         Set<Integer> events2update = new HashSet<>();
         
         for (Integer i : tm.getEditedRows()) {
@@ -1073,7 +1078,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         values.get(row).loadFromCopy(current_value);
         
-        bl2es.remove(current_value.idx.getValue());
+        {
+            var l2e = bl2es.get(current_value.idx.getValue());
+            if( l2e != null ) {
+                bles_to_remove.add(l2e);
+                bl2es.remove(current_value.idx.getValue());
+            }
+        }
         
         EventDescr event_descr = (EventDescr) jCEvent.getSelectedItem();
         if( event_descr == null ) {
@@ -1097,6 +1108,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         bl2e.bp_idx.loadFromCopy(current_value.bp_idx.getValue());
         bl2e.event_idx.loadFromCopy(event_descr.event.idx.getValue());
         bl2e.member_idx.loadFromCopy(member_descr.member.idx.getValue());
+        bl2e.member_name.loadFromString(member_descr.member.forname.toString() + " " + member_descr.member.name.toString() );
+        bl2e.event_name.loadFromString(event_descr.event.name.toString());
         
         if( contact_descr != null ) {
             bl2e.contact_idx.loadFromCopy(contact_descr.contact.idx.getValue());

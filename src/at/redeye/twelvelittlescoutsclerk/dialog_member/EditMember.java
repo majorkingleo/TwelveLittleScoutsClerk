@@ -642,6 +642,9 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                         if( group != null && !group_already_inserted ) {
                             m2g = new DBMembers2Groups();
                             m2g.idx.loadFromCopy( getNewSequenceValue(DBMembers2Groups.MEMBERS2GROUPS_IDX_SEQUENCE) );
+                            m2g.member_idx.loadFromCopy(member.idx.getValue());
+                            m2g.group_idx.loadFromCopy(group.idx.getValue());
+                            m2g.hist.setAnHist(mainwin.getRoot().getLogin());
                             trans.insertValues(m2g);
                         }
                     }
@@ -649,17 +652,20 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                     {
                         DBEventMember em = new DBEventMember();
                         var ems = trans.fetchTable2(em, "where " + trans.markColumn(em.member_idx) + " = " + member.idx.toString());
-                        int group_idx = MemberHelper.fetch_group_idx(trans, member);
-                        DBGroup group = new DBGroup();
-                        group.idx.loadFromCopy(group_idx);
+                        Integer group_idx = MemberHelper.fetch_group_idx(trans, member);
                         
-                        if( trans.fetchTableWithPrimkey(group) ) {
-                            for( DBEventMember e : ems ) {
-                                if( e.group_idx.getValue() != group_idx ) {
-                                    e.group_idx.loadFromCopy(group_idx);
-                                    e.group.loadFromCopy(group.name.getValue());
-                                    
-                                    trans.updateValues(e);
+                        if( group_idx != null ) {
+                            DBGroup group = new DBGroup();
+                            group.idx.loadFromCopy(group_idx);
+
+                            if( trans.fetchTableWithPrimkey(group) ) {
+                                for( DBEventMember e : ems ) {
+                                    if( e.group_idx.getValue() != group_idx ) {
+                                        e.group_idx.loadFromCopy(group_idx);
+                                        e.group.loadFromCopy(group.name.getValue());
+
+                                        trans.updateValues(e);
+                                    }
                                 }
                             }
                         }

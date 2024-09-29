@@ -85,6 +85,10 @@ public class MemberHelper {
         
         List<Integer> data = (List<Integer>) trans.fetchOneColumnValue(stmt, DBDataType.DB_TYPE_INTEGER);
         
+        if( data.isEmpty() ) {
+            return null;
+        }
+        
         return data.get(0);
     }
     

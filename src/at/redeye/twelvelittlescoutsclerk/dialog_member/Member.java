@@ -347,7 +347,12 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                     + " and " + trans.markColumn(m2g, m2g.member_idx) + " = " + entry.idx.toString() );                        
                     
             boolean found_group = false;
-            int group_idx = groups_by_name.get(entry.group.getValue()).idx.getValue();
+            
+            int group_idx = 0;
+            
+            if( !entry.group.isEmpty()) {
+                group_idx = groups_by_name.get(entry.group.getValue()).idx.getValue();
+            }
             
             for( DBMembers2Groups m : m2gs ) {                
                 if( group_idx != m.group_idx.getValue() ) {
@@ -357,10 +362,10 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                 }
             }
             
-            if( !found_group ) {
+            if( !found_group && !entry.group.getValue().isEmpty() ) {
                 m2g.idx.loadFromCopy(getNewSequenceValue(DBMembers2Groups.MEMBERS2GROUPS_IDX_SEQUENCE));
                 m2g.hist.setAnHist(getRoot().getLogin());
-                m2g.member_idx.loadFromCopy(entry.idx.getValue());
+                m2g.member_idx.loadFromCopy(entry.idx.getValue());                
                 m2g.group_idx.loadFromCopy(groups_by_name.get(entry.group.getValue()).idx.getValue());
                 m2g.bp_idx.loadFromCopy(entry.bp_idx.getValue());
                 trans.insertValues(m2g);
@@ -456,6 +461,7 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                        
         DBMember member = new DBMember();
         member.bp_idx.loadFromCopy(mainwin.getBPIdx());
+        member.idx.loadFromCopy(mainwin.getNewSequenceValue(DBMember.MEMBERS_IDX_SEQUENCE));
         
         CreateMember create_member = new CreateMember(mainwin, this, member);
         

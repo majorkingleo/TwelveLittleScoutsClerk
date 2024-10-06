@@ -160,6 +160,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         bindVar(jTReference, current_value.reference);
         bindVar(jTAmount, current_value.amount);
         bindVar(jtAlreadyPaid, current_event_member.paid);
+        bindVar(jTAlreadyPaidInCash, current_event_member.paid_cash);
         
         jTContent.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             @Override
@@ -207,16 +208,16 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         final Color WARNING_COLOR = new Color(255,200,200);
         final Color OK_COLOR = new Color(200,255,200);
-        
+                
         if( current_event_member.idx.getValue() > 0 ) {
             
-            double already_paid = current_event_member.paid.getValue() + current_event_member.paid_cash.getValue() + current_value.amount.getValue();               
+            double already_paid = current_event_member.paid.getValue() + current_event_member.paid_cash.getValue() + current_value.amount.getValue();
 
             if( already_paid > current_event_member.costs.getValue() ) {
                 jtAlreadyPaid.setBackground(WARNING_COLOR);
                 jTAlreadyPaidInCash.setBackground(WARNING_COLOR);
             }
-            else if( Math.abs(already_paid - current_event_member.costs.getValue()) <= 0.01 ) {
+            else if( Math.abs(already_paid - current_event_member.costs.getValue()) <= 0.01 ) {                               
                 jtAlreadyPaid.setBackground(OK_COLOR);
                 jTAlreadyPaidInCash.setBackground(OK_COLOR);
             }

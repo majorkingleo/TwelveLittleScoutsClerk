@@ -109,9 +109,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         tm.setEditable(members.costs);
         tm.setEditable(members.comment);
-        tm.setEditable(members.paid_cash);
+        tm.setEditable(members.paid_cash);                
         
-        tm.prepareTable();
+        tm.prepareTable();               
         
         filters.add(jCCacheOpen);
         
@@ -128,6 +128,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         tm.autoResize();
         
         tableFilter1.setFilter(jTMembers);
+        tm.showRowHeader();
     }
     
     private void feed_table() {

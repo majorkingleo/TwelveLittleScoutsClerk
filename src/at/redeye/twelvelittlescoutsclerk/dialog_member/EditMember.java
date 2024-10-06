@@ -129,7 +129,7 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
         tm.hide(m2c.contact.hist.an_zeit);
         tm.hide(m2c.contact.hist.ae_zeit);
         tm.hide(m2c.contact.bp_idx);
-        tm.hide(m2c.contact.idx);        
+        tm.hide(m2c.contact.idx);                
 
         tm.prepareTable();
         

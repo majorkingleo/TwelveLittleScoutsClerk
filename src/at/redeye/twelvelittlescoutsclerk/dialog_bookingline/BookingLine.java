@@ -197,6 +197,31 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private void feed_table() {
         feed_table(true);
     }
+    
+    @Override
+    public void var_to_gui() {
+        super.var_to_gui();
+        
+        jtAlreadyPaid.setBackground(null);
+        jTAlreadyPaidInCash.setBackground(null);
+        
+        final Color WARNING_COLOR = new Color(255,200,200);
+        final Color OK_COLOR = new Color(200,255,200);
+        
+        if( current_event_member.idx.getValue() > 0 ) {
+            
+            double already_paid = current_event_member.paid.getValue() + current_event_member.paid_cash.getValue() + current_value.amount.getValue();               
+
+            if( already_paid > current_event_member.costs.getValue() ) {
+                jtAlreadyPaid.setBackground(WARNING_COLOR);
+                jTAlreadyPaidInCash.setBackground(WARNING_COLOR);
+            }
+            else if( Math.abs(already_paid - current_event_member.costs.getValue()) <= 0.01 ) {
+                jtAlreadyPaid.setBackground(OK_COLOR);
+                jTAlreadyPaidInCash.setBackground(OK_COLOR);
+            }
+        }
+    }
 
     private void feed_table(boolean autombox) {
         new AutoMBox(getTitle(), autombox) {
@@ -306,6 +331,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jLabel11 = new javax.swing.JLabel();
         jtAlreadyPaid = new javax.swing.JTextField();
         jBSplit = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        jTAlreadyPaidInCash = new javax.swing.JTextField();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -485,6 +512,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             }
         });
 
+        jLabel12.setText("Cash:");
+
+        jTAlreadyPaidInCash.setEditable(false);
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -542,7 +573,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jLabel11)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jtAlreadyPaid)))))))
+                                        .addComponent(jtAlreadyPaid, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel12)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jTAlreadyPaidInCash)))))))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -580,7 +615,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     .addComponent(jLabel10)
                     .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel11)
-                    .addComponent(jtAlreadyPaid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jtAlreadyPaid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel12)
+                    .addComponent(jTAlreadyPaidInCash, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jCEvent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1183,12 +1220,25 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 jCEvent.removeAllItems();
                 jCEvent.addItem(null);
                 
+                int selected_index = 0;
+                int index = 0;
+                
                 for( DBEvent event : events ) {
+                    index++;
                     jCEvent.addItem(new EventDescr( event ));
+                    
+                    if( Math.abs(event.costs.getValue() - current_value.amount.getValue()) <= 0.01 ) {
+                        selected_index = index;
+                    }
+                    
+                    if( selected_index == 0 &&
+                        event.costs.getValue() > current_value.amount.getValue() ) {
+                        selected_index = index;
+                    }
                 }
                
-                if( !events.isEmpty() ) {
-                    jCEvent.setSelectedIndex(1);
+                if( !events.isEmpty() ) {                                                           
+                    jCEvent.setSelectedIndex(selected_index);
                 }
             }
         };
@@ -1261,12 +1311,20 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         var event_descr = (EventDescr)jCEvent.getSelectedItem();
         
         if( event_descr == null ) {
+            if( current_event_member.idx.getValue() != 0 ) {
+                current_event_member.loadFromCopy(new DBEventMember());            
+                var_to_gui();
+            }
             return;
         }
         
         var member_descr = (MemberDescr)jCMember.getSelectedItem();
         
         if( member_descr == null ) {
+            if( current_event_member.idx.getValue() != 0 ) {
+                current_event_member.loadFromCopy(new DBEventMember());
+                var_to_gui();
+            }
             return;
         }
         
@@ -1279,7 +1337,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
                 if( event_member != null ) {
                     current_event_member.loadFromCopy(event_member);
-                }   
+                    var_to_gui();
+                } else {
+                     if( current_event_member.idx.getValue() != 0 ) {
+                        current_event_member.loadFromCopy(new DBEventMember());
+                        var_to_gui();
+                      }
+                }
             }
         };
                      
@@ -1405,6 +1469,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1418,6 +1483,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jTAlreadyPaidInCash;
     private javax.swing.JTextField jTAmount;
     private javax.swing.JTextField jTBankAccountBIC;
     private javax.swing.JTextField jTBankAccountIBAN;

@@ -316,6 +316,8 @@ public class ImportMemberFromScoreg
                 m2g.member_idx.loadFromCopy(member.idx.getValue());
                 m2g.group_idx.loadFromCopy(group.idx.getValue());
                 m2g.bp_idx.loadFromCopy(main.getBPIdx());
+                m2g.member_name.loadFromString(member.forname.toString() + " " + member.name.toString());
+                m2g.group.loadFromString(group.name.toString());                
                 trans.insertValues(m2g);
             } 
         }

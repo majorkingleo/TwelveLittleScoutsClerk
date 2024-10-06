@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
+import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 
 /**
@@ -21,6 +22,8 @@ public class DBMembers2Groups extends DBStrukt
     public DBInteger      group_idx = new DBInteger("group_idx", "Contact Idx");
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBHistory      hist = new DBHistory( "hist" );
+    public DBString       group = new DBString("group", "Group", 50 );
+    public DBString       member_name = new DBString("member_name", "Member Name", 50 );
     
     public DBMembers2Groups()
     {
@@ -31,12 +34,14 @@ public class DBMembers2Groups extends DBStrukt
         add(group_idx);
         add(bp_idx);        
         add(hist);
+        add(group,2);
+        add(member_name,2);
                 
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
         
-        setVersion(1);
+        setVersion(2);
     }
     
     @Override

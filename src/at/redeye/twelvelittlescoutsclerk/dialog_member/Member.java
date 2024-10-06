@@ -355,10 +355,10 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
             }
             
             for( DBMembers2Groups m : m2gs ) {                
-                if( group_idx != m.group_idx.getValue() ) {
+                if( group_idx == m.group_idx.getValue() ) {
                     found_group = true;
                 } else {
-                    trans.deleteWithPrimaryKey(entry);
+                    trans.deleteWithPrimaryKey(m);
                 }
             }
             
@@ -368,6 +368,8 @@ public class Member extends BaseDialog implements NewSequenceValueInterface {
                 m2g.member_idx.loadFromCopy(entry.idx.getValue());                
                 m2g.group_idx.loadFromCopy(groups_by_name.get(entry.group.getValue()).idx.getValue());
                 m2g.bp_idx.loadFromCopy(entry.bp_idx.getValue());
+                m2g.member_name.loadFromString(entry.forname.toString() + " " + entry.name.toString());
+                m2g.group.loadFromString(entry.group.toString());
                 trans.insertValues(m2g);
             }
         }

@@ -21,8 +21,8 @@ public class DBBookingLine2Events extends DBStrukt
     public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
     public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBString       member_name = new DBString( "member_name", 50 );
-    public DBString       event_name = new DBString( "event_name", 50 );
+    public DBString       member_name = new DBString( "member_name", "Member Name", 50 );
+    public DBString       event_name = new DBString( "event_name", "Event Name", 50 );
     public DBHistory      hist = new DBHistory( "hist" );
     
     public DBBookingLine2Events()

@@ -27,6 +27,7 @@ import javax.swing.JOptionPane;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.log4j.Logger;
+import org.joda.time.DateMidnight;
 
 /**
  *
@@ -118,6 +119,8 @@ public class ImportBookingLineFromElba
             var lines = trans.fetchTable2(line, " where "
                     + trans.markColumn(line,line.line) + " = '" + line.line.toString() + "' "
                     + " and " + trans.markColumn(line,line.bp_idx) + " = " + azidx
+                    + " and " + trans.getDayStmt(line.date,new DateMidnight(line.date.getValue()))
+                    + " and " + trans.markColumn(line.amount) + " = " + line.amount
                     + " and " + trans.markColumn(line,line.data_source) + " = 'ELBA' "
             );
             

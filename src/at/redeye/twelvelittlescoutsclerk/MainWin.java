@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -159,11 +160,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMenu6 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
-        jMenu3 = new javax.swing.JMenu();
-        jRMetal = new javax.swing.JRadioButtonMenuItem();
-        jRSystem = new javax.swing.JRadioButtonMenuItem();
-        jRMotif = new javax.swing.JRadioButtonMenuItem();
-        jRNimbus = new javax.swing.JRadioButtonMenuItem();
+        jMenuDesign = new javax.swing.JMenu();
         jMSettings = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
@@ -327,30 +324,8 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenu4.setText("Einstellungen");
 
-        jMenu3.setText("Design");
-
-        jRMetal.setSelected(true);
-        jRMetal.setText("Metal");
-        jMenu3.add(jRMetal);
-
-        jRSystem.setSelected(true);
-        jRSystem.setText("System");
-        jMenu3.add(jRSystem);
-
-        jRMotif.setSelected(true);
-        jRMotif.setText("Motif");
-        jRMotif.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRMotifActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jRMotif);
-
-        jRNimbus.setSelected(true);
-        jRNimbus.setText("Nimbus");
-        jMenu3.add(jRNimbus);
-
-        jMenu4.add(jMenu3);
+        jMenuDesign.setText("Design");
+        jMenu4.add(jMenuDesign);
 
         jMSettings.setText("Einstellungen");
         jMSettings.addActionListener(new java.awt.event.ActionListener() {
@@ -511,10 +486,6 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         invokeDialogUnique(new AboutPlugins(root));
     }//GEN-LAST:event_jMPluginActionPerformed
-
-    private void jRMotifActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRMotifActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jRMotifActionPerformed
 
     private void jMSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMSettingsActionPerformed
         invokeDialogUnique(new LocalConfig(root));
@@ -794,11 +765,11 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMSettings;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenu jMenu6;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenu jMenuDesign;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem2;
@@ -807,10 +778,6 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMenuItemContacts;
     private javax.swing.JMenuItem jMenuItemEvents;
     private javax.swing.JMenuItem jMenuItemMembers;
-    private javax.swing.JRadioButtonMenuItem jRMetal;
-    private javax.swing.JRadioButtonMenuItem jRMotif;
-    private javax.swing.JRadioButtonMenuItem jRNimbus;
-    private javax.swing.JRadioButtonMenuItem jRSystem;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JTextArea jTComment;
@@ -818,29 +785,35 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
  void changeStyle()
     {
-        if (jRMetal.isSelected()) {
-            changeStyle("metal");
-        }
-        else if (jRSystem.isSelected()) {
-            changeStyle("system");
-        }
-        else if (jRNimbus.isSelected()) {
-            changeStyle("nimbus");
-        }
-        else if (jRMotif.isSelected()) {
-            changeStyle("motif");
-        }
+        UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
+        
+        var it = buttonGroupDesign.getElements().asIterator();       
+        boolean done = false;
+
+        while( it.hasNext() && !done ) {            
+            var button = it.next();
+
+            if( button.isSelected() ) {
+                for( UIManager.LookAndFeelInfo info : lafInfo ) {
+                    if( button.getText().equals(info.getName()) ) {
+                        changeStyle( info.getClassName(), info.getName() );
+                        done = true;
+                        break;
+                    }
+                } // for
+            } // if
+        } // while                            
     }
     
-    void changeStyle( final String name )
+    void changeStyle( final String class_name, final String title )
     {        
         new AutoMBox(MainWin.class.getName())
         {
             @Override
             public void do_stuff() throws Exception {
-                root.getSetup().setLocalConfig(FrameWorkConfigDefinitions.LookAndFeel.getConfigName(), name);
+                root.getSetup().setLocalConfig(FrameWorkConfigDefinitions.LookAndFeel.getConfigName(), title);
                 
-                UIManager.setLookAndFeel(BaseModuleLauncher.getLookAndFeelStrByName(name));
+                UIManager.setLookAndFeel(class_name);
                 root.closeAllWindowsNoAppExit();
                 new MainWin(main,root).setVisible(true);
             }
@@ -848,24 +821,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     }    
 
     private void initStyle()
-    {
-        buttonGroupDesign.add(jRMetal);
-        buttonGroupDesign.add(jRSystem);
-        buttonGroupDesign.add(jRNimbus);
-        buttonGroupDesign.add(jRMotif);
-        
-        String style = root.getSetup().getLocalConfig(FrameWorkConfigDefinitions.LookAndFeel);
-        
-        if( style.equals("motif") ) {
-            jRMotif.setSelected(true);
-        } else if( style.equals("metal")) {
-            jRMetal.setSelected(true);            
-        } else if( style.equals("nimbus")) {
-            jRNimbus.setSelected(true);
-        } else {
-            jRSystem.setSelected(true);
-        }
-        
+    {        
+        UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
+
         ActionListener styleChanged = new ActionListener() {
 
             @Override
@@ -874,11 +832,20 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         };
         
+        String style = root.getSetup().getLocalConfig(FrameWorkConfigDefinitions.LookAndFeel);
+        
+        for( UIManager.LookAndFeelInfo info : lafInfo ) {
+            System.out.println( "LookAndFeel: " + info.getName() + " class: " + info.getClassName());
+            JRadioButtonMenuItem jr = new JRadioButtonMenuItem(info.getName());
 
-        jRMetal.addActionListener(styleChanged);
-        jRSystem.addActionListener(styleChanged);
-        jRNimbus.addActionListener(styleChanged);
-        jRMotif.addActionListener(styleChanged);
+            jMenuDesign.add(jr);
+            buttonGroupDesign.add(jr);
+            jr.addActionListener(styleChanged);
+            
+            if( style.equals(info.getName()) ) {
+                jr.setSelected(true);
+            }
+        }
     }       
 
     @Override

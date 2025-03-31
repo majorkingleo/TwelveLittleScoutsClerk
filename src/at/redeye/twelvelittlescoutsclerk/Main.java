@@ -65,8 +65,16 @@ public class Main extends BaseModuleLauncher
         
         root.registerPlugin(new at.redeye.Plugins.JDatePicker.Plugin() );
         
-        // this sets the default value only
+        // this sets the default value only                       
         FrameWorkConfigDefinitions.LookAndFeel.value.loadFromString("nimbus");
+        
+        /*
+        UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
+        
+        for( UIManager.LookAndFeelInfo info : lafInfo ) {
+            System.out.println( "LookAndFeel: " + info.getName() + " class: " + info.getClassName());
+        }
+        */
         
         // AutoMBox.addShowAdvancedExceptionHandle(new ExceptionHandler());
 

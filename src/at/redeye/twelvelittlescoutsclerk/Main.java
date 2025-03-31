@@ -32,7 +32,7 @@ public class Main extends BaseModuleLauncher
         
         BaseConfigureLogging(Level.DEBUG);
         
-        root = new LocalRoot("TwelveLittleScoutsClerk", "12 Little Scouts Clerk", true, false);
+        root = new LocalRoot( getAppName(), getAppTitle(), true, false);
 
         root.setBaseLanguage("de");
         root.setDefaultLanguage("en");
@@ -41,7 +41,17 @@ public class Main extends BaseModuleLauncher
         BaseAppConfigDefinitions.DoLogging.setConfigValue("TRUE");
         
         root.setLanguageTranslationResourcePath("/at/redeye/twelvelittlescoutsclerk/resources/translations");
-    }      
+    }
+    
+    final String getAppName()
+    {
+        return getStartupParam("appname", "appname", "appname", "TwelveLittleScoutsClerk");
+    }
+
+    final String getAppTitle()
+    {
+        return getStartupParam("apptitle", "apptitle", "apptitle", "Test" );
+    }
     
     public void run()
     {

@@ -7,8 +7,9 @@ package at.redeye.twelvelittlescoutsclerk.dialog_split;
 import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
-import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
+import at.redeye.FrameWork.base.tablemanipulator.TableValidator;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
@@ -85,6 +86,48 @@ public class Split extends BaseDialogDialog {
         bindVar(jTReference, line.reference);
         
         var_to_gui();
+        
+        tm.setValidator(line.amount, new TableValidator() {
+            @Override
+            public boolean acceptData(String data) {
+                java.awt.EventQueue.invokeLater(new Runnable(){
+                    @Override
+                    public void run() {
+                        update_left_amount();
+                    }
+                });
+                return true;
+            }
+            
+            @Override
+            public boolean wantDoLoadSelf() {
+                return false;
+            }
+        });
+    }
+    
+    @Override
+    public void var_to_gui() {   
+        update_left_amount();
+        super.var_to_gui();
+    }
+
+    private void update_left_amount()
+    {
+        double left = line.amount.getValue();
+        
+        for( var line : lines ) {
+            left -= line.amount.getValue();
+        }
+        
+        jTLeft.setText(String.valueOf(left));
+        if( left < 0 ) {
+            jTLeft.setBackground(Color.red);
+            jTLeft.setForeground(Color.white);
+        } else {
+            jTLeft.setBackground(null);
+            jTLeft.setForeground(null);
+        }
     }
     
     public List<DBBookingLine> getLines()
@@ -109,6 +152,8 @@ public class Split extends BaseDialogDialog {
         jBDelete = new javax.swing.JButton();
         jBClose = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jTLeft = new javax.swing.JTextField();
 
         jButton1.setText("jButton1");
 
@@ -144,8 +189,8 @@ public class Split extends BaseDialogDialog {
 
         jTAmount.setEditable(false);
 
-        jBNew.setText("New");
         jBNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
+        jBNew.setText("New");
         jBNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBNewActionPerformed(evt);
@@ -202,6 +247,10 @@ public class Split extends BaseDialogDialog {
                     .addComponent(jBClose)))
         );
 
+        jLabel4.setText("Left:");
+
+        jTLeft.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -215,7 +264,12 @@ public class Split extends BaseDialogDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTReference)
-                    .addComponent(jTAmount))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTLeft)))
                 .addContainerGap())
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -229,7 +283,9 @@ public class Split extends BaseDialogDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jTLeft, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(3, 3, 3)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -296,10 +352,12 @@ public class Split extends BaseDialogDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTAmount;
     private javax.swing.JTable jTContent;
+    private javax.swing.JTextField jTLeft;
     private javax.swing.JTextField jTReference;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables

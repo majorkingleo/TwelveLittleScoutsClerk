@@ -141,9 +141,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         tm.setValidator(bookinglines.hist.ae_zeit, new DateValidator());
         tm.setValidator(bookinglines.hist.an_zeit, new DateValidator());               
         
-        tm.prepareTable();               
-        
-        tableFilter1.setFilter(jTContent);
+        tm.prepareTable();                      
                                 
         if( mainwin.isAzLocked() ) {
             jBSave.setEnabled(false);
@@ -202,9 +200,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             }
         }    
         
+        filter_date_from.loadFromString("1970-01-01 00:00:00");
+        filter_date_till.loadFromString("1970-01-01 00:00:00");
+        
         gui_to_var();
         feed_table(false);
         tm.autoResize();
+        tableFilter1.setFilter(jTContent);
     }
     
     @Override

@@ -22,6 +22,14 @@ public class DateFilter
     
     public static String getVonBisFilter( Transaction trans, DBDateTime von , DBDateTime bis, DBDateTime column )            
     {
+        if( von == null ) {
+            von = new DBDateTime("dummy");
+        }
+
+        if( bis == null ) {
+            bis = new DBDateTime("dummy");
+        }  
+        
         if( von.getValue().getTime() < cal_70_er.getTimeInMillis() && bis.getValue().getTime() < cal_70_er.getTimeInMillis() )
         {
             return "";

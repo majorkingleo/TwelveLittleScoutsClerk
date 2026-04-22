@@ -94,7 +94,7 @@ public class SetupTestDB extends BaseModuleLauncher implements SetupTestDBInterf
                DB_NAME,
                DB_NAME,
                DB_NAME,
-               SupportedDBMSTypes.DB_MYSQL
+               SupportedDBMSTypes.DB_MARIADB
                );
 
         DbConnectionInterface connint = new DBConnector(connparams);
@@ -133,7 +133,7 @@ public class SetupTestDB extends BaseModuleLauncher implements SetupTestDBInterf
         root.getSetup().setLocalConfig(Setup.DBPasswd, DB_NAME);
         root.getSetup().setLocalConfig(Setup.DBPort, "");
         root.getSetup().setLocalConfig(Setup.DBInstance, DB_NAME);
-        root.getSetup().setLocalConfig(Setup.DBType, SupportedDBMSTypes.DB_MYSQL.toString());
+        root.getSetup().setLocalConfig(Setup.DBType, SupportedDBMSTypes.DB_MARIADB.toString());
 
          if( !root.loadDBConnectionFromSetup() )
          {

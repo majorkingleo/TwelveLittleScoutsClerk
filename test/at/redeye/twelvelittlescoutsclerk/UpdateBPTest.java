@@ -4,22 +4,23 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.DBDataType;
-import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
-import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.test.db.SetupTestDB;
 import at.redeye.twelvelittlescoutsclerk.test.db.SetupTestDBInterface;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import static org.junit.Assert.*;
-import org.junit.*;
 
 /**
  *
@@ -95,7 +96,7 @@ public class UpdateBPTest {
     @Test
     public void testCopyData2NewAZ() throws Exception {
         System.out.println("copyData2NewAZ");
-
+/* 
         try {
             DBAZ az = new DBAZ();
             az.idx.loadFromCopy(1);
@@ -197,7 +198,10 @@ public class UpdateBPTest {
         } catch( UnsupportedDBDataTypeException | WrongBindFileFormatException | SQLException | TableBindingNotRegisteredException | IOException ex ) {
             ex.printStackTrace();
             fail( "exception caught: " + ex);
-        }                
+        }              
+            */  
+
+        fail( "test not implemented yet");
     }
 
     /**
@@ -206,6 +210,7 @@ public class UpdateBPTest {
     @Test
     public void testDeleteAZ() throws Exception 
     {
+        /*
         try {
              DBAZ az = new DBAZ();
             az.idx.loadFromCopy(1);
@@ -275,5 +280,7 @@ public class UpdateBPTest {
             ex.printStackTrace();
             fail( "exception caught: " + ex);
         }    
+*/
+        fail( "test not implemented yet");
     }
 }

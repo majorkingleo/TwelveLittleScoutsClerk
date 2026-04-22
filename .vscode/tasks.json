@@ -10,6 +10,43 @@
 				"build.xml"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Build project (Maven)",
+			"type": "shell",
+			"command": "bash -c 'mvn compile'",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				{
+					"owner": "java",
+					"fileLocation": "absolute",
+					"pattern": {
+						"regexp": "^\\[ERROR\\]\\s+(/.+\\.java):\\[(\\d+),(\\d+)\\]\\s+(.+)$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"message": 4
+					}
+				}
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Package project (Maven)",
+			"type": "shell",
+			"command": "bash -c 'mvn package -DskipTests'",
+			"group": "build",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
 		}
 	]
 }

@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "prod",
+            "request": "launch",
+            "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
+            "projectName": "TwelveLittleScoutsClerk",
+            "args": ""
+        },
+        {
+            "type": "java",
+            "name": "test",
+            "request": "launch",
+            "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
+            "projectName": "TwelveLittleScoutsClerk",
+            "args": "-appname test -apptitle Test"
+        }
+    ]
+}

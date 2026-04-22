@@ -4,34 +4,54 @@
  */
 package at.redeye.twelvelittlescoutsclerk.imports;
 
-import at.redeye.FrameWork.utilities.FileExtFilter;
 import java.io.File;
+import java.util.ArrayList;
+
 import javax.swing.filechooser.FileFilter;
+
+import at.redeye.FrameWork.utilities.FileExtFilter;
 
 /**
  *
  * @author martin
  */
-public class CSVFileFilter extends FileFilter {
+public class MultipleExtFileFilter extends FileFilter {
 
-    FileExtFilter filter;
+    ArrayList<FileExtFilter> filter;
+    String description;
     
-    public CSVFileFilter()
+    public MultipleExtFileFilter( ArrayList<String> filters )
     {
-        filter = new FileExtFilter("*.csv");
+        filter = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filters.size(); i++) {
+            FileExtFilter f = new FileExtFilter(filters.get(i));            
+            filter.add(f);
+
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(f);
+        }
+        description = sb.toString();
     }        
     
     @Override
-    public boolean accept(File f) {
-        if( f.isDirectory() )
+    public boolean accept(File file) {
+        if( file.isDirectory() )
             return true;
         
-        return filter.accept(f);
+        for (FileExtFilter f : filter) {
+            if (f.accept(file)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public String getDescription() {
-        return "*.csv";
+        return description;
     }
     
 }

@@ -15,7 +15,7 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.FrameWork.base.transaction.Transaction;
-import at.redeye.griesdorn.reports.FixNimbusBackgroundColor;
+import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.MemberNameCombo;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;

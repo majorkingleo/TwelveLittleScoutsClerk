@@ -47,6 +47,32 @@
 				"reveal": "always",
 				"panel": "shared"
 			}
+		},
+		{
+			"label": "Run tests (Maven)",
+			"type": "shell",
+			"command": "bash -c 'mvn test'",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				{
+					"owner": "java",
+					"fileLocation": "absolute",
+					"pattern": {
+						"regexp": "^\\[ERROR\\]\\s+(/.+\\.java):\\[(\\d+),(\\d+)\\]\\s+(.+)$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"message": 4
+					}
+				}
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
 		}
 	]
 }

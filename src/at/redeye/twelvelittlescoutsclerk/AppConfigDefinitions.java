@@ -33,7 +33,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         add(PrimeTrainer);
         add(Anzahlung);
 
-        GlobalConfigDefinitions.add_help_path("/at/redeye/griesdorn/resources/Help/Params/");
-        LocalConfigDefinitions.add_help_path("/at/redeye/griesdorn/resources/Help/Params/");
+        GlobalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
+        LocalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
     }    
 }

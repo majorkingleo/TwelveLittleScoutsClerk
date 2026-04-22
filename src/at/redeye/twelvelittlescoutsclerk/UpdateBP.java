@@ -4,16 +4,26 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
+import org.apache.log4j.Logger;
+
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAudit;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import org.apache.log4j.Logger;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 
 /**
  *
@@ -211,21 +221,29 @@ public class UpdateBP {
 
     void deleteAZ(int idx) throws SQLException 
     {
-        /*
-        DBBonus bonus = new DBBonus();
-        DBKunden kunden = new DBKunden();
-        DBPrime prime = new DBPrime();
-        DBAudit audit = new DBAudit();
-        DBAZ az = new DBAZ();
-        DBAnzahlungen anzahlungen = new DBAnzahlungen();
-        
-        trans.updateValues("delete from " + trans.markTable(bonus) + " where " + trans.markColumn(bonus.az_idx) + " = " + idx );
-        trans.updateValues("delete from " + trans.markTable(kunden) + " where " + trans.markColumn(kunden.az_idx) + " = " + idx );
-        trans.updateValues("delete from " + trans.markTable(prime) + " where " + trans.markColumn(prime.az_idx) + " = " + idx );
-        trans.updateValues("delete from " + trans.markTable(audit) + " where " + trans.markColumn(audit.az_idx) + " = " + idx );
-        trans.updateValues("delete from " + trans.markTable(anzahlungen) + " where " + trans.markColumn(anzahlungen.az_idx) + " = " + idx );
-        trans.updateValues("delete from " + trans.markTable(az) + " where " + trans.markColumn(az.idx) + " = " + idx );
-*/
+        DBBillingPeriod         az              = new DBBillingPeriod();
+        DBAudit                 audit           = new DBAudit();
+        DBMember                member          = new DBMember();
+        DBContact               contact         = new DBContact();
+        DBMembers2Contacts      m2c             = new DBMembers2Contacts();
+        DBMembers2Groups        m2g             = new DBMembers2Groups();
+        DBGroup                 group           = new DBGroup();
+        DBEvent                 event           = new DBEvent();
+        DBEventMember           event_member    = new DBEventMember();
+        DBBookingLine2Events    bl2events       = new DBBookingLine2Events();
+        DBBookingLine           bl              = new DBBookingLine();
+                
+        trans.updateValues("delete from " + trans.markTable(audit));
+        trans.updateValues("delete from " + trans.markTable(member));
+        trans.updateValues("delete from " + trans.markTable(contact));
+        trans.updateValues("delete from " + trans.markTable(m2c));
+        trans.updateValues("delete from " + trans.markTable(m2g));
+        trans.updateValues("delete from " + trans.markTable(group));
+        trans.updateValues("delete from " + trans.markTable(event));
+        trans.updateValues("delete from " + trans.markTable(event_member));
+        trans.updateValues("delete from " + trans.markTable(bl2events));
+        trans.updateValues("delete from " + trans.markTable(bl));
+        trans.updateValues("delete from " + trans.markTable(az));
     }
     
 }

@@ -27,7 +27,12 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
     
     static class BPNameWrapper
     {
-        DBBillingPeriod az;
+        DBBillingPeriod az = null;
+        
+        public BPNameWrapper()
+        {
+            
+        }
         
         public BPNameWrapper( DBBillingPeriod az )
         {
@@ -37,6 +42,10 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         @Override
         public String toString()
         {
+            if( az == null ) {
+                return "";
+            }
+            
             if( az.locked.getValue() > 0 )
                 return az.title.toString() + " X";
             
@@ -68,7 +77,10 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
 
                 int preselect = -1;
                 int count = 0;
-
+                
+                // add empty one first
+                jCold.addItem(new BPNameWrapper());
+                
                 for( DBBillingPeriod j : jt )
                 {
                     jCold.addItem(new BPNameWrapper(j));
@@ -80,8 +92,9 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
                     count++;
                 }
 
-                if( preselect >= 0 )
+                if( preselect >= 0 ) {
                     jCold.setSelectedIndex(preselect);
+                }
             }
         };           
         
@@ -195,7 +208,11 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         Transaction trans = getTransaction();
         
        UpdateBP updateBP = new UpdateBP(trans, this );
-       updateBP.copyData2NewAZ(idx, bp_other);
+       
+       // no copy selected
+       if( bp_other != null ) {
+        updateBP.copyData2NewAZ(idx, bp_other);
+       }
     }    
     
     void createNewAZ() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException

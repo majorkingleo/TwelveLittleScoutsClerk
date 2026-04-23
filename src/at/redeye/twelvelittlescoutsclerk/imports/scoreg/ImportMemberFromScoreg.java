@@ -72,9 +72,15 @@ public class ImportMemberFromScoreg extends ImportMemberFromScoreBase
 
         File file = fc.getSelectedFile();
         if( file.canRead() ) {
+
             mainwin.setLastOpenPath(file.getParent());
             logger.debug("importing " + file);
-            executeImport(mainwin, new ImportMemberFromScoreg(mainwin, file));
+
+            if( file.getName().toLowerCase().endsWith(".csv") ) {                        
+                executeImport(mainwin, new ImportMemberFromScoreg(mainwin, file));
+            } else {
+                executeImport(mainwin, new ImportMemberFromScoregExcel(mainwin, file));
+            }
         }
     }
 }

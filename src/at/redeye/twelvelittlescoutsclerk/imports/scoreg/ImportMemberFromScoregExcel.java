@@ -30,11 +30,11 @@ import at.redeye.twelvelittlescoutsclerk.MainWin;
  *
  * @author martin
  */
-public class ImportMemberFromScoreExcel extends ImportMemberFromScoreBase
+public class ImportMemberFromScoregExcel extends ImportMemberFromScoreBase
 {
-    private static final Logger logger = Logger.getLogger(ImportMemberFromScoreExcel.class);
+    private static final Logger logger = Logger.getLogger(ImportMemberFromScoregExcel.class);
 
-    public ImportMemberFromScoreExcel( MainWin main, File file )
+    public ImportMemberFromScoregExcel( MainWin main, File file )
     {
         super(main, file);
     }
@@ -135,7 +135,7 @@ public class ImportMemberFromScoreExcel extends ImportMemberFromScoreBase
         if( file.canRead() ) {
             mainwin.setLastOpenPath(file.getParent());
             logger.debug("importing " + file);
-            executeImport(mainwin, new ImportMemberFromScoreExcel(mainwin, file));
+            executeImport(mainwin, new ImportMemberFromScoregExcel(mainwin, file));
         }
     }
 }

@@ -31,7 +31,7 @@ public class MultipleExtFileFilter extends FileFilter {
             if (i > 0) {
                 sb.append(", ");
             }
-            sb.append(f);
+            sb.append(filters.get(i));
         }
         description = sb.toString();
     }        

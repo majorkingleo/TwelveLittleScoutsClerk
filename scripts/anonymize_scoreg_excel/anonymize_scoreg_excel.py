@@ -381,7 +381,7 @@ def anonymize_postal_code_value(original: str, mapping: MappingStore, used_posta
 
     digits = "".join(ch for ch in original if ch.isdigit())
     if digits:
-        replacement_digits = "".join(rng.choice(string.digits) for _ in range(len(digits)))
+        replacement_digits = randomize_digits_by_pattern(digits, rng)
         di = 0
         chars: List[str] = []
         for ch in original:

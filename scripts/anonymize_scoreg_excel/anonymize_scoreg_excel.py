@@ -18,15 +18,26 @@ from __future__ import annotations
 
 import argparse
 from datetime import date, datetime
-import json
 import random
 import re
-import string
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Set
 
 from openpyxl import load_workbook
+from anonymization_common import (
+    EMAIL_REGEX,
+    ID_REGEX,
+    NAME_SPLIT_REGEX,
+    MappingStore,
+    load_mapping_store,
+    SHARED_FIRST_NAME_POOL,
+    SHARED_LAST_NAME_POOL,
+    random_alnum,
+    random_digits,
+    random_like_segment,
+    randomize_digits_by_pattern,
+    save_mapping_store,
+)
 
 # First names from Star Trek and The Simpsons universes.
 FIRST_NAME_POOL: List[str] = [
@@ -324,91 +335,12 @@ COUNTRY_POOL: List[str] = [
     "Thailand",
 ]
 
-ID_REGEX = re.compile(r"\b\d+-[A-Z0-9]{3,8}-[A-Z0-9]{4,16}\b")
-EMAIL_REGEX = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
-NAME_SPLIT_REGEX = re.compile(r"\s+")
-
-
-@dataclass
-class MappingStore:
-    first_name_map: Dict[str, str]
-    last_name_map: Dict[str, str]
-    full_name_map: Dict[str, str]
-    street_map: Dict[str, str]
-    email_map: Dict[str, str]
-    phone_map: Dict[str, str]
-    postal_code_map: Dict[str, str]
-    country_map: Dict[str, str]
-    date_map: Dict[str, str]
-    id_map: Dict[str, str]
-
-    @classmethod
-    def from_json(cls, data: Dict[str, Dict[str, str]]) -> "MappingStore":
-        return cls(
-            first_name_map=data.get("first_name_map", {}),
-            last_name_map=data.get("last_name_map", {}),
-            full_name_map=data.get("full_name_map", {}),
-            street_map=data.get("street_map", {}),
-            email_map=data.get("email_map", {}),
-            phone_map=data.get("phone_map", {}),
-            postal_code_map=data.get("postal_code_map", {}),
-            country_map=data.get("country_map", {}),
-            date_map=data.get("date_map", {}),
-            id_map=data.get("id_map", {}),
-        )
-
-    def to_json(self) -> Dict[str, Dict[str, str]]:
-        return {
-            "first_name_map": self.first_name_map,
-            "last_name_map": self.last_name_map,
-            "full_name_map": self.full_name_map,
-            "street_map": self.street_map,
-            "email_map": self.email_map,
-            "phone_map": self.phone_map,
-            "postal_code_map": self.postal_code_map,
-            "country_map": self.country_map,
-            "date_map": self.date_map,
-            "id_map": self.id_map,
-        }
-
+# Use merged/shared pools from common module in both anonymizers.
+FIRST_NAME_POOL = SHARED_FIRST_NAME_POOL
+LAST_NAME_POOL = SHARED_LAST_NAME_POOL
 
 def normalize_header(value: str) -> str:
     return value.strip().lower()
-
-
-def random_alnum(length: int, rng: random.Random) -> str:
-    chars = string.ascii_uppercase + string.digits
-    return "".join(rng.choice(chars) for _ in range(length))
-
-
-def random_digits(length: int, rng: random.Random) -> str:
-    if length <= 0:
-        return ""
-    head = rng.choice(string.digits[1:])
-    tail = "".join(rng.choice(string.digits) for _ in range(length - 1))
-    return head + tail
-
-
-def random_like_segment(segment: str, rng: random.Random) -> str:
-    out = []
-    for ch in segment:
-        if ch.isdigit():
-            out.append(rng.choice(string.digits))
-        elif ch.isalpha():
-            out.append(rng.choice(string.ascii_uppercase))
-        else:
-            out.append(ch)
-    return "".join(out)
-
-
-def randomize_digits_by_pattern(value: str, rng: random.Random) -> str:
-    chars: List[str] = []
-    for ch in value:
-        if ch.isdigit():
-            chars.append(rng.choice(string.digits))
-        else:
-            chars.append(ch)
-    return "".join(chars)
 
 
 def anonymize_email_value(original: str, mapping: MappingStore, used_emails: Set[str], rng: random.Random) -> str:
@@ -712,16 +644,11 @@ def classify_column(header: str) -> str:
 
 
 def load_mapping(path: Path) -> MappingStore:
-    if not path.exists():
-        return MappingStore({}, {}, {}, {}, {}, {}, {}, {}, {}, {})
-    with path.open("r", encoding="utf-8") as f:
-        return MappingStore.from_json(json.load(f))
+    return load_mapping_store(path)
 
 
 def save_mapping(path: Path, mapping: MappingStore) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(mapping.to_json(), f, indent=2, ensure_ascii=False)
+    save_mapping_store(path, mapping)
 
 
 def anonymize_workbook(input_file: Path, output_file: Path, mapping_file: Path, seed: int) -> None:

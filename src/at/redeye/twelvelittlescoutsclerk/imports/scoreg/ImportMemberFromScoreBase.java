@@ -26,6 +26,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MainWinInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
@@ -46,16 +47,16 @@ public abstract class ImportMemberFromScoreBase
 {
     private static final Logger logger = Logger.getLogger(ImportMemberFromScoreBase.class);
 
-    protected MainWin main;
+    protected MainWinInterface main;
     protected Transaction trans;
     protected File file;
     protected final SimpleDateFormat sdf_date;
     protected ArrayList<String> scoutids;
     protected ArrayList<String> double_scoutids;
     protected ArrayList<String> unknown_members;
-    protected int azidx;
+    protected int bp_idx;
 
-    public ImportMemberFromScoreBase( MainWin main, File file )
+    public ImportMemberFromScoreBase( MainWinInterface main, File file )
     {
         this.main = main;
         this.file = file;
@@ -118,7 +119,7 @@ public abstract class ImportMemberFromScoreBase
         HashMap<String,DBMember> member_by_membernr = new HashMap<>();
 
         DBMember member = new DBMember();
-        List<DBMember> members_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + " = " + azidx);
+        List<DBMember> members_list = trans.fetchTable2(member, "where " + trans.markColumn(member.bp_idx) + " = " + bp_idx);
 
         for( DBMember m : members_list )
         {
@@ -208,9 +209,9 @@ public abstract class ImportMemberFromScoreBase
      */
     protected abstract List<String[]> readData() throws Exception;
 
-    public boolean run( int azidx ) throws Exception
+    public boolean run( int bp_idx ) throws Exception
     {
-        this.azidx = azidx;
+        this.bp_idx = bp_idx;
         clear();
 
         if( trans == null ) {

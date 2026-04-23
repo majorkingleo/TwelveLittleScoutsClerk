@@ -41,7 +41,7 @@ public class CreateCommonData {
     Integer normal_job_type_id = null;
     Integer holiday_job_type_id = null;
 
-    private CreateCommonData(Root root) {
+    public CreateCommonData(Root root) {
         this.root = root;
     }
 
@@ -93,7 +93,7 @@ public class CreateCommonData {
 
     }
     
-    private void cleanup() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
+    public void cleanup() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
     {
         Transaction trans = root.getDBConnection().getDefaultTransaction();
 

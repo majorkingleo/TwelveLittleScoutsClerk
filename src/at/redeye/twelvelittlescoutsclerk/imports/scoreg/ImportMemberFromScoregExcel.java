@@ -22,6 +22,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MainWinInterface;
 
 /**
  * Imports Scoreg member data from an Excel (.xlsx) file.
@@ -34,7 +35,7 @@ public class ImportMemberFromScoregExcel extends ImportMemberFromScoreBase
 {
     private static final Logger logger = Logger.getLogger(ImportMemberFromScoregExcel.class);
 
-    public ImportMemberFromScoregExcel( MainWin main, File file )
+    public ImportMemberFromScoregExcel( MainWinInterface main, File file )
     {
         super(main, file);
     }

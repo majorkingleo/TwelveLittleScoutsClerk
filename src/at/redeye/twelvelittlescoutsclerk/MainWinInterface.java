@@ -4,12 +4,14 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import at.redeye.FrameWork.base.Root;
+import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
-import java.io.IOException;
-import java.sql.SQLException;
 
 /**
  *
@@ -34,6 +36,8 @@ public interface MainWinInterface
     public int getNewSequenceValue(String seqName) throws SQLException,
             UnsupportedDBDataTypeException, WrongBindFileFormatException,
             TableBindingNotRegisteredException, IOException;
+
+    public Transaction getNewTransaction();
 
     public Audit getAudit();
     

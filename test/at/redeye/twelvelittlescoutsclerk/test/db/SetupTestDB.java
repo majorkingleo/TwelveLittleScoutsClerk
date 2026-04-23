@@ -205,4 +205,10 @@ public class SetupTestDB extends BaseModuleLauncher implements SetupTestDBInterf
         return audit;        
     }
 
+    @Override
+    public Transaction getNewTransaction()
+    {
+        return root.getDBConnection().getNewTransaction();
+    }
+
 }

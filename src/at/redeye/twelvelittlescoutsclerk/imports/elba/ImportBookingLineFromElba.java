@@ -10,6 +10,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.MainWinInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.imports.CSVFileFilter;
@@ -17,6 +18,7 @@ import at.redeye.twelvelittlescoutsclerk.imports.InfoWin;
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Dialog;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -37,13 +39,13 @@ public class ImportBookingLineFromElba
 {
     private static final Logger logger = Logger.getLogger(ImportBookingLineFromElba.class);
     
-    MainWin main;
+    MainWinInterface main;
     Transaction trans;
     File csv_file;
     SimpleDateFormat sdf_date;    
     int azidx;
     
-    public ImportBookingLineFromElba( MainWin main, File csv_file )
+    public ImportBookingLineFromElba( MainWinInterface main, File csv_file )
     {
         this.main = main;
         this.csv_file = csv_file;       
@@ -57,22 +59,20 @@ public class ImportBookingLineFromElba
 
     public String getErrorMessage()
     {                
-        StringBuilder sb = new StringBuilder();
-
-        return sb.toString();
+       return null;
     }
     
     public static String cutBOM(String value) {
-        // UTF-8 BOM is EF BB BF, see https://en.wikipedia.org/wiki/Byte_order_mark
-        String bom = String.format("%x", new BigInteger(1, value.substring(0,3).getBytes()));
-        if (bom.equals("efbbbf"))
-            // UTF-8
-            return value.substring(3, value.length());
-        else if (bom.substring(0, 2).equals("feff") || bom.substring(0, 2).equals("ffe"))
-            // UTF-16BE or UTF16-LE
-            return value.substring(2, value.length());
-        else
-            return value;
+        // UTF-8 BOM decoded as ISO-8859-1 bytes: EF BB BF → \u00EF\u00BB\u00BF (3 chars)
+        if (value.length() >= 3 && value.charAt(0) == '\u00EF' && value.charAt(1) == '\u00BB' && value.charAt(2) == '\u00BF')
+            return value.substring(3);
+        // UTF-16BE BOM (U+FEFF) or UTF-8 BOM decoded as UTF-8 (also U+FEFF)
+        if (!value.isEmpty() && value.charAt(0) == '\uFEFF')
+            return value.substring(1);
+        // UTF-16LE BOM (U+FFFE)
+        if (!value.isEmpty() && value.charAt(0) == '\uFFFE')
+            return value.substring(1);
+        return value;
     }
           
     
@@ -163,7 +163,7 @@ public class ImportBookingLineFromElba
     }
     
 
-    private void commit() throws SQLException {
+    public void commit() throws SQLException {
         trans.commit();
     }    
     

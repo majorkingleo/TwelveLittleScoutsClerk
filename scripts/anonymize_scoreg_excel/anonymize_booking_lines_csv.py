@@ -39,14 +39,18 @@ ACCOUNT_LABEL_REGEX = re.compile(
 
 # Labels commonly found in booking text segments.
 PERSON_LABEL_REGEX = re.compile(
-    r"(?i)\b(auftraggeber|beguenstigter|empfaenger|zahlungspflichtiger|kontoinhaber)\s*:\s*"
-    r"([^;]+?)(?=\s+(?:zahlungsreferenz|verwendungszweck|iban|bic|auftraggeber|beguenstigter|empfaenger|"
+    r"(?i)\b(auftraggeber|beguenstigter|empf(?:a|ä)nger|zahlungspflichtiger|kontoinhaber)\s*:\s*"
+    r"([^;]+?)(?=\s+(?:zahlungsreferenz|verwendungszweck|iban|bic|auftraggeber|beguenstigter|empf(?:a|ä)nger|"
     r"zahlungspflichtiger|kontoinhaber)\s*:|$)"
+)
+
+AUFTRAGGEBER_NAME_RANGE_REGEX = re.compile(
+    r"(?i)\bauftraggeber\s*:\s*(.+?)(?=\s*(?:zahlungsreferenz|verwendungszweck)\s*:|$)"
 )
 
 REFERENCE_LABEL_REGEX = re.compile(
     r"(?i)\b(zahlungsreferenz|verwendungszweck)\s*:\s*([^;]+?)(?=\s+(?:iban|bic|auftraggeber|beguenstigter|"
-    r"empfaenger|zahlungspflichtiger|kontoinhaber)\s*:|$)"
+    r"empf(?:a|ä)nger|zahlungspflichtiger|kontoinhaber)\s*:|$)"
 )
 
 BANK_FIELD_REGEX = re.compile(r"(?i)\b(bank(?:name)?|institut|kreditinstitut)\s*:\s*([^;]+)")
@@ -136,11 +140,25 @@ def anonymize_name(
     if normalized in booking_name_map:
         return booking_name_map[normalized]
 
+    for variant in build_name_variants(normalized):
+        existing = booking_name_map.get(variant)
+        if existing:
+            booking_name_map[normalized] = existing
+            used_names.add(existing)
+            return existing
+
     if normalized in full_name_map:
         anon = full_name_map[normalized]
         booking_name_map[normalized] = anon
         used_names.add(anon)
         return anon
+
+    for variant in build_name_variants(normalized):
+        existing = full_name_map.get(variant)
+        if existing:
+            booking_name_map[normalized] = existing
+            used_names.add(existing)
+            return existing
 
     parts = normalized.split(" ")
     if len(parts) >= 2:
@@ -239,23 +257,51 @@ def anonymize_bic(
     return candidate
 
 
-def extract_names_from_reference(text: str) -> List[str]:
+def extract_names_from_reference(text: str, mapping: Dict[str, Dict[str, str]]) -> List[str]:
     names: List[str] = []
+    booking_name_map = ensure_map(mapping, "booking_name_map")
+    full_name_map = ensure_map(mapping, "full_name_map")
+
+    def is_known_name(candidate: str) -> bool:
+        for variant in build_name_variants(candidate):
+            if variant in booking_name_map or variant in full_name_map:
+                return True
+        return False
+
     for _, content in REFERENCE_LABEL_REGEX.findall(text):
-        # Capture first likely "Firstname Lastname" pair.
-        m = re.search(r"\b([A-Z][A-Za-z\-']+)\s+([A-Z][A-Za-z\-']+)\b", content)
-        if m:
-            candidate = f"{m.group(1)} {m.group(2)}"
+        # Booking references often contain event text first and person name later,
+        # so prefer the last valid two-token person candidate.
+        pair_matches = re.findall(r"\b([A-Z][A-Za-z\-']+)\s+([A-Z][A-Za-z\-']+)\b", content)
+        candidates = [f"{first} {last}" for first, last in pair_matches if is_likely_person_name(f"{first} {last}")]
+
+        # If a candidate is already known from prior mapping, prefer it.
+        known_candidates = [candidate for candidate in candidates if is_known_name(candidate)]
+        if known_candidates:
+            names.append(known_candidates[-1])
+            continue
+
+        for first, last in reversed(pair_matches):
+            candidate = f"{first} {last}"
             if is_likely_person_name(candidate):
                 names.append(candidate)
+                break
     return names
 
 
 def extract_labeled_names(text: str) -> List[str]:
     names: List[str] = []
+
+    # Business rule: everything between "Auftraggeber:" and
+    # "Zahlungsreferenz:" / "Verwendungszweck:" is treated as a name segment.
+    for content in AUFTRAGGEBER_NAME_RANGE_REGEX.findall(text):
+        cleaned = normalize_spaces(content)
+        cleaned = re.sub(r"\b(iban|bic)\b.*$", "", cleaned, flags=re.IGNORECASE).strip(" ;,")
+        if cleaned:
+            names.append(cleaned)
+
     for _, content in PERSON_LABEL_REGEX.findall(text):
         cleaned = normalize_spaces(content)
-        cleaned = re.sub(r"\b(iban|bic)\b.*$", "", cleaned, flags=re.IGNORECASE).strip()
+        cleaned = re.sub(r"\b(iban|bic)\b.*$", "", cleaned, flags=re.IGNORECASE).strip(" ;,")
         if cleaned and is_likely_person_name(cleaned):
             names.append(cleaned)
     return names
@@ -264,6 +310,54 @@ def extract_labeled_names(text: str) -> List[str]:
 def replace_name(text: str, source_name: str, target_name: str) -> str:
     pattern = re.compile(re.escape(source_name))
     return pattern.sub(target_name, text)
+
+
+def build_name_variants(name: str) -> List[str]:
+    normalized = normalize_spaces(name)
+    if not normalized:
+        return []
+
+    variants: List[str] = [normalized]
+    parts = normalized.split(" ")
+    if len(parts) >= 2:
+        swapped = f"{parts[-1]} {parts[0]}"
+        if swapped != normalized:
+            variants.append(swapped)
+    return variants
+
+
+def apply_known_name_replacements(text: str, mapping: Dict[str, Dict[str, str]], max_passes: int = 3) -> str:
+    booking_name_map = ensure_map(mapping, "booking_name_map")
+    full_name_map = ensure_map(mapping, "full_name_map")
+
+    replacements: List[tuple[str, str]] = []
+    for source, target in {**full_name_map, **booking_name_map}.items():
+        if not source or not target:
+            continue
+        for variant in build_name_variants(source):
+            if variant and variant != target:
+                replacements.append((variant, target))
+
+    # Replace longer names first to avoid partial overlaps; keep order deterministic.
+    ordered_replacements = sorted(set(replacements), key=lambda item: (-len(item[0]), item[0], item[1]))
+
+    current = text
+    seen_states = {current}
+    for _ in range(max_passes):
+        updated = current
+        for source, target in ordered_replacements:
+            updated = replace_name(updated, source, target)
+
+        if updated == current:
+            break
+        if updated in seen_states:
+            current = updated
+            break
+
+        seen_states.add(updated)
+        current = updated
+
+    return current
 
 
 def anonymize_text_cell(
@@ -279,7 +373,7 @@ def anonymize_text_cell(
 
     all_names: List[str] = []
     all_names.extend(extract_labeled_names(value))
-    all_names.extend(extract_names_from_reference(value))
+    all_names.extend(extract_names_from_reference(value, mapping))
 
     primary_person = all_names[0] if all_names else None
 
@@ -304,7 +398,12 @@ def anonymize_text_cell(
 
     for original_name in all_names:
         anonymized_name = anonymize_name(original_name, mapping, used_names, rng)
-        value = replace_name(value, original_name, anonymized_name)
+        for source_variant in build_name_variants(original_name):
+            value = replace_name(value, source_variant, anonymized_name)
+
+    # Second pass: apply all existing mapped names (incl. reversed order)
+    # so leftovers from earlier data/order are still normalized in one run.
+    value = apply_known_name_replacements(value, mapping)
 
     def bank_repl(match: re.Match[str]) -> str:
         label = match.group(1)

@@ -164,11 +164,32 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 for (DBEventMember entry : values) {
                     tm.add(entry);
                 }
+
+                DBBookingLine2Events bl2e = new DBBookingLine2Events();
+                List<DBBookingLine2Events> assigned_booking_lines = trans.fetchTable2(
+                        bl2e,
+                        "where " + trans.markColumn(bl2e.bp_idx) + " = " + mainwin.getBPIdx()
+                                + " and " + trans.markColumn(bl2e.event_idx) + " = " + event.idx.toString());
+
+                Set<Integer> members_with_bookingline = new HashSet<>();
+
+                for (DBBookingLine2Events assigned_booking_line : assigned_booking_lines) {
+                    members_with_bookingline.add(assigned_booking_line.member_idx.getValue());
+                }
                 
                 
                 for( int idx = 0; idx < values.size(); ++idx ) {
                     var line = values.get(idx);
-                    if( line.paid.getValue() + line.paid_cash.getValue() >= line.costs.getValue() ) {
+                    boolean has_mapping = members_with_bookingline.contains(line.member_idx.getValue());
+                    boolean mapping_expected = line.paid.getValue() > 0.01;
+
+                    if( !has_mapping && mapping_expected ) {
+                        Color missing_mapping_color = idx % 2 == 0 ? new Color(255, 190, 190) : new Color(255, 165, 165);
+
+                        for( var col : line.getAllValues() ) {
+                            tm.setCellColor(col, idx, missing_mapping_color);
+                        }
+                    } else if( line.paid.getValue() + line.paid_cash.getValue() >= line.costs.getValue() ) {
                         for( var col : line.getAllValues() ) {
                             tm.setCellColor(col, idx, idx % 2 == 0 ? Color.YELLOW : Color.ORANGE);
                         }

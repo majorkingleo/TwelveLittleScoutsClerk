@@ -5,6 +5,7 @@
 package at.redeye.twelvelittlescoutsclerk.dialog_event;
 
 import at.redeye.FrameWork.base.AutoMBox;
+import at.redeye.FrameWork.base.BaseDialogBase;
 import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.UniqueDialogHelper;
@@ -24,8 +25,10 @@ import at.redeye.twelvelittlescoutsclerk.MemberSearch;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
 import java.awt.Color;
 import java.io.IOException;
@@ -278,6 +281,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBAddMember = new javax.swing.JButton();
         jBRemoveMember = new javax.swing.JButton();
         jBEditMember = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        jBBookingLine = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jCCacheOpen = new javax.swing.JCheckBox();
@@ -375,6 +380,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
+        jBBookingLine.setText("Booking Line");
+        jBBookingLine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBBookingLineActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -384,7 +396,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jBAddMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBRemoveMember, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                    .addComponent(jBEditMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jBEditMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jSeparator1)
+                    .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -396,7 +410,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addComponent(jBRemoveMember)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBEditMember)
-                .addContainerGap(189, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBBookingLine)
+                .addContainerGap(138, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
@@ -455,7 +473,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -676,9 +694,60 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         feed_table(true);
     }//GEN-LAST:event_jCCacheOpenActionPerformed
 
+    private void jBBookingLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBBookingLineActionPerformed
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                if (!checkAnyAndSingleSelection(jTMembers)) {
+                    return;
+                }
+
+                int row = tm.getSelectedRow();
+
+                if (row < 0 || row >= values.size()) {
+                    return;
+                }
+
+                DBEventMember event_member = values.get(row);
+                DBBookingLine2Events booking_line_mapping = new DBBookingLine2Events();
+                Transaction trans = getTransaction();
+
+                List<DBBookingLine2Events> assigned_booking_lines = trans.fetchTable2(
+                        booking_line_mapping,
+                        "where " + trans.markColumn(booking_line_mapping.bp_idx) + " = " + mainwin.getBPIdx()
+                                + " and " + trans.markColumn(booking_line_mapping.event_idx) + " = " + event.idx.toString()
+                                + " and " + trans.markColumn(booking_line_mapping.member_idx) + " = " + event_member.member_idx.toString());
+
+                if (assigned_booking_lines.isEmpty()) {
+                    JOptionPane.showMessageDialog(EditEvent.this,
+                            MlM("No booking line is assigned to the selected event member."));
+                    return;
+                }
+
+                ArrayList<Integer> booking_line_ids = new ArrayList<>();
+
+                for (DBBookingLine2Events assigned_booking_line : assigned_booking_lines) {
+                    booking_line_ids.add(assigned_booking_line.bl_idx.getValue());
+                }
+
+                BookingLine booking_line_dialog = BookingLine.getOpenDialogInstance();
+
+                if (booking_line_dialog == null) {
+                    booking_line_dialog = new BookingLine(mainwin);
+                    EditEvent.this.invokeDialogUnique((BaseDialogBase) booking_line_dialog);
+                } else {
+                    EditEvent.this.invokeDialog((BaseDialogBase) booking_line_dialog);
+                }
+
+                booking_line_dialog.selectBookingLines(booking_line_ids);
+            }
+        };
+    }//GEN-LAST:event_jBBookingLineActionPerformed
+
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAddMember;
+    private javax.swing.JButton jBBookingLine;
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBEditMember;
@@ -695,6 +764,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jTCosts;
     private javax.swing.JTable jTMembers;
     private javax.swing.JTextField jTName;

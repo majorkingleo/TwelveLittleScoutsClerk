@@ -52,6 +52,12 @@ import org.apache.log4j.Logger;
 public class BookingLine extends BaseDialog implements NewSequenceValueInterface {
 
     private static final Logger logger = Logger.getLogger(BookingLine.class.getName());
+    private static BookingLine open_dialog_instance;
+
+    public static BookingLine getOpenDialogInstance()
+    {
+        return open_dialog_instance;
+    }
     
     static class ContactDescr
     {
@@ -120,6 +126,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     
     public BookingLine(MainWin mainwin) {
         super( mainwin.getRoot(), "BookingLines");
+        open_dialog_instance = this;
         
         initComponents();
             
@@ -227,6 +234,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             }
         }
 
+        if( open_dialog_instance == this ) {
+            open_dialog_instance = null;
+        }
+
         super.close();
     }
     
@@ -311,6 +322,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     tm.add(entry);
                 }
                 
+                bl2es.clear();
                 DBBookingLine2Events bl2e = new DBBookingLine2Events();
                 
                 List<DBBookingLine2Events> l_ble = trans.fetchTable2(bl2e,
@@ -322,17 +334,96 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 
                 // color lines, with an assigned event
                 for( int idx = 0; idx < values.size(); idx++ ) {
-                    final var value = values.get(idx);
-                    var l2e = bl2es.get(value.idx.getValue());
-
-                    if( l2e != null ) {
-                        for( var col : value.getAllValues() ) {
-                            tm.setCellColor(col, idx, idx % 2 == 0 ? Color.YELLOW : Color.ORANGE);
-                        }
-                    }
+                    colorBookingLineRow(idx, values.get(idx));
                 }
             }
         };
+    }
+
+    private void colorBookingLineRow(int row, DBBookingLine value)
+    {
+        var l2e = bl2es.get(value.idx.getValue());
+
+        if( l2e == null ) {
+            return;
+        }
+
+        for( var col : value.getAllValues() ) {
+            tm.setCellColor(col, row, row % 2 == 0 ? Color.YELLOW : Color.ORANGE);
+        }
+    }
+
+    private int ensureBookingLineLoaded(int booking_line_idx) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        for( int row = 0; row < values.size(); row++ ) {
+            if( values.get(row).idx.getValue().equals(booking_line_idx) ) {
+                return row;
+            }
+        }
+
+        DBBookingLine bookingline = new DBBookingLine();
+        Transaction trans = getTransaction();
+        List<DBBookingLine> lines = trans.fetchTable2(bookingline,
+                "where " + trans.markColumn(bookingline.bp_idx) + " = " + mainwin.getBPIdx()
+                + " and " + trans.markColumn(bookingline.idx) + " = " + booking_line_idx);
+
+        if( lines.isEmpty() ) {
+            return -1;
+        }
+
+        DBBookingLine line = lines.get(0);
+        values.add(line);
+        tm.add(line);
+
+        int row = values.size() - 1;
+        colorBookingLineRow(row, line);
+        return row;
+    }
+
+    public boolean selectBookingLines(List<Integer> booking_line_ids)
+    {
+        if( booking_line_ids == null || booking_line_ids.isEmpty() ) {
+            return false;
+        }
+
+        try {
+            jTContent.clearSelection();
+
+            Integer first_view_row = null;
+
+            for( Integer booking_line_idx : booking_line_ids ) {
+                int model_row = ensureBookingLineLoaded(booking_line_idx);
+
+                if( model_row < 0 ) {
+                    continue;
+                }
+
+                int view_row = jTContent.convertRowIndexToView(model_row);
+
+                if( view_row < 0 ) {
+                    continue;
+                }
+
+                jTContent.getSelectionModel().addSelectionInterval(view_row, view_row);
+
+                if( first_view_row == null ) {
+                    first_view_row = view_row;
+                }
+            }
+
+            if( first_view_row == null ) {
+                return false;
+            }
+
+            jTContent.scrollRectToVisible(jTContent.getCellRect(first_view_row, 0, true));
+            jTContent.requestFocusInWindow();
+            toFront();
+            return true;
+        }
+        catch (SQLException | TableBindingNotRegisteredException | UnsupportedDBDataTypeException | WrongBindFileFormatException ex) {
+            logger.error(ex, ex);
+            return false;
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

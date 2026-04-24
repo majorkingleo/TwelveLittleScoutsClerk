@@ -50,7 +50,7 @@ public class Main extends BaseModuleLauncher
 
     final String getAppTitle()
     {
-        return getStartupParam("apptitle", "apptitle", "apptitle", "Test" );
+        return getStartupParam("apptitle", "apptitle", "apptitle", "Twelve Little Scouts Clerk" );
     }
     
     public void run()
@@ -61,7 +61,7 @@ public class Main extends BaseModuleLauncher
         }                 
          
         AppConfigDefinitions.registerDefinitions();
-	FrameWorkConfigDefinitions.registerDefinitions();
+	    FrameWorkConfigDefinitions.registerDefinitions();
         
         root.registerPlugin(new at.redeye.Plugins.JDatePicker.Plugin() );
         

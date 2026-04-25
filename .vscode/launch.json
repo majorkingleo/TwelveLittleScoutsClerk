@@ -16,6 +16,14 @@
             "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
             "projectName": "TwelveLittleScoutsClerk",
             "args": "-appname test -apptitle Test"
-        }
+        },
+        {
+            "type": "java",
+            "name": "unit_test",
+            "request": "launch",
+            "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
+            "projectName": "TwelveLittleScoutsClerk",
+            "args": "-appname unittest -apptitle UnitTest"
+        }        
     ]
 }

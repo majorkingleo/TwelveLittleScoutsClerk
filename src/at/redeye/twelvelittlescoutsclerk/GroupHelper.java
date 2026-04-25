@@ -9,6 +9,8 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
+
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -30,5 +32,56 @@ public class GroupHelper {
         }
         
         return map_g;
+    }
+
+    public static void init_groups(MainWinInterface mainwin, Transaction trans) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException 
+    {      
+        {
+            DBGroup group = new DBGroup();
+            group.idx.loadFromCopy(mainwin.getNewSequenceValue(DBGroup.GROUP_IDX_SEQUENCE));
+            group.hist.setAnHist(mainwin.getRoot().getLogin());
+            group.name.loadFromCopy("WiWö");
+            trans.insertValues(group);
+        }
+        
+        {
+            DBGroup group = new DBGroup();
+            group.idx.loadFromCopy(mainwin.getNewSequenceValue(DBGroup.GROUP_IDX_SEQUENCE));
+            group.hist.setAnHist(mainwin.getRoot().getLogin());
+            group.name.loadFromCopy("GuSp");
+            trans.insertValues(group);
+        }
+        
+        {
+            DBGroup group = new DBGroup();
+            group.idx.loadFromCopy(mainwin.getNewSequenceValue(DBGroup.GROUP_IDX_SEQUENCE));
+            group.hist.setAnHist(mainwin.getRoot().getLogin());
+            group.name.loadFromCopy("CaEx");
+            trans.insertValues(group);
+        }
+        
+        {
+            DBGroup group = new DBGroup();
+            group.idx.loadFromCopy(mainwin.getNewSequenceValue(DBGroup.GROUP_IDX_SEQUENCE));
+            group.hist.setAnHist(mainwin.getRoot().getLogin());
+            group.name.loadFromCopy("RaRo");
+            trans.insertValues(group);
+        }
+        
+        {
+            DBGroup group = new DBGroup();
+            group.idx.loadFromCopy(mainwin.getNewSequenceValue(DBGroup.GROUP_IDX_SEQUENCE));
+            group.hist.setAnHist(mainwin.getRoot().getLogin());
+            group.name.loadFromCopy("Leiter");
+            trans.insertValues(group);
+        }
+        
+        {
+            DBGroup group = new DBGroup();
+            group.idx.loadFromCopy(mainwin.getNewSequenceValue(DBGroup.GROUP_IDX_SEQUENCE));
+            group.hist.setAnHist(mainwin.getRoot().getLogin());
+            group.name.loadFromCopy("Funktionär");
+            trans.insertValues(group);
+        }        
     }
 }

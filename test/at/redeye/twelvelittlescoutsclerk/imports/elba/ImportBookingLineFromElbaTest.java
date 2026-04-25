@@ -56,7 +56,7 @@ public class ImportBookingLineFromElbaTest {
             root = setup_test_db.getRoot();        
             trans = root.getDBConnection().getDefaultTransaction();
             
-            CreateCommonData ccd = new CreateCommonData( root );
+            CreateCommonData ccd = new CreateCommonData( root, mainwin );
             ccd.cleanup();
         } 
 

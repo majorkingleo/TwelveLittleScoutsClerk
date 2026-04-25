@@ -155,4 +155,21 @@ public class EventHelper {
         
         return ems.get(0);
     }
+
+    public static DBEventMember createEventMember( MainWinInterface mainwin, Transaction trans, DBMember member, DBEvent event ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
+    {       
+        DBEventMember em = new DBEventMember();
+        em.idx.loadFromCopy(mainwin.getNewSequenceValue(DBEventMember.EVENTMEMBER_IDX_SEQUENCE));        
+        em.bp_idx.loadFromCopy(mainwin.getBPIdx());
+        em.event_idx.loadFromCopy(event.idx.getValue());
+        em.member_idx.loadFromCopy(member.idx.getValue());
+        em.group_idx.loadFromCopy(MemberHelper.fetch_group_idx(trans,member));
+        em.hist.setAnHist("root");
+        em.costs.loadFromCopy(event.costs.getValue());
+        em.name.loadFromCopy(member.name.getValue());
+        em.forname.loadFromCopy(member.forname.getValue());
+        em.group.loadFromCopy(member.group.getValue());       
+        
+        return em;
+    }
 }

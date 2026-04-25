@@ -24,6 +24,7 @@ import at.redeye.twelvelittlescoutsclerk.MemberHelper;
 import at.redeye.twelvelittlescoutsclerk.MemberSearch;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
+import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
@@ -606,26 +607,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         return ret;
     }
-    
-    DBEventMember createEntry( DBMember member ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
-    {
-        Transaction trans = getTransaction();
         
-        DBEventMember em = new DBEventMember();
-        em.idx.loadFromCopy(mainwin.getNewSequenceValue(DBEventMember.EVENTMEMBER_IDX_SEQUENCE));        
-        em.bp_idx.loadFromCopy(mainwin.getBPIdx());
-        em.event_idx.loadFromCopy(event.idx.getValue());
-        em.member_idx.loadFromCopy(member.idx.getValue());
-        em.group_idx.loadFromCopy(MemberHelper.fetch_group_idx(trans,member));
-        em.hist.setAnHist("root");
-        em.costs.loadFromCopy(event.costs.getValue());
-        em.name.loadFromCopy(member.name.getValue());
-        em.forname.loadFromCopy(member.forname.getValue());
-        em.group.loadFromCopy(member.group.getValue());       
-        
-        return em;
-    }
-    
     private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAddMemberActionPerformed
         
         MemberSearch ms = new MemberSearch( mainwin, "Add a new member");
@@ -653,7 +635,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 for (DBMember member : selected_members) {
 
-                    DBEventMember entry = createEntry(member);
+                    DBEventMember entry = EventHelper.createEventMember(mainwin, getTransaction(), member, event );
 
                     values.add(entry);
                     tm.add(entry);

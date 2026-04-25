@@ -345,7 +345,7 @@ public abstract class ImportMemberFromScoreBase
         }
     }
 
-    protected void commit() throws SQLException
+    public void commit() throws SQLException
     {
         trans.commit();
     }

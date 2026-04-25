@@ -23,6 +23,7 @@ import at.redeye.twelvelittlescoutsclerk.MainWinInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import at.redeye.twelvelittlescoutsclerk.imports.MatchColumn;
 import at.redeye.twelvelittlescoutsclerk.test.db.SetupTestDB;
 import at.redeye.twelvelittlescoutsclerk.test.db.SetupTestDBInterface;
@@ -57,8 +58,9 @@ public class ImportMemberFromScoregExcelTest {
             trans = root.getDBConnection().getDefaultTransaction();
             member = new DBMember();
             
-            CreateCommonData ccd = new CreateCommonData( root );
+            CreateCommonData ccd = new CreateCommonData( root, mainwin );
             ccd.cleanup();
+            ccd.init_groups();
         } 
     }
     
@@ -131,6 +133,7 @@ public class ImportMemberFromScoregExcelTest {
 
         {
             DBContact contact = new DBContact();
+            @SuppressWarnings("unchecked") 
             List<Integer> data = (List<Integer>)trans.fetchOneColumnValue("select count(*) from " + trans.markTable(contact) 
                     + " where " + trans.markColumn(contact.bp_idx) + " = " + bp_idx, 
                     DBDataType.DB_TYPE_INTEGER);
@@ -140,11 +143,22 @@ public class ImportMemberFromScoregExcelTest {
 
         {
             DBMembers2Contacts m2c = new DBMembers2Contacts();
+            @SuppressWarnings("unchecked") 
             List<Integer> data = (List<Integer>)trans.fetchOneColumnValue("select count(*) from " + trans.markTable(m2c) 
                     + " where " + trans.markColumn(m2c.bp_idx) + " = " + bp_idx, 
                     DBDataType.DB_TYPE_INTEGER);
 
             assertEquals(149, (int) data.get(0));
+        }
+
+        {
+            DBMembers2Groups m2g = new DBMembers2Groups();
+            @SuppressWarnings("unchecked") 
+            List<Integer> data = (List<Integer>)trans.fetchOneColumnValue("select count(*) from " + trans.markTable(m2g) 
+                    + " where " + trans.markColumn(m2g.bp_idx) + " = " + bp_idx, 
+                    DBDataType.DB_TYPE_INTEGER);
+
+            assertEquals(members.size(), (int) data.get(0));
         }
 
     }

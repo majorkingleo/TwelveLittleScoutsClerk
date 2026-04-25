@@ -97,7 +97,8 @@ public class BookingLineHelperTest {
     @Test
     public void testSave() throws Exception {
         System.out.println("save");
-        testSaveAssignEvent();        
+        testSaveAssignEvent();
+        testRemoveAssignEvent();
     }
 
     void testSaveAssignEvent() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException
@@ -168,6 +169,59 @@ public class BookingLineHelperTest {
             assertEquals(bl2e.member_idx.getValue(), bl2e_new.member_idx.getValue());
             assertEquals(bl2e.member_name.getValue(), bl2e_new.member_name.getValue());
             assertEquals(bl2e.event_name.getValue(), bl2e_new.event_name.getValue());
+        }
+
+        trans.commit();
+    }
+
+    void testRemoveAssignEvent() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException
+    {
+        List<DBBookingLine2Events> bles_to_remove = new java.util.ArrayList<>();
+
+        // fetch Booking Line
+        DBBookingLine line = new DBBookingLine();
+
+        List<DBBookingLine> values = trans.fetchTable2( line, 
+            " where " + trans.markColumn(line.bp_idx) + " = " + mainwin.getBPIdx() + 
+            " and " + trans.markColumn(line.line) + " like '%LK Thxalot%' " +
+            " order by " + trans.markColumn(line.idx) );
+
+        if( values.size() != 6) {
+            fail( "Expected 6 booking lines, but found " + values.size() );
+        }
+
+        HashSet<Integer> edited_rows = new HashSet<Integer>() {
+            {
+                add(0);
+            }
+        };
+
+        // Fetch event
+        DBEvent event = new DBEvent();
+
+        List<DBEvent> events = trans.fetchTable2( event, 
+            " where " + trans.markColumn(event.bp_idx) + " = " + mainwin.getBPIdx() + 
+            " and " + trans.markColumn(event.name) + " like '%LK Thxalot%' " +
+            " order by " + trans.markColumn(event.idx) );
+
+        if( events.size() != 1) {
+            fail( "Expected 1 event, but found " + events.size() );
+        }
+
+        event = events.get(0);
+
+        DBBookingLine current_value = values.get(0);
+
+        HashMap<Integer, DBBookingLine2Events> bl2es = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
+        bles_to_remove.add(bl2es.get(current_value.idx.getValue()));
+    
+
+        BookingLineHelper.save(trans, mainwin, bles_to_remove, values, edited_rows, bl2es);
+        
+        {
+            HashMap<Integer, DBBookingLine2Events> bl2es_new = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
+
+            assertFalse(bl2es_new.containsKey(current_value.idx.getValue()));
         }
 
         trans.commit();

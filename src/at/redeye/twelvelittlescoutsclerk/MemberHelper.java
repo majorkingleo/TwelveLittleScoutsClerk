@@ -118,6 +118,18 @@ public class MemberHelper {
             trans.updateValues(member);
         }
     }
+
+    public static HashMap<String,DBMember> get_members_by_scout_id_map(Transaction trans, int bp_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        List<DBMember> members = MemberHelper.fetch_members(trans, bp_idx);
+        HashMap<String,DBMember> members_by_scout_id = new HashMap<>();
+
+        for( DBMember m : members ) {
+            members_by_scout_id.put(m.member_registration_number.getValue(), m);
+        }
+
+        return members_by_scout_id;
+    }
     
     
 }

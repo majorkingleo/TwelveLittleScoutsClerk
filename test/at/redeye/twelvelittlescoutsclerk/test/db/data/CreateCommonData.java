@@ -5,14 +5,12 @@
 
 package at.redeye.twelvelittlescoutsclerk.test.db.data;
 
-import java.awt.Event;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.GroupLayout.Group;
 
 import at.redeye.FrameWork.base.AutoLogger;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
@@ -200,12 +198,7 @@ public class CreateCommonData {
 
         DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans,event);
 
-        List<DBMember> members = MemberHelper.fetch_members(trans, mainwin.getBPIdx());
-        HashMap<String,DBMember> members_by_scout_id = new HashMap<>();
-
-        for( DBMember m : members ) {
-            members_by_scout_id.put(m.member_registration_number.getValue(), m);
-        }
+        HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
 
         {
             DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("8-AEJGP-K48289"), event);

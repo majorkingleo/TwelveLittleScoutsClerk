@@ -322,15 +322,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     tm.add(entry);
                 }
                 
-                bl2es.clear();
-                DBBookingLine2Events bl2e = new DBBookingLine2Events();
-                
-                List<DBBookingLine2Events> l_ble = trans.fetchTable2(bl2e,
-                        "where " + trans.markColumn(bl2e.bp_idx) + " = " + mainwin.getBPIdx());
-                
-                for( var l2e : l_ble ) {                    
-                    bl2es.put(l2e.bl_idx.getValue(),l2e);                                        
-                }
+                bl2es = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
                 
                 // color lines, with an assigned event
                 for( int idx = 0; idx < values.size(); idx++ ) {
@@ -1011,80 +1003,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     {
         Transaction trans = getTransaction();
         
-        for( var le : bles_to_remove ) {
-            trans.deleteWithPrimaryKey(le);
-        }
-        
-        Set<Integer> events2update = new HashSet<>();
-        
-        for (Integer i : tm.getEditedRows()) {
-
-            if( i < 0 ) {
-                continue;
-            }
-            
-            DBBookingLine entry = values.get(i);            
-            DBBookingLine2Events bl2e = bl2es.get(entry.idx.getValue());
-            
-            if( bl2e == null ) {
-                DBBookingLine2Events bl2 = new DBBookingLine2Events();
-                List<DBBookingLine2Events> to_delete = trans.fetchTable2(bl2," where " + trans.markColumn(bl2,bl2.bl_idx) + " = " + entry.idx.toString() );
-                
-                for( var td : to_delete ) {
-                    events2update.add(td.event_idx.getValue());
-                    trans.deleteWithPrimaryKey(td);
-                }
-                
-                entry.assigned.loadFromCopy(0);
-            } else {
-                entry.assigned.loadFromCopy(1);
-            }
-
-            entry.hist.setAeHist(root.getUserName());
-            trans.updateValues(entry);         
-        }
-        
-        if( bl2es.size() > 0 ) {
-            
-            for( DBBookingLine2Events bl2e : bl2es.values() ) {
-                if( bl2e.idx.getValue() == 0 ) {
-                    bl2e.idx.loadFromCopy(getNewSequenceValue(DBBookingLine2Events.BOOKINGLINE2EVENTS_IDX_SEQUENCE));
-                }
-
-                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl2e);
-            }            
-        }
-        
-        List<DBEvent> events = getEvents4Update(events2update); 
-
-        for( var event : events ) {
-            EventHelper.calc_paid_values_4_event( trans, event );
-        }
-
+        BookingLineHelper.save(trans, mainwin, bles_to_remove, values, tm.getEditedRows(), bl2es);
 
         trans.commit();
-    }
-    
-    /** returns an empty list if empty */
-    private List<DBEvent> getEvents4Update( Set<Integer> events2update ) throws UnsupportedDBDataTypeException, WrongBindFileFormatException, SQLException, TableBindingNotRegisteredException, IOException
-    {
-        HashSet<Integer> events = new HashSet<>();
-        events.addAll(events2update);
-        
-        for( var bl2 : bl2es.values() ) {
-            events.add(bl2.event_idx.getValue());
-        }
-        
-        List<DBEvent> ret = new ArrayList<>();
-        
-        for( var event_idx : events ) {
-            DBEvent ev = new DBEvent();
-            ev.idx.loadFromCopy(event_idx);
-            getTransaction().fetchTableWithPrimkey(ev);
-            ret.add(ev);
-        }
-        
-        return ret;
     }
     
     private void jBSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSaveActionPerformed

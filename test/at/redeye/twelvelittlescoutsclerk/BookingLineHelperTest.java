@@ -127,7 +127,7 @@ public class BookingLineHelperTest {
 
         // Fetch members            
         HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
-        DBMember member_descr = members_by_scout_id.get("8-AEJGP-K48289");
+        DBMember member_descr = members_by_scout_id.get(CreateCommonData.THXALOT_SCOUT_IDS.get(0));
 
         DBBookingLine current_value = values.get(0);
 

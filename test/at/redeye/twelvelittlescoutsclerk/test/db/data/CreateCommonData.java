@@ -57,6 +57,7 @@ public class CreateCommonData {
     MainWinInterface mainwin;
 
     public static final List<String> LANDESSPIEL_SCOUT_IDS = List.of("4-B60-Z62847", "6-X94-N34508", "9-W38-I30526", "2-C34-K70612", "1-D78-A86412", "3-V48-J47049", "3-Z32-O67037", "8-D27-M31759");
+    public static final List<String> THXALOT_SCOUT_IDS = List.of("5-X74-X7484", "1-A99-I39575", "6-G2-X5030", "8-T12-P21833", "3-A84-G5166");
 
     public CreateCommonData(Root root, MainWinInterface mainwin) {
         this.root = root;
@@ -216,7 +217,7 @@ public class CreateCommonData {
 
         HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
         
-        for( String scout_id : LANDESSPIEL_SCOUT_IDS )
+        for( String scout_id : THXALOT_SCOUT_IDS )
         {
             DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get(scout_id), event);
             DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
@@ -239,7 +240,7 @@ public class CreateCommonData {
 
         HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
 
-        List<String> scout_ids = List.of("4-B60-Z62847", "6-X94-N34508", "9-W38-I30526", "2-C34-K70612", "1-D78-A86412", "3-V48-J47049", "3-Z32-O67037", "8-D27-M31759");
+        List<String> scout_ids = CreateCommonData.LANDESSPIEL_SCOUT_IDS;
 
         for( String scout_id : scout_ids )
         {

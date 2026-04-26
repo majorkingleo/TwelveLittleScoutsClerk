@@ -230,12 +230,12 @@ public class BookingLineHelperTest {
             DBEventMember current_event_member = new DBEventMember();
             current_event_member.idx.loadFromCopy(event_member.idx.getValue());
 
-            if( !trans.fetchTableWithPrimkey(current_value) ) {
-                fail("Booking line not found after save");
+            if( !trans.fetchTableWithPrimkey(current_event_member) ) {
+                fail("Event member not found after save");
             }
 
-            if( current_value.amount.getValue() != 0 ) {
-                fail("Amount should not be 0 after save but is " + current_value.amount.getValue());
+            if( current_event_member.paid.getValue() != 0 ) {
+                fail("Paid amount should be 0 after save but is " + current_event_member.paid.getValue());
             }
         }
 

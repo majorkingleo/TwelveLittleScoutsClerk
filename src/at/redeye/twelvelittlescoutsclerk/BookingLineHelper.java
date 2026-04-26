@@ -53,11 +53,12 @@ public class BookingLineHelper
                              Set<Integer> edited_rows,
                              HashMap<Integer,DBBookingLine2Events> bl2es ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
+        Set<Integer> events2update = new HashSet<>();
+
         for( var le : bles_to_remove ) {
+            events2update.add(le.event_idx.getValue());
             trans.deleteWithPrimaryKey(le);
         }
-        
-        Set<Integer> events2update = new HashSet<>();
         
         for (Integer i : edited_rows) {
 

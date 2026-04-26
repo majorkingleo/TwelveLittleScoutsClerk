@@ -12,6 +12,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.test.db.SetupTestDB;
 import at.redeye.twelvelittlescoutsclerk.test.db.SetupTestDBInterface;
@@ -213,15 +214,42 @@ public class BookingLineHelperTest {
         DBBookingLine current_value = values.get(0);
 
         HashMap<Integer, DBBookingLine2Events> bl2es = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
-        bles_to_remove.add(bl2es.get(current_value.idx.getValue()));
+        DBBookingLine2Events ble = bl2es.get(current_value.idx.getValue());
+
+        DBEventMember event_member = new DBEventMember();
+
+        List<DBEventMember> event_members = trans.fetchTable2( event_member, " where " + trans.markColumn(ble.bp_idx) + " = " + ble.bp_idx.getValue() +
+            " and " + trans.markColumn(ble.event_idx) + " = " + ble.event_idx.getValue() +
+            " and " + trans.markColumn(ble.member_idx) + " = " + ble.member_idx.getValue() );
+
+        if( event_members.size() != 1) {
+            fail( "Expected 1 event member, but found " + event_members.size() );
+        }
+
+        event_member = event_members.get(0);
+
+        bles_to_remove.add(ble);
+        bl2es.remove(current_value.idx.getValue());
     
 
         BookingLineHelper.save(trans, mainwin, bles_to_remove, values, edited_rows, bl2es);
         
         {
             HashMap<Integer, DBBookingLine2Events> bl2es_new = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
-
             assertFalse(bl2es_new.containsKey(current_value.idx.getValue()));
+        }
+
+        {   
+            DBEventMember current_event_member = new DBEventMember();
+            current_event_member.idx.loadFromCopy(event_member.idx.getValue());
+
+            if( !trans.fetchTableWithPrimkey(current_value) ) {
+                fail("Booking line not found after save");
+            }
+
+            if( current_value.amount.getValue() != 0 ) {
+                fail("Amount should not be 0 after save but is " + current_value.amount.getValue());
+            }
         }
 
         trans.commit();

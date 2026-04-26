@@ -62,6 +62,7 @@ public class BookingLineHelperTest {
             ccd.import_scoreg_data();
             ccd.import_booking_lines();
             ccd.create_events();
+            ccd.assign_booking_lines_4_landesspiel();
         }      
     }
     
@@ -71,25 +72,11 @@ public class BookingLineHelperTest {
     
     @Before
     public void setUp() {
+         
     }
     
     @After
     public void tearDown() {
-    }
-
-    /**
-     * Test of delete_bookingline method, of class BookingLineHelper.
-     */
-    @Test
-    public void testDelete_bookingline() throws Exception {
-        System.out.println("delete_bookingline");
-        /*
-        Transaction trans = null;
-        DBBookingLine line = null;
-        BookingLineHelper.delete_bookingline(trans, line);
-        // TODO review the generated test code and remove the default call to fail.
-        */
-        fail("The test case is a prototype.");        
     }
 
     /**
@@ -261,15 +248,18 @@ public class BookingLineHelperTest {
     @Test
     public void testFetch_bookingline2events() throws Exception {
         System.out.println("fetch_bookingline2events");
-        /*
-        Transaction trans = null;
-        MainWinInterface mainwin = null;
-        HashMap<Integer, DBBookingLine2Events> expResult = null;
+        
         HashMap<Integer, DBBookingLine2Events> result = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        */
-        fail("The test case is a prototype.");        
+
+        HashMap<Integer, DBBookingLine2Events> results4landesspiel = new HashMap<>();
+
+        for( var e : result.entrySet() ) {
+            if( e.getValue().event_name.getValue().equals("Landesspiel") ) {
+                results4landesspiel.put(e.getKey(), e.getValue());
+            }
+        }        
+
+        assertEquals(results4landesspiel.size(), CreateCommonData.LANDESSPIEL_SCOUT_IDS.size());
     }
     
 }

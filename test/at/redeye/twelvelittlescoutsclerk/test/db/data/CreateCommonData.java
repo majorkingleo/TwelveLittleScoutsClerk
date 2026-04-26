@@ -5,10 +5,16 @@
 
 package at.redeye.twelvelittlescoutsclerk.test.db.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -21,6 +27,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.UserManagement.bindtypes.DBPb;
 import at.redeye.UserManagement.impl.UserDataHandling;
+import at.redeye.twelvelittlescoutsclerk.BookingLineHelper;
 import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.GroupHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWinInterface;
@@ -48,6 +55,8 @@ public class CreateCommonData {
 
     Root root;    
     MainWinInterface mainwin;
+
+    public static final List<String> LANDESSPIEL_SCOUT_IDS = List.of("4-B60-Z62847", "6-X94-N34508", "9-W38-I30526", "2-C34-K70612", "1-D78-A86412", "3-V48-J47049", "3-Z32-O67037", "8-D27-M31759");
 
     public CreateCommonData(Root root, MainWinInterface mainwin) {
         this.root = root;
@@ -101,6 +110,7 @@ public class CreateCommonData {
                 data_inserter.import_scoreg_data();
                 data_inserter.create_events();
                 data_inserter.import_booking_lines();
+                data_inserter.assign_booking_lines_4_landesspiel();
             }
         };
 
@@ -188,6 +198,12 @@ public class CreateCommonData {
 
     public void create_events() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
     {
+        create_thx_alot();
+        create_landesspiel();
+    }
+
+    public void create_thx_alot() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
+    {
         Transaction trans = root.getDBConnection().getDefaultTransaction(); 
         DBEvent event = new DBEvent();
         event.bp_idx.loadFromCopy(mainwin.getBPIdx());
@@ -199,39 +215,41 @@ public class CreateCommonData {
         DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans,event);
 
         HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
-
-        {
-            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("8-AEJGP-K48289"), event);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
-        }
-
-        {
-            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("6-R19-B70917"), event);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
-        }
-
-        {
-            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("9-B12-Z74561"), event);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
-        }
-
-        {
-            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("6-L36-I68116"), event);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
-        }
         
+        for( String scout_id : LANDESSPIEL_SCOUT_IDS )
         {
-            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("7-Q47-T80709"), event);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
-        }
-        
-        {
-            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get("6-A69-B70161"), event);
+            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get(scout_id), event);
             DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
         }
 
         trans.commit();
     }
+
+    public void create_landesspiel() throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException 
+    {
+        Transaction trans = root.getDBConnection().getDefaultTransaction(); 
+        DBEvent event = new DBEvent();
+        event.bp_idx.loadFromCopy(mainwin.getBPIdx());
+        event.name.loadFromCopy("Landesspiel");
+        event.hist.setAnHist(root.getUserName());
+        event.idx.loadFromCopy(mainwin.getNewSequenceValue(DBEvent.EVENT_IDX_SEQUENCE));
+        event.costs.loadFromCopy(25.0);
+
+        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans,event);
+
+        HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
+
+        List<String> scout_ids = List.of("4-B60-Z62847", "6-X94-N34508", "9-W38-I30526", "2-C34-K70612", "1-D78-A86412", "3-V48-J47049", "3-Z32-O67037", "8-D27-M31759");
+
+        for( String scout_id : scout_ids )
+        {
+            DBEventMember em = EventHelper.createEventMember(mainwin, trans, members_by_scout_id.get(scout_id), event);
+            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, em, em.hist, "root" );
+        }
+
+        trans.commit();
+    }
+
 
     public void init_groups() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException 
     {      
@@ -240,4 +258,71 @@ public class CreateCommonData {
         trans.commit();
     }
     
+    public void assign_booking_lines_4_landesspiel() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException 
+    {
+        Transaction trans = root.getDBConnection().getDefaultTransaction(); 
+
+        List<DBBookingLine2Events> bles_to_remove = new java.util.ArrayList<>();
+
+        // fetch Booking Line
+        DBBookingLine line = new DBBookingLine();
+
+        List<DBBookingLine> values = trans.fetchTable2( line, 
+            " where " + trans.markColumn(line.bp_idx) + " = " + mainwin.getBPIdx() + 
+            " and " + trans.markColumn(line.line) + " like '%LaSp%' " +
+            " order by " + trans.markColumn(line.idx) );
+
+        if( values.size() != 8) {
+            throw new RuntimeException( "Expected 8 booking lines, but found " + values.size() );
+        }
+
+        HashSet<Integer> edited_rows = new HashSet<Integer>() {
+            {
+                for( int i = 0; i < values.size(); i++ ) {
+                    add(i);
+                }
+            }
+        };
+
+        // Fetch event
+        DBEvent event = new DBEvent();
+
+        List<DBEvent> events = trans.fetchTable2( event, 
+            " where " + trans.markColumn(event.bp_idx) + " = " + mainwin.getBPIdx() + 
+            " and " + trans.markColumn(event.name) + " = 'Landesspiel' " +
+            " order by " + trans.markColumn(event.idx) );
+
+        if( events.size() != 1) {
+            throw new RuntimeException( "Expected 1 event, but found " + events.size() );
+        }
+
+        event = events.get(0);
+
+        // Fetch members            
+        HashMap<String,DBMember> members_by_scout_id = MemberHelper.get_members_by_scout_id_map(trans, mainwin.getBPIdx());
+        HashMap<Integer, DBBookingLine2Events> bl2es = BookingLineHelper.fetch_bookingline2events(trans, mainwin);
+
+        int count = 0;
+
+        for( String scout_id : LANDESSPIEL_SCOUT_IDS ) {        
+            DBMember member_descr = members_by_scout_id.get(scout_id);
+
+            DBBookingLine current_value = values.get(count);
+            count++;
+
+            DBBookingLine2Events bl2e = new DBBookingLine2Events();
+            bl2e.bl_idx.loadFromCopy(current_value.idx.getValue());
+            bl2e.bp_idx.loadFromCopy(current_value.bp_idx.getValue());
+            bl2e.event_idx.loadFromCopy(event.idx.getValue());
+            bl2e.member_idx.loadFromCopy(member_descr.idx.getValue());
+            bl2e.member_name.loadFromString(member_descr.forname.toString() + " " + member_descr.name.toString() );
+            bl2e.event_name.loadFromString(event.name.toString());
+                    
+            bl2es.put(current_value.idx.getValue(), bl2e);
+        }
+
+        BookingLineHelper.save(trans, mainwin, bles_to_remove, values, edited_rows, bl2es);        
+
+        trans.commit();
+    }
 }

@@ -147,6 +147,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 tm.clear();
                 clearEdited();
 
+                Double total_paid = 0.0;
+                Double total_costs = 0.0;
+
                 DBEventMember em = new DBEventMember();
 
                 Transaction trans = getTransaction();
@@ -164,6 +167,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 
                 for (DBEventMember entry : values) {
                     tm.add(entry);
+                    total_paid += entry.paid.getValue() + entry.paid_cash.getValue();
+                    total_costs += entry.costs.getValue();
                 }
 
                 DBBookingLine2Events bl2e = new DBBookingLine2Events();
@@ -196,6 +201,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         }
                     }
                 }
+
+                jStatusBar.setText(String.format(MlM("Total paid: %1$.2f, total costs: %2$.2f"), total_paid, total_costs));
             }
         };
     }     
@@ -295,7 +302,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jPanel1 = new javax.swing.JPanel();
         jBClose = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
-        jBClose1 = new javax.swing.JButton();
+        jStatusBar = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTMembers = new javax.swing.JTable();
@@ -336,12 +343,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
-        jBClose1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/help.png"))); // NOI18N
-        jBClose1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBClose1ActionPerformed(evt);
-            }
-        });
+        jStatusBar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -350,8 +352,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jBSave)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jBClose1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jStatusBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBClose))
         );
@@ -359,10 +361,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jBClose1)
-                    .addComponent(jBSave)
-                    .addComponent(jBClose))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jStatusBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBSave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBClose, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -593,10 +595,6 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
     }//GEN-LAST:event_jBSaveActionPerformed
 
-    private void jBClose1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBClose1ActionPerformed
-        callHelpWin();
-    }//GEN-LAST:event_jBClose1ActionPerformed
-
     private Set<Integer> getMemberIds()
     {
         Set<Integer> ret = new HashSet<>();
@@ -752,7 +750,6 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBAddMember;
     private javax.swing.JButton jBBookingLine;
     private javax.swing.JButton jBClose;
-    private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;
@@ -768,6 +765,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel jStatusBar;
     private javax.swing.JTextField jTCosts;
     private javax.swing.JTable jTMembers;
     private javax.swing.JTextField jTName;

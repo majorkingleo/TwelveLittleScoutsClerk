@@ -144,5 +144,47 @@ public class ContactHelper {
         
         return result;
     }   
-    
+
+    public static class ContactMatchResult {
+        public final DBContact contact;
+        public final List<String> matchedTerms;
+
+        public ContactMatchResult(DBContact contact, List<String> matchedTerms) {
+            this.contact = contact;
+            this.matchedTerms = matchedTerms;
+        }
+    }
+
+    public static List<String> getContactMatchTerms(DBContact c, DBBookingLine line) {
+        List<String> terms = new ArrayList<>();
+
+        if (!line.from_bank_account_iban.isEmpty() &&
+                line.from_bank_account_iban.toString().equals(c.bank_account_iban.toString())) {
+            terms.add(line.from_bank_account_iban.toString());
+        }
+
+        if (!line.from_bank_account_bic.isEmpty() &&
+                line.from_bank_account_bic.toString().equals(c.bank_account_bic.toString())) {
+            terms.add(line.from_bank_account_bic.toString());
+        }
+
+        String fullName = (c.forname.getValue() + " " + c.name.getValue()).toLowerCase();
+        for (String token : line.from_name.getValue().split("[\t ,\\-]+")) {
+            if (token.length() >= 3 && fullName.contains(token.toLowerCase())) {
+                terms.add(token);
+            }
+        }
+
+        return terms;
+    }
+
+    public static List<ContactMatchResult> findContactsForWithMatch(Transaction trans, DBBookingLine line) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException {
+        List<DBContact> contacts = findContactsFor(trans, line);
+        List<ContactMatchResult> result = new ArrayList<>();
+        for (DBContact c : contacts) {
+            result.add(new ContactMatchResult(c, getContactMatchTerms(c, line)));
+        }
+        return result;
+    }
+
 }

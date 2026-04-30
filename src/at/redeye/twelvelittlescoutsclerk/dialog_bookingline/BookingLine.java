@@ -33,6 +33,9 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
 import at.redeye.twelvelittlescoutsclerk.dialog_split.Split;
 import java.awt.Color;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -123,6 +126,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     DBDateTime filter_date_till = new DBDateTime("dummy");
 
     ArrayList<JComponent> filters = new ArrayList<>();
+    private List<String> current_contact_match_terms = new ArrayList<>();
+    private List<String> current_member_match_terms = new ArrayList<>();
     
     public BookingLine(MainWin mainwin) {
         super( mainwin.getRoot(), "BookingLines");
@@ -1211,14 +1216,21 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     BookingLineHelperELBA.parseBookingLineText(current_value);
                 }
                 
-                List<DBContact> contacts = ContactHelper.findContactsFor(getTransaction(), current_value);
-                
-                jCContact.removeAllItems();
-                for( DBContact contact : contacts ) {
-                    jCContact.addItem(new ContactDescr( contact ));
-                }               
+                List<ContactHelper.ContactMatchResult> contactResults = ContactHelper.findContactsForWithMatch(getTransaction(), current_value);
 
-               var_to_gui();       
+                current_contact_match_terms.clear();
+                current_member_match_terms.clear();
+                if (!contactResults.isEmpty()) {
+                    current_contact_match_terms.addAll(contactResults.get(0).matchedTerms);
+                }
+
+                jCContact.removeAllItems();
+                for( ContactHelper.ContactMatchResult result : contactResults ) {
+                    jCContact.addItem(new ContactDescr( result.contact ));
+                }
+
+               var_to_gui();
+               highlightJTLine();
             }
         };                        
     }//GEN-LAST:event_jBAutoDetectActionPerformed
@@ -1311,7 +1323,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 if( descr == null ) {
                     return;
                 }
-                
+
+                current_contact_match_terms.clear();
+                current_contact_match_terms.addAll(ContactHelper.getContactMatchTerms(descr.contact, current_value));
+                current_member_match_terms.clear();
+
                 List<DBMember> members = MemberHelper.findMembersFor(getTransaction(), descr.contact);
                 
                 jCMember.removeAllItems();
@@ -1319,6 +1335,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     jCMember.addItem(new MemberDescr( member ));
                 }
 
+                highlightJTLine();
             }
         };
         
@@ -1360,6 +1377,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 if( !events.isEmpty() ) {                                                           
                     jCEvent.setSelectedIndex(selected_index);
                 }
+
+                current_member_match_terms.clear();
+                current_member_match_terms.addAll(MemberHelper.getMemberMatchTerms(descr.member));
+                highlightJTLine();
             }
         };
         
@@ -1677,8 +1698,41 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             toFront();
         }
 */
-    }    
-    
+    }
+
+    private void highlightSubstrings(Highlighter h, String fullText, String search, Highlighter.HighlightPainter painter) {
+        if (search == null || search.isEmpty()) return;
+        String lowerText = fullText.toLowerCase();
+        String lowerSearch = search.toLowerCase();
+        int fromIndex = 0;
+        while (true) {
+            int pos = lowerText.indexOf(lowerSearch, fromIndex);
+            if (pos < 0) break;
+            try {
+                h.addHighlight(pos, pos + search.length(), painter);
+            } catch (BadLocationException ex) {
+                // ignore
+            }
+            fromIndex = pos + 1;
+        }
+    }
+
+    private void highlightJTLine() {
+        Highlighter h = jTLine.getHighlighter();
+        h.removeAllHighlights();
+        String text = jTLine.getText();
+
+        Highlighter.HighlightPainter contactPainter = new DefaultHighlighter.DefaultHighlightPainter(new Color(173, 216, 230));
+        for (String term : current_contact_match_terms) {
+            highlightSubstrings(h, text, term, contactPainter);
+        }
+
+        Highlighter.HighlightPainter memberPainter = new DefaultHighlighter.DefaultHighlightPainter(new Color(144, 238, 144));
+        for (String term : current_member_match_terms) {
+            highlightSubstrings(h, text, term, memberPainter);
+        }
+    }
+
     @Override
     public boolean canClose() {
         int ret = checkSave(tm);

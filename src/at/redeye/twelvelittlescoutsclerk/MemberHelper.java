@@ -17,6 +17,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -130,6 +131,35 @@ public class MemberHelper {
 
         return members_by_scout_id;
     }
-    
-    
+
+    public static class MemberMatchResult {
+        public final DBMember member;
+        public final List<String> matchedTerms;
+
+        public MemberMatchResult(DBMember member, List<String> matchedTerms) {
+            this.member = member;
+            this.matchedTerms = matchedTerms;
+        }
+    }
+
+    public static List<String> getMemberMatchTerms(DBMember member) {
+        List<String> terms = new ArrayList<>();
+        for (String token : (member.forname.getValue() + " " + member.name.getValue()).split("[ ,\\-]+")) {
+            if (token.length() >= 3) {
+                terms.add(token);
+            }
+        }
+        return terms;
+    }
+
+    public static List<MemberMatchResult> findMembersForWithMatch(Transaction trans, DBContact contact) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException {
+        List<DBMember> members = findMembersFor(trans, contact);
+        List<MemberMatchResult> result = new ArrayList<>();
+        for (DBMember member : members) {
+            result.add(new MemberMatchResult(member, getMemberMatchTerms(member)));
+        }
+        return result;
+    }
+
+
 }

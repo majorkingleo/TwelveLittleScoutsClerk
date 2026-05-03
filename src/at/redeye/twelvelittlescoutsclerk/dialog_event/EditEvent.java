@@ -599,15 +599,23 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     {
         Set<Integer> ret = new HashSet<>();
         
-        for( DBEventMember member : values ) {
-            ret.add(member.member_idx.getValue());
+        try {
+            List<DBEventMember> all_members = EventHelper.get_members_4_event(getTransaction(), event);
+            for( DBEventMember member : all_members ) {
+                ret.add(member.member_idx.getValue());
+            }
+        } catch( Exception ex ) {
+            logger.error(ex, ex);
+            for( DBEventMember member : values ) {
+                ret.add(member.member_idx.getValue());
+            }
         }
         
         return ret;
     }
         
-    private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAddMemberActionPerformed
-        
+    private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAddMemberActionPerformed                
+
         MemberSearch ms = new MemberSearch( mainwin, "Add a new member");
         Set<Integer> ids = getMemberIds();
                

@@ -32,8 +32,8 @@ public class DBEvent extends DBStrukt {
         add(name);
         add(hist);
         add(costs);
-        add(paid);
-        add(planned_costs);
+        add(paid, 2);
+        add(planned_costs, 3);
         
         hist.setTitle(" ");
         

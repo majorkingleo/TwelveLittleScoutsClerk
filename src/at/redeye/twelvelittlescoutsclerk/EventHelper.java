@@ -133,6 +133,13 @@ public class EventHelper {
             total_paid += member2amount.get(em.member_idx.getValue()) + em.paid_cash.getValue();
         }
         event.paid.loadFromCopy(total_paid);
+        
+        double planned = 0;
+        for( var em : event_members ) {
+            planned += em.costs.getValue();
+        }
+        event.planned_costs.loadFromCopy(planned);
+        
         trans.updateValues(event);
     }
     

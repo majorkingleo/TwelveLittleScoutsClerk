@@ -21,6 +21,7 @@ public class DBEvent extends DBStrukt {
     public DBHistory      hist = new DBHistory( "hist" );
     public DBDouble       costs = new DBDouble( "costs", "Costs per Person" );
     public DBDouble       paid = new DBDouble( "paid", "Paid" );
+    public DBDouble       planned_costs = new DBDouble( "planned_costs", "Planned Costs" );
     
     public DBEvent()
     {
@@ -32,12 +33,13 @@ public class DBEvent extends DBStrukt {
         add(hist);
         add(costs);
         add(paid);
+        add(planned_costs);
         
         hist.setTitle(" ");
         
         idx.setAsPrimaryKey();
 
-        setVersion(2);
+        setVersion(3);
     }
     
     @Override

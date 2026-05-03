@@ -98,8 +98,10 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
                 for( int idx = 0; idx < values.size(); ++idx ) {
                     DBEvent entry = values.get(idx);
                     List<DBEventMember> members = EventHelper.get_members_4_event(trans, entry);
-                    if( !members.isEmpty() && members.stream().allMatch(
-                            em -> em.paid.getValue() + em.paid_cash.getValue() >= em.costs.getValue() - 0.01) ) {
+                    boolean all_paid = !members.isEmpty() && members.stream().allMatch(
+                            em -> em.paid.getValue() + em.paid_cash.getValue() >= em.costs.getValue() - 0.01);
+                    boolean planned_matches = Math.abs(entry.planned_costs.getValue() - entry.costs.getValue()) <= 0.01;
+                    if( all_paid || planned_matches ) {
                         Color green = idx % 2 == 0 ? new Color(200, 255, 200) : new Color(180, 240, 180);
                         for( var col : entry.getAllValues() ) {
                             tm.setCellColor(col, idx, green);

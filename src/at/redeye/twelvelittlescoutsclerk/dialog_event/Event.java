@@ -18,6 +18,8 @@ import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
+import java.awt.Color;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -91,6 +93,18 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
                 
                 for (DBEvent entry : values) {
                     tm.add(entry);
+                }
+                
+                for( int idx = 0; idx < values.size(); ++idx ) {
+                    DBEvent entry = values.get(idx);
+                    List<DBEventMember> members = EventHelper.get_members_4_event(trans, entry);
+                    if( !members.isEmpty() && members.stream().allMatch(
+                            em -> em.paid.getValue() + em.paid_cash.getValue() >= em.costs.getValue() - 0.01) ) {
+                        Color green = idx % 2 == 0 ? new Color(200, 255, 200) : new Color(180, 240, 180);
+                        for( var col : entry.getAllValues() ) {
+                            tm.setCellColor(col, idx, green);
+                        }
+                    }
                 }
             }
         };
@@ -315,6 +329,10 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
 
             entry.hist.setAeHist(root.getUserName());
             DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans,entry);
+        }
+        
+        for( DBEvent entry : values ) {
+            EventHelper.calc_paid_values_4_event(trans, entry);
         }
         
         getTransaction().commit();

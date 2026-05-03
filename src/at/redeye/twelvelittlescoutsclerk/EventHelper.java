@@ -127,6 +127,13 @@ public class EventHelper {
             em.paid.loadFromCopy(member2amount.get(em.member_idx.getValue()));
             trans.updateValues(em);
         }
+        
+        double total_paid = 0;
+        for( var em : event_members ) {
+            total_paid += member2amount.get(em.member_idx.getValue()) + em.paid_cash.getValue();
+        }
+        event.paid.loadFromCopy(total_paid);
+        trans.updateValues(event);
     }
     
     /**

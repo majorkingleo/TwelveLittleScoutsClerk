@@ -19,7 +19,8 @@ public class DBEvent extends DBStrukt {
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBString       name = new DBString("name", "Name", 50 );
     public DBHistory      hist = new DBHistory( "hist" );
-    public DBDouble       costs = new DBDouble( "costs", "Costs" );
+    public DBDouble       costs = new DBDouble( "costs", "Costs per Person" );
+    public DBDouble       paid = new DBDouble( "paid", "Paid" );
     
     public DBEvent()
     {
@@ -30,10 +31,13 @@ public class DBEvent extends DBStrukt {
         add(name);
         add(hist);
         add(costs);
+        add(paid);
         
         hist.setTitle(" ");
         
         idx.setAsPrimaryKey();
+
+        setVersion(2);
     }
     
     @Override

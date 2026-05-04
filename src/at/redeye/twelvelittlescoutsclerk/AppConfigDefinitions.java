@@ -18,10 +18,12 @@ import at.redeye.FrameWork.base.prm.impl.PrmDefaultCheckSuite;
 public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     
     public static DBConfig UserName = new DBConfig("UserName","");
-    public static DBConfig Password = new DBConfig("Password","");
-    public static DBConfig Prime = new DBConfig("Prime","1000","Ausbezahlte Prämie", new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_DOUBLE));
-    public static DBConfig PrimeTrainer = new DBConfig("PrimeTrainer","300","Ausbezahlte Prämie für Trainer", new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_DOUBLE));
-    public static DBConfig Anzahlung = new DBConfig("Anzahlung","3000","Anzahlung für neue Kunden", new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_DOUBLE));
+    public static DBConfig Password = new DBConfig("Password","");    
+    public static DBConfig Organisation = new DBConfig("Organisation","Pfadfindergruppe XY","Name der Organisation");
+    public static DBConfig OrganisationAddressStreet = new DBConfig("OrganisationAddressStreet","Musterstraße 1","Adresse der Organisation");
+    public static DBConfig OrganisationAddressPostalCode = new DBConfig("OrganisationAddressPostalCode","12345","Adresse der Organisation");
+    public static DBConfig OrganisationAddressCity = new DBConfig("OrganisationAddressCity","Musterstadt","Adresse der Organisation");
+    public static DBConfig OrganisaiontIBAN = new DBConfig("OrganisaiontIBAN","AT00 0000 0000 0000 0000","IBAN der Organisation");    
     
     public static void registerDefinitions() {
 
@@ -29,10 +31,12 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
 
         addLocal(UserName);  
         addLocal(Password);  
-        add(Prime);
-        add(PrimeTrainer);
-        add(Anzahlung);
-
+        add(Organisation);
+        add(OrganisationAddressStreet);
+        add(OrganisationAddressPostalCode);
+        add(OrganisationAddressCity);
+        add(OrganisaiontIBAN);
+    
         GlobalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
         LocalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
     }    

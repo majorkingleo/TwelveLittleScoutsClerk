@@ -85,6 +85,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         bindVar(jTName, event.name);
         bindVar(jTCosts, event.costs);
+        bindVar(jTBillingTemplate, event.billing_template);
                
         var_to_gui();
         
@@ -317,6 +318,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jCCacheOpen = new javax.swing.JCheckBox();
         jPanel5 = new javax.swing.JPanel();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
+        jLabel4 = new javax.swing.JLabel();
+        jTBillingTemplate = new javax.swing.JTextField();
 
         jMenuItem1.setText("jMenuItem1");
 
@@ -438,7 +441,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBBookingLine)
-                .addContainerGap(138, Short.MAX_VALUE))
+                .addContainerGap(183, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
@@ -516,6 +519,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addContainerGap())
         );
 
+        jLabel4.setText("Billing Template");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -528,9 +533,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3))
-                        .addGap(133, 133, 133)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4))
+                        .addGap(62, 62, 62)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTBillingTemplate)
                             .addComponent(jTCosts)
                             .addComponent(jTName))))
                 .addContainerGap())
@@ -546,6 +553,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTCosts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jTBillingTemplate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -614,7 +625,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         return ret;
     }
         
-    private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAddMemberActionPerformed                
+    private void jBAddMemberActionPerformed(java.awt.event.ActionEvent evt) {                                                            
 
         MemberSearch ms = new MemberSearch( mainwin, "Add a new member");
         Set<Integer> ids = getMemberIds();
@@ -649,7 +660,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         };
         
-    }//GEN-LAST:event_jBAddMemberActionPerformed
+    }                                           
 
     private void jBRemoveMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBRemoveMemberActionPerformed
         
@@ -765,6 +776,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -774,6 +786,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jStatusBar;
+    private javax.swing.JTextField jTBillingTemplate;
     private javax.swing.JTextField jTCosts;
     private javax.swing.JTable jTMembers;
     private javax.swing.JTextField jTName;

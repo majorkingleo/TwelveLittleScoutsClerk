@@ -4,6 +4,8 @@
  */
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
+import org.sqlite.core.DB;
+
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
@@ -27,6 +29,7 @@ public class DBEventMember extends DBStrukt {
     public DBDouble       paid = new DBDouble( "piad" );
     public DBDouble       paid_cash = new DBDouble( "piad_cash", "Cash" );
     public DBString       comment = new DBString("comment", "Comment", 255 );
+    public DBString       bill = new DBString("bill", "Bill", 255 );
     
     public DBEventMember()
     {
@@ -45,13 +48,14 @@ public class DBEventMember extends DBStrukt {
         add(paid);
         add(paid_cash,2);
         add(comment);
+        add(bill, 3);
         
         hist.setTitle(" ");
         
         bp_idx.shouldHaveIndex();
         idx.setAsPrimaryKey();
         
-        setVersion(2);
+        setVersion(3);
     }
     
     @Override

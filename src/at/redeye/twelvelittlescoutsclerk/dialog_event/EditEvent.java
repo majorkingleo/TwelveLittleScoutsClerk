@@ -313,6 +313,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBEditMember = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jBBookingLine = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
+        jBCreateBill = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jCCacheOpen = new javax.swing.JCheckBox();
@@ -414,6 +416,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
+        jBCreateBill.setText("Create Bill");
+        jBCreateBill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBCreateBillActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -421,11 +430,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator2)
                     .addComponent(jBAddMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBRemoveMember, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                     .addComponent(jBEditMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator1)
-                    .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBCreateBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -441,7 +452,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBBookingLine)
-                .addContainerGap(183, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBCreateBill)
+                .addContainerGap(132, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
@@ -764,11 +779,32 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         };
     }//GEN-LAST:event_jBBookingLineActionPerformed
 
+    private void jBCreateBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCreateBillActionPerformed
+        
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                if (!checkAnyAndSingleSelection(jTMembers)) {
+                    return;
+                }
+
+                int row = tm.getSelectedRow();
+
+                if (row < 0 || row >= values.size()) {
+                    return;
+                }
+
+                DBEventMember event_member = values.get(row);
+            }
+        };
+    }//GEN-LAST:event_jBCreateBillActionPerformed
+
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAddMember;
     private javax.swing.JButton jBBookingLine;
     private javax.swing.JButton jBClose;
+    private javax.swing.JButton jBCreateBill;
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;
@@ -785,6 +821,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel jStatusBar;
     private javax.swing.JTextField jTBillingTemplate;
     private javax.swing.JTextField jTCosts;

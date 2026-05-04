@@ -1328,7 +1328,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 current_contact_match_terms.addAll(ContactHelper.getContactMatchTerms(descr.contact, current_value));
                 current_member_match_terms.clear();
 
-                List<DBMember> members = MemberHelper.findMembersFor(getTransaction(), descr.contact);
+                List<DBMember> members = MemberHelper.findMembersFor(getTransaction(), descr.contact, current_value);
                 
                 jCMember.removeAllItems();
                 for( DBMember member : members ) {

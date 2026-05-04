@@ -10,6 +10,7 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.DBDataType;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBGroup;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
@@ -18,6 +19,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -105,6 +107,34 @@ public class MemberHelper {
             "       and " + trans.markColumn(m2c.contact_idx) + " = " + contact.idx.toString() +
             "       and " + trans.markColumn(m2c.member_idx) + " = " + trans.markColumn(member,member.idx) + " ) " );              
         
+        return members;
+    }
+
+    public static List<DBMember> findMembersFor( Transaction trans, DBContact contact, DBBookingLine line ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        List<DBMember> members = findMembersFor(trans, contact);
+
+        String bookingText = (line.from_name.getValue() + " " + line.line.getValue() + " " + line.reference.getValue()).toLowerCase();
+
+        members.sort(Comparator.comparingInt(m -> {
+            String forname = m.forname.getValue().toLowerCase();
+            String name = m.name.getValue().toLowerCase();
+
+            // Priority 1: exact full name match (either order)
+            if (!forname.isEmpty() && !name.isEmpty()) {
+                if (bookingText.contains(forname + " " + name) || bookingText.contains(name + " " + forname)) {
+                    return 0;
+                }
+            }
+
+            // Priority 2: both forname and surname appear individually
+            if (!forname.isEmpty() && !name.isEmpty() && bookingText.contains(forname) && bookingText.contains(name)) {
+                return 1;
+            }
+
+            return 2;
+        }));
+
         return members;
     }
     

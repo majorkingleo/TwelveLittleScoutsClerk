@@ -1,0 +1,188 @@
+/**
+ * TwelveLittleScoutsClerk bill generation from ODT template
+ * @author Copyright (c) 2023-2026 Martin Oberzalek
+ */
+package at.redeye.twelvelittlescoutsclerk;
+
+import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
+import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
+import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.odftoolkit.odfdom.doc.OdfTextDocument;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+public class BillingHelper {
+
+    /**
+     * Generates a bill ODT (and optionally a PDF) from the ODT template
+     * referenced by {@code event.billing_template}.
+     *
+     * After calling this method the caller must persist the updated
+     * {@code eventMember} via {@code trans.updateValues(eventMember)}.
+     *
+     * @param trans          active transaction
+     * @param event          the event (must have {@code billing_template} set)
+     * @param eventMember    the event-member record whose bill is being created
+     * @param convertToPdf   when {@code true} also convert the ODT to PDF via
+     *                       LibreOffice and return the PDF file
+     * @return the generated {@code .odt} or {@code .pdf} file
+     */
+    public static File generateBill(Transaction trans, DBEvent event,
+            DBEventMember eventMember, boolean convertToPdf)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException,
+                   IOException, Exception {
+
+        // 1. Fetch DBMember
+        DBMember member = new DBMember();
+        member.idx.loadFromCopy(eventMember.member_idx.getValue());
+        trans.fetchTableWithPrimkey(member);
+
+        // 2. Fetch first DBContact linked to the member (may be null)
+        DBContact contact = fetchFirstContact(trans, member);
+
+        // 3. Build replacement map
+        Map<String, String> replacements = buildReplacementMap(member, contact, event, eventMember);
+
+        // 4+5. Load ODT template
+        String templatePath = event.billing_template.getValue();
+        File templateFile = new File(templatePath);
+        OdfTextDocument doc = OdfTextDocument.loadDocument(templateFile);
+
+        // 6. Walk all text nodes and apply replacements
+        replaceInNode(doc.getContentDom(), replacements);
+
+        // 7. Save to a temp ODT file
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        File odtFile = File.createTempFile(
+                "bill_" + eventMember.member_idx.getValue() + "_", ".odt", tmpDir);
+        doc.save(odtFile);
+
+        File outputFile = odtFile;
+
+        // 8. Optionally convert to PDF
+        if (convertToPdf) {
+            outputFile = convertToPdf(odtFile, tmpDir);
+        }
+
+        // 9. Store output path in eventMember (caller must persist)
+        eventMember.bill.loadFromString(outputFile.getAbsolutePath());
+
+        // 10. Return output file
+        return outputFile;
+    }
+
+    // -----------------------------------------------------------------------
+    // Private helpers
+    // -----------------------------------------------------------------------
+
+    private static DBContact fetchFirstContact(Transaction trans, DBMember member)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException,
+                   IOException {
+
+        DBMembers2Contacts m2c = new DBMembers2Contacts();
+        List<DBMembers2Contacts> links = trans.fetchTable2(m2c,
+                "where " + trans.markColumn(m2c.member_idx) + " = " + member.idx.toString());
+
+        if (links.isEmpty()) {
+            return null;
+        }
+
+        DBContact contact = new DBContact();
+        contact.idx.loadFromCopy(links.get(0).contact_idx.getValue());
+        trans.fetchTableWithPrimkey(contact);
+        return contact;
+    }
+
+    private static Map<String, String> buildReplacementMap(DBMember member,
+            DBContact contact, DBEvent event, DBEventMember eventMember) {
+
+        Map<String, String> map = new HashMap<>();
+
+        // Member
+        map.put("${member.name}",                member.name.getValue());
+        map.put("${member.forname}",             member.forname.getValue());
+        map.put("${member.registration_number}", member.member_registration_number.getValue());
+        map.put("${member.group}",               member.group.getValue());
+
+        // Contact (empty string when no contact is linked)
+        String contactName    = contact != null ? contact.name.getValue()    : "";
+        String contactForname = contact != null ? contact.forname.getValue() : "";
+        String contactEmail   = contact != null ? contact.email.getValue()   : "";
+        String contactTel     = contact != null ? contact.tel.getValue()     : "";
+        map.put("${contact.name}",    contactName);
+        map.put("${contact.forname}", contactForname);
+        map.put("${contact.email}",   contactEmail);
+        map.put("${contact.tel}",     contactTel);
+
+        // Event
+        map.put("${event.name}",          event.name.getValue());
+        map.put("${event.costs}",         event.costs.getValue().toString());
+        map.put("${event.planned_costs}", event.planned_costs.getValue().toString());
+
+        // EventMember
+        map.put("${event_member.costs}",      eventMember.costs.getValue().toString());
+        map.put("${event_member.paid}",       eventMember.paid.getValue().toString());
+        map.put("${event_member.paid_cash}",  eventMember.paid_cash.getValue().toString());
+        map.put("${event_member.comment}",    eventMember.comment.getValue());
+
+        // Organisation (from global config)
+        map.put("${org.name}",                AppConfigDefinitions.Organisation.getConfigValue());
+        map.put("${org.address_street}",      AppConfigDefinitions.OrganisationAddressStreet.getConfigValue());
+        map.put("${org.address_postal_code}", AppConfigDefinitions.OrganisationAddressPostalCode.getConfigValue());
+        map.put("${org.address_city}",        AppConfigDefinitions.OrganisationAddressCity.getConfigValue());
+        map.put("${org.iban}",                AppConfigDefinitions.OrganisaiontIBAN.getConfigValue());
+
+        return map;
+    }
+
+    private static void replaceInNode(Node node, Map<String, String> replacements) {
+        if (node.getNodeType() == Node.TEXT_NODE) {
+            String text = node.getNodeValue();
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                text = text.replace(entry.getKey(), entry.getValue());
+            }
+            node.setNodeValue(text);
+        }
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            replaceInNode(children.item(i), replacements);
+        }
+    }
+
+    private static File convertToPdf(File odtFile, File outDir) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(
+                "libreoffice", "--headless", "--convert-to", "pdf",
+                "--outdir", outDir.getAbsolutePath(),
+                odtFile.getAbsolutePath());
+        pb.redirectErrorStream(true);
+        Process proc = pb.start();
+
+        // Drain stdout/stderr to avoid blocking
+        try (InputStream is = proc.getInputStream()) {
+            is.transferTo(java.io.OutputStream.nullOutputStream());
+        }
+
+        int exitCode = proc.waitFor();
+        if (exitCode != 0) {
+            throw new IOException("LibreOffice conversion failed with exit code " + exitCode);
+        }
+
+        String pdfName = odtFile.getName().replaceFirst("\\.odt$", ".pdf");
+        return new File(outDir, pdfName);
+    }
+}

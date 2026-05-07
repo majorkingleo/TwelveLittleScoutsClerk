@@ -8,6 +8,7 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
@@ -54,16 +55,22 @@ public class BillingHelper {
         // 2. Fetch first DBContact linked to the member (may be null)
         DBContact contact = fetchFirstContact(trans, member);
 
+        // 2b. Fetch DBBillingPeriod for the billing period title
+        DBBillingPeriod billingPeriod = new DBBillingPeriod();
+        billingPeriod.idx.loadFromCopy(eventMember.bp_idx.getValue());
+        trans.fetchTableWithPrimkey(billingPeriod);
+
         // 3. Build replacement map
-        Map<String, String> replacements = buildReplacementMap(member, contact, event, eventMember);
+        Map<String, String> replacements = buildReplacementMap(member, contact, event, eventMember, billingPeriod);
 
         // 4+5. Load ODT template
         String templatePath = event.billing_template.getValue();
         File templateFile = new File(templatePath);
         OdfTextDocument doc = OdfTextDocument.loadDocument(templateFile);
 
-        // 6. Walk all text nodes and apply replacements
+        // 6. Walk all text nodes in content and styles (headers/footers) and apply replacements
         replaceInNode(doc.getContentDom(), replacements);
+        replaceInNode(doc.getStylesDom(), replacements);
 
         // 7. Save to a temp ODT file
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -109,7 +116,8 @@ public class BillingHelper {
     }
 
     private static Map<String, String> buildReplacementMap(DBMember member,
-            DBContact contact, DBEvent event, DBEventMember eventMember) {
+            DBContact contact, DBEvent event, DBEventMember eventMember,
+            DBBillingPeriod billingPeriod) {
 
         Map<String, String> map = new HashMap<>();
 
@@ -118,16 +126,18 @@ public class BillingHelper {
         map.put("${member.forname}",             member.forname.getValue());
         map.put("${member.registration_number}", member.member_registration_number.getValue());
         map.put("${member.group}",               member.group.getValue());
+        map.put("${member.fullname}",            (member.forname.getValue() + " " + member.name.getValue()).trim());
 
         // Contact (empty string when no contact is linked)
         String contactName    = contact != null ? contact.name.getValue()    : "";
         String contactForname = contact != null ? contact.forname.getValue() : "";
         String contactEmail   = contact != null ? contact.email.getValue()   : "";
         String contactTel     = contact != null ? contact.tel.getValue()     : "";
-        map.put("${contact.name}",    contactName);
-        map.put("${contact.forname}", contactForname);
-        map.put("${contact.email}",   contactEmail);
-        map.put("${contact.tel}",     contactTel);
+        map.put("${contact.name}",     contactName);
+        map.put("${contact.forname}",  contactForname);
+        map.put("${contact.email}",    contactEmail);
+        map.put("${contact.tel}",      contactTel);
+        map.put("${contact.fullname}", (contactForname + " " + contactName).trim());
 
         // Event
         map.put("${event.name}",          event.name.getValue());
@@ -139,6 +149,9 @@ public class BillingHelper {
         map.put("${event_member.paid}",       eventMember.paid.getValue().toString());
         map.put("${event_member.paid_cash}",  eventMember.paid_cash.getValue().toString());
         map.put("${event_member.comment}",    eventMember.comment.getValue());
+
+        // Billing period
+        map.put("${billing_period.title}", billingPeriod.title.getValue());
 
         // Organisation (from global config)
         map.put("${org.name}",                AppConfigDefinitions.Organisation.getConfigValue());

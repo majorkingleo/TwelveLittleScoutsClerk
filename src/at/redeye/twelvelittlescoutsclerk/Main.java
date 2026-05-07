@@ -102,6 +102,7 @@ public class Main extends BaseModuleLauncher
             root.getBindtypeManager().register(new DBBookingLine2Events());
             root.getBindtypeManager().register(new DBBookingLine());
             root.getBindtypeManager().register(new DBBill());
+            root.getBindtypeManager().register(new DBBillTemplate());
 
             if( !dbconnection_loaded )
                 autocreateInternalDB();

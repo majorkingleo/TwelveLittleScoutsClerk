@@ -25,6 +25,7 @@ import at.redeye.twelvelittlescoutsclerk.MemberSearch;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.EventHelper;
+import at.redeye.twelvelittlescoutsclerk.BillingHelper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
@@ -795,6 +796,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 }
 
                 DBEventMember event_member = values.get(row);
+                java.io.File bill = BillingHelper.generateBill(
+                        getTransaction(), event, event_member, false);
+                getTransaction().updateValues(event_member);
+                JOptionPane.showMessageDialog(null,
+                        "Bill created: " + bill.getAbsolutePath());
             }
         };
     }//GEN-LAST:event_jBCreateBillActionPerformed

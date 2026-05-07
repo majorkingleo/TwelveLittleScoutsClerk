@@ -3,5 +3,6 @@
 * don't access folder data
 * building is done via maven
 * for python use .venv
+* The FrameWork source code is at ../FrameWork
 
 

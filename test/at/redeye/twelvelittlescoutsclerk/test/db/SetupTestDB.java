@@ -34,6 +34,7 @@ import at.redeye.twelvelittlescoutsclerk.Audit;
 import at.redeye.twelvelittlescoutsclerk.MainWinInterface;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAudit;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
@@ -82,6 +83,7 @@ public class SetupTestDB extends BaseModuleLauncher implements SetupTestDBInterf
         root.getBindtypeManager().register(new DBEventMember());
         root.getBindtypeManager().register(new DBBookingLine2Events());
         root.getBindtypeManager().register(new DBBookingLine());
+        root.getBindtypeManager().register(new DBBill());
 
         autocreateInternalDB();
     }

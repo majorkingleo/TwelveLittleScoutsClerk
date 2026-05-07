@@ -14,7 +14,9 @@ Config values are read via `GlobalConfigDefinitions.get(key).getConfigValue()`.
 
 ### Phase 1 — Add dependency
 
-Add `org.apache.odftoolkit:odfdom-java:0.10.0` to the `<dependencies>` section of `pom.xml`.
+Add `org.odftoolkit:odfdom-java:0.10.0` to the `<dependencies>` section of `pom.xml`.
+
+> **Note:** The group ID is `org.odftoolkit` (not `org.apache.odftoolkit`); versions 0.9.0+ moved to the new group ID.
 
 ### Phase 2 — Implement BillingHelper
 
@@ -112,7 +114,7 @@ from the table below wherever the corresponding values should appear.
 
 ## Key Decisions
 
-- **Library**: `org.apache.odftoolkit:odfdom-java:0.10.0` (handles split text-node edge cases).
+- **Library**: `org.odftoolkit:odfdom-java:0.10.0` (handles split text-node edge cases; group ID changed from `org.apache.odftoolkit` in versions ≥ 0.9.0).
 - **Config access**: `GlobalConfigDefinitions.get(key).getConfigValue()`.
 - **Output location**: `File.createTempFile(...)` in the system temp directory; path returned to caller.
 - **PDF**: optional `boolean convertToPdf` parameter; uses `libreoffice --headless`.

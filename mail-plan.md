@@ -125,8 +125,27 @@ Logic:
      Max Mustermann <max@example.com>, Erika Muster <erika@example.com>
      ```
      where the list excludes the current recipient.
-5. Add `${mail.also_sent_to}` to the replacement map before step 6.
-6. Extract plain text from the processed DOM by collecting all text-node values
+5. Compute `${mail.payment_note}` based on payment state:
+   - `totalPaid = eventMember.paid + eventMember.paid_cash`
+   - If `totalPaid >= eventMember.costs` (fully paid):
+     ```
+     Hinweis: Diese Rechnung ist bereits vollstaendig bezahlt. Es ist keine weitere Ueberweisung erforderlich.
+     ```
+   - If `totalPaid > 0` but less than `costs` (partially paid):
+     ```
+     Hinweis: Ein Teilbetrag von ${event_member.paid_total} EUR wurde bereits bezahlt. Offener Restbetrag: ${event_member.costs_remaining} EUR.
+     ```
+     where `paid_total = totalPaid` and `costs_remaining = costs - totalPaid`.
+   - If `totalPaid == 0` → `${mail.payment_note}` resolves to `""` (blank line,
+     invisible). The bank transfer paragraph below remains the call to action.
+   - When fully paid, the paragraph `"Bitte ueberweisen Sie den Betrag auf
+     folgendes Konto: ..."` should be suppressed. This is handled by also
+     substituting a dedicated `${mail.transfer_request}` placeholder:
+     - If paid in full → `""`
+     - Otherwise → `"Bitte ueberweisen Sie den Betrag auf folgendes Konto:"`
+6. Add `${mail.payment_note}`, `${mail.transfer_request}`, and
+   `${mail.also_sent_to}` to the replacement map before step 7.
+7. Extract plain text from the processed DOM by collecting all text-node values
    (same recursive walk as `replaceInNode`, collecting instead of replacing).
 7. Build subject line:
    ```

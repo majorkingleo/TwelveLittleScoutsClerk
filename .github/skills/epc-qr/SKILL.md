@@ -83,16 +83,7 @@ JLabel qrLabel = new JLabel(icon);
 
 ### B. Embed in an ODT bill template
 
-Use the ODT helper approach — write the `BufferedImage` to a temp PNG, then insert it into the ODT document via the odfdom API:
-
-```java
-File pngFile = File.createTempFile("qr_", ".png");
-ImageIO.write(img, "PNG", pngFile);
-// Then insert pngFile into the OdfTextDocument at the placeholder position
-// See ODT embedding pattern in BillingHelper.java
-```
-
-An alternative is to add a `${qr_code}` placeholder in the ODT and replace it with the image in `BillingHelper.generateBillFromTemplate()`.
+The image placeholder in the ODT must be a `draw:frame` with `draw:name="qr_code"` (or `"Bild2"` as fallback — the current name in `billing_template.odt`). `BillingHelper.injectEpcQrCode()` finds this frame automatically and replaces the image bytes in the ODF package at the existing `xlink:href` path.
 
 ### C. Save QR image to file (download from UI)
 

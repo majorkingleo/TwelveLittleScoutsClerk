@@ -394,7 +394,7 @@
         <Property name="text" type="java.lang.String" value="Billing Template"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="jTBillingTemplate">
+    <Component class="javax.swing.JComboBox" name="jTBillingTemplate">
     </Component>
   </SubComponents>
 </Form>

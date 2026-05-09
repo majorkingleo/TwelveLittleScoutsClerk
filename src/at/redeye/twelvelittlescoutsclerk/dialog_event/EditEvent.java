@@ -842,10 +842,30 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     return;
                 }
 
+                // Allocate bill idx first so it can go into the bill name
+                int newIdx = mainwin.getNewSequenceValue(DBBill.BILL_IDX_SEQUENCE);
+
+                // Build bill name: YYYY-MM BillNr EventName MemberForname MemberName
+                String billMonth = java.time.YearMonth.now()
+                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
+                String billName = billMonth + " " + newIdx
+                        + " " + event.name.getValue()
+                        + " " + event_member.forname.getValue() + " " + event_member.name.getValue();
+
+                // Cancel the existing bill (if any)
+                int oldBillIdx = event_member.bill_idx.getValue();
+                if (oldBillIdx > 0) {
+                    DBBill oldBill = new DBBill();
+                    oldBill.idx.loadFromCopy(oldBillIdx);
+                    trans.fetchTableWithPrimkey(oldBill);
+                    oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                    DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                            trans, oldBill, oldBill.hist, root.getUserName());
+                }
+
                 // Generate bill ODT from template blob
                 java.io.File odtFile = BillingHelper.generateBillFromTemplate(
                         trans, template, event, event_member, false);
-                trans.updateValues(event_member);
 
                 // Convert ODT to PDF
                 java.io.File pdfFile = BillingHelper.convertToPdf(
@@ -857,17 +877,22 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 // Create and insert new DBBill record
                 DBBill bill = new DBBill();
-                int newIdx = mainwin.getNewSequenceValue(DBBill.BILL_IDX_SEQUENCE);
                 bill.idx.loadFromCopy(newIdx);
                 bill.bp_idx.loadFromCopy(mainwin.getBPIdx());
                 bill.billingnr.loadFromString(String.valueOf(newIdx));
-                bill.file_name.loadFromString(template.file_name.getValue());
+                bill.file_name.loadFromString(billName);
                 bill.odt_data.value = odtBytes;
                 bill.pdf_data.value = pdfBytes;
                 bill.direction.handler.setValue(DBBill.Direction.OUTGOING.ordinal());
                 // state defaults to NORMAL (0)
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                         trans, bill, bill.hist, root.getUserName());
+
+                // Update event_member: store bill name and reference to bill record
+                event_member.bill.loadFromString(billName);
+                event_member.bill_idx.loadFromCopy(newIdx);
+                trans.updateValues(event_member);
+
                 trans.commit();
 
                 JOptionPane.showMessageDialog(null, "Rechnung erstellt und gespeichert.");

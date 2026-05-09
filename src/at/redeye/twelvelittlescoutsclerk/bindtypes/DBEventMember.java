@@ -30,7 +30,8 @@ public class DBEventMember extends DBStrukt {
     public DBDouble       paid_cash = new DBDouble( "piad_cash", "Cash" );
     public DBString       comment = new DBString("comment", "Comment", 255 );
     public DBString       bill = new DBString("bill", "Bill", 255 );
-    
+    public DBInteger      bill_idx = new DBInteger("bill_idx");              // FK to BILLS.idx
+
     public DBEventMember()
     {
         super("EVENTMEMBERS");
@@ -49,13 +50,14 @@ public class DBEventMember extends DBStrukt {
         add(paid_cash,2);
         add(comment);
         add(bill, 3);
+        add(bill_idx, 4);
         
         hist.setTitle(" ");
         
         bp_idx.shouldHaveIndex();
         idx.setAsPrimaryKey();
         
-        setVersion(3);
+        setVersion(4);
     }
     
     @Override

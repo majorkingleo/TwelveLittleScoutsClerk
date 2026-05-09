@@ -847,8 +847,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         trans, template, event, event_member, false);
                 trans.updateValues(event_member);
 
-                // Read generated ODT bytes to store in DB
+                // Convert ODT to PDF
+                java.io.File pdfFile = BillingHelper.convertToPdf(
+                        odtFile, odtFile.getParentFile());
+
+                // Read both files to store in DB
                 byte[] odtBytes = java.nio.file.Files.readAllBytes(odtFile.toPath());
+                byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
 
                 // Create and insert new DBBill record
                 DBBill bill = new DBBill();
@@ -858,6 +863,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 bill.billingnr.loadFromString(String.valueOf(newIdx));
                 bill.file_name.loadFromString(template.file_name.getValue());
                 bill.odt_data.value = odtBytes;
+                bill.pdf_data.value = pdfBytes;
                 bill.direction.handler.setValue(DBBill.Direction.OUTGOING.ordinal());
                 // state defaults to NORMAL (0)
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(

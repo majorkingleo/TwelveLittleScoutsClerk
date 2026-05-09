@@ -245,7 +245,7 @@ public class BillingHelper {
         }
     }
 
-    private static File convertToPdf(File odtFile, File outDir) throws IOException, InterruptedException {
+    public static File convertToPdf(File odtFile, File outDir) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(
                 "libreoffice", "--headless", "--convert-to", "pdf",
                 "--outdir", outDir.getAbsolutePath(),

@@ -73,6 +73,17 @@
 				"reveal": "always",
 				"panel": "shared"
 			}
+		},
+		{
+			"label": "Clean project (Maven)",
+			"type": "shell",
+			"command": "bash -c 'mvn clean'",
+			"group": "build",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
 		}
 	]
 }

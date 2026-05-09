@@ -7,7 +7,17 @@
             "request": "launch",
             "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
             "projectName": "TwelveLittleScoutsClerk",
-            "args": ""
+            "args": "",
+            "preLaunchTask": "Build project (Maven)",
+            "exceptionBreakpoint": {
+                "exceptionBreakpointFilters": [
+                    {
+                        "filter": "java.lang.NoSuchMethodException",
+                        "caught": false,
+                        "uncaught": true
+                    }
+                ]
+            }
         },
         {
             "type": "java",
@@ -15,7 +25,17 @@
             "request": "launch",
             "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
             "projectName": "TwelveLittleScoutsClerk",
-            "args": "-appname test -apptitle Test"
+            "args": "-appname test -apptitle Test",
+            "preLaunchTask": "Build project (Maven)",
+            "exceptionBreakpoint": {
+                "exceptionBreakpointFilters": [
+                    {
+                        "filter": "java.lang.NoSuchMethodException",
+                        "caught": false,
+                        "uncaught": true
+                    }
+                ]
+            }
         },
         {
             "type": "java",
@@ -23,7 +43,17 @@
             "request": "launch",
             "mainClass": "at.redeye.twelvelittlescoutsclerk.Main",
             "projectName": "TwelveLittleScoutsClerk",
-            "args": "-appname unittest -apptitle UnitTest"
+            "args": "-appname unittest -apptitle UnitTest",
+            "preLaunchTask": "Build project (Maven)",
+            "exceptionBreakpoint": {
+                "exceptionBreakpointFilters": [
+                    {
+                        "filter": "java.lang.NoSuchMethodException",
+                        "caught": false,
+                        "uncaught": true
+                    }
+                ]
+            }
         }        
     ]
 }

@@ -627,6 +627,15 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     updaterEvent.auditEventDiffAndUpdate(event_old, event);
                     
                     for( DBEventMember em : values_to_remove ) {
+                        // Cancel the referenced bill (if any) before removing the member
+                        if (em.bill_idx.getValue() > 0) {
+                            DBBill oldBill = new DBBill();
+                            oldBill.idx.loadFromCopy(em.bill_idx.getValue());
+                            trans.fetchTableWithPrimkey(oldBill);
+                            oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                                    trans, oldBill, oldBill.hist, root.getUserName());
+                        }
                         trans.deleteWithPrimaryKey(em);
                     }
                     

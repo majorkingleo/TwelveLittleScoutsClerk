@@ -65,44 +65,81 @@ intervention.
 
 ## 3  New Classes
 
-### 3.1 `MailJobHelper.java`
+### 3.1 Mail-Body ODT Template
 
-Static helper, similar to `BillingHelper`.
+The mail body is **itself an ODT document** processed with the same
+`${…}` placeholder replacement engine used for bills (`BillingHelper.replaceInNode`).
+After substitution the plain text is extracted by walking all text nodes —
+no LibreOffice conversion needed, just the odfdom DOM.
 
-```
-createMailJobs(Transaction trans, DBBill bill, int memberIdx, int bpIdx,
-               String subject, String body)
-```
-
-Logic:
-1. Fetch all `DBMembers2Contacts` links for `memberIdx`.
-2. For each link, fetch `DBContact`.
-3. If `contact.email` is non-blank, create a `DBMailJob` with:
-   - `bill_idx` = `bill.idx`
-   - `recipient_email` / `recipient_name` from contact
-   - `subject` / `body` passed in
-   - `pdf_data` = `bill.pdf_data.value`
-   - `state` = PENDING, `retry_count` = 0
-4. Insert each job via `trans.insertValues(job)` (or
-   `DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey`).
-
-Subject template (configurable or hard-coded initially):
-
-```
-Rechnung ${bill.file_name} – ${org.name}
-```
-
-Body template (plain text, can reference same `${…}` placeholders as ODT
-templates):
+A ready-to-use starting template is in
+`testdata/mail_body_template.odt` (content below after placeholder expansion):
 
 ```
 Sehr geehrte/r ${contact.forname} ${contact.name},
 
-anbei übermitteln wir Ihnen die Rechnung ${bill.file_name}.
+anbei erhalten Sie die Rechnung für ${member.fullname} betreffend ${event.name}.
+
+Rechnungsnummer: ${billing_number}
+Betrag:          ${event_member.costs} €
+
+Bitte überweisen Sie den Betrag auf folgendes Konto:
+IBAN: ${org.iban}
 
 Mit freundlichen Grüßen
 ${org.name}
+${org.address_street}, ${org.address_postal_code} ${org.address_city}
 ```
+
+**Storage** — add a new BLOB field `mail_body_odt_data` to `DBBillTemplate`
+(version 3) so each billing template can carry its own customised mail body.
+The `testdata/mail_body_template.odt` is the default that is loaded when the
+field is empty.
+
+### 3.2 `MailJobHelper.java`
+
+Static helper, similar to `BillingHelper`.
+
+```
+createMailJobs(Transaction trans, DBBill bill, DBBillTemplate template,
+               DBEvent event, DBEventMember eventMember, DBMember member)
+```
+
+Logic:
+1. Load mail body ODT:
+   - If `template.mail_body_odt_data` is non-empty → load from blob bytes
+   - Otherwise → load from `testdata/mail_body_template.odt` (classpath resource)
+2. Apply the same `buildReplacementMap()` used in `BillingHelper` plus
+   `${billing_number}` = `bill.billingnr`.
+3. Fetch all `DBMembers2Contacts` links for `eventMember.member_idx` and collect
+   all linked `DBContact` records with a non-blank `email` into a list
+   (`allRecipients`).
+4. For each recipient, build the `${mail.also_sent_to}` value as the *other*
+   recipients in the list:
+   - If `allRecipients` has only one entry → `${mail.also_sent_to}` resolves to
+     `""` (empty string → the placeholder paragraph is blank and effectively
+     invisible).
+   - If more than one → value is:
+     ```
+     Hinweis: Diese Rechnung wurde ebenfalls an folgende Adressen gesendet:
+     Max Mustermann <max@example.com>, Erika Muster <erika@example.com>
+     ```
+     where the list excludes the current recipient.
+5. Add `${mail.also_sent_to}` to the replacement map before step 6.
+6. Extract plain text from the processed DOM by collecting all text-node values
+   (same recursive walk as `replaceInNode`, collecting instead of replacing).
+7. Build subject line:
+   ```
+   Rechnung ${billing_number} – ${org.name}
+   ```
+8. For each linked `DBContact` with a non-blank `email`, create a `DBMailJob`:
+   - `bill_idx` = `bill.idx`
+   - `recipient_email` / `recipient_name` from contact
+   - `subject` from step 4
+   - `body` = extracted plain text from step 3
+   - `pdf_data` = `bill.pdf_data.value`
+   - `state` = PENDING, `retry_count` = 0
+7. Insert each job via `DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey`.
 
 ### 3.2 `MailWorker.java`
 
@@ -144,7 +181,12 @@ to the configured SMTP server, builds a `MimeMessage` with:
 - Body part: `text/plain` (or `text/html`)
 - Attachment: `application/pdf` with filename `${bill.file_name}.pdf`
 
-### 3.3 Config resolution helper (inside `MailWorker` or `MailJobHelper`)
+### 3.3 `MailWorker.java`
+
+See section 3 original description — this class is unchanged by the ODT-body
+approach.
+
+### 3.4 Config resolution helper (inside `MailWorker` or `MailJobHelper`)
 
 ```java
 private static String cfg(DBConfig global, DBConfig local) {
@@ -178,20 +220,16 @@ Add to `pom.xml` (before `<scope>test</scope>` section):
 
 ## 5  Wiring: `EditEvent.jBCreateBillActionPerformed`
 
-After `trans.commit()` (bill inserted) add:
+After the bill `trans.commit()` add:
 
 ```java
 // Enqueue mail jobs for all member contacts
-String subject = "Rechnung " + billName + " – "
-        + AppConfigDefinitions.Organisation.getConfigValue();
-String body = buildMailBody(event_member, event, billName);
-MailJobHelper.createMailJobs(trans, bill, event_member.member_idx.getValue(),
-        mainwin.getBPIdx(), subject, body);
+MailJobHelper.createMailJobs(trans, bill, template, event, event_member, member);
 trans.commit(); // second commit for the mail jobs
 ```
 
-`buildMailBody()` is a simple private helper that returns the plain-text
-template with substitutions applied.
+The `member` object is already fetched inside `generateBillFromTemplate`; pass
+it as an additional parameter or re-fetch it here.
 
 ---
 
@@ -227,10 +265,12 @@ A "Retry" button re-sets FAILED jobs back to PENDING.
 
 1. `pom.xml` — add angus-mail dependency
 2. `AppConfigDefinitions.java` — add 7 mail config entries
-3. `DBMailJob.java` — new bindtype, version 1
-4. `Main.java` — register `DBMailJob` with `BindtypeManager`
-5. `MailJobHelper.java` — `createMailJobs()` + `buildMailBody()`
-6. `MailWorker.java` — polling loop + `sendMail()`
-7. `EditEvent.java` — call `MailJobHelper.createMailJobs()` after bill insert
-8. `Main.java` — start daemon thread
-9. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry
+3. `DBBillTemplate.java` — add `mail_body_odt_data` BLOB, bump to version 3
+4. `DBMailJob.java` — new bindtype, version 1
+5. `Main.java` — register `DBMailJob` with `BindtypeManager`
+6. `MailJobHelper.java` — `createMailJobs()` (ODT body load → text extract → job insert)
+7. `MailWorker.java` — polling loop + `sendMail()`
+8. `EditEvent.java` — call `MailJobHelper.createMailJobs()` after bill insert
+9. `Main.java` — start daemon thread
+10. `testdata/mail_body_template.odt` ✅ already created — ship in resources or testdata
+11. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry

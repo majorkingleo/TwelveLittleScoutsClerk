@@ -91,10 +91,9 @@ ${org.name}
 ${org.address_street}, ${org.address_postal_code} ${org.address_city}
 ```
 
-**Storage** — add a new BLOB field `mail_body_odt_data` to `DBBillTemplate`
-(version 3) so each billing template can carry its own customised mail body.
-The `testdata/mail_body_template.odt` is the default that is loaded when the
-field is empty.
+**Storage** — use the existing BLOB field `odt_data` of `DBBillTemplate`
+
+Add to globalconfig definitions a config value which names the template that is to use for sending mails.
 
 ### 3.2 `MailJobHelper.java`
 
@@ -108,7 +107,7 @@ createMailJobs(Transaction trans, DBBill bill, DBBillTemplate template,
 Logic:
 1. Load mail body ODT:
    - If `template.mail_body_odt_data` is non-empty → load from blob bytes
-   - Otherwise → load from `testdata/mail_body_template.odt` (classpath resource)
+   - Otherwise → report and error
 2. Apply the same `buildReplacementMap()` used in `BillingHelper` plus
    `${billing_number}` = `bill.billingnr`.
 3. Fetch all `DBMembers2Contacts` links for `eventMember.member_idx` and collect

@@ -143,6 +143,12 @@ public class Main extends BaseModuleLauncher
         
         mainwin.setVisible(true);      
         mainwin.toFront();
+
+        // Start background mail dispatcher
+        MailWorker mailWorker = new MailWorker(root.getDBConnection().getDefaultTransaction());
+        Thread mailThread = new Thread(mailWorker, "MailWorker");
+        mailThread.setDaemon(true);
+        mailThread.start();
     }
     
     public void silentCheckTableVersions() {

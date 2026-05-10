@@ -291,10 +291,10 @@ A "Retry" button re-sets FAILED jobs back to PENDING.
    - Loads ODT from the `DBBillTemplate` named by `MailBodyTemplateName`
    - Applies replacement map + mail-specific placeholders
    - Inserts `DBMailJob` rows (state PENDING) for each contact with e-mail
-7. `MailWorker.java` — polling loop + `sendMail()`  ❌ **TODO**
+7. `MailWorker.java` — polling loop + `sendMail()`  ✅ **DONE**
 8. `EditEvent.java` — "Send Mail" button added  ✅ **DONE**
    - Separate from "Create Bill"; calls `MailJobHelper.createMailJobs()`
    - Button disabled until a row is selected, `MailBodyTemplateName` is configured, and the member has at least one contact with an e-mail
-9. `Main.java` — start `MailWorker` daemon thread  ❌ **TODO** (depends on step 7)
+9. `Main.java` — start `MailWorker` daemon thread  ✅ **DONE**
 10. `testdata/mail_body_template.odt`  ✅ **DONE** (already existed)
 11. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry  ❌ **TODO**

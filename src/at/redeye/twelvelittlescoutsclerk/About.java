@@ -44,7 +44,7 @@ public class About extends BaseDialog {
         jLTitle.setText("About Twelve Little Scouts Clerk");
 
         jBCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBCancel.setText("Schließen");
+        jBCancel.setText("Close");
         jBCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCancelActionPerformed(evt);

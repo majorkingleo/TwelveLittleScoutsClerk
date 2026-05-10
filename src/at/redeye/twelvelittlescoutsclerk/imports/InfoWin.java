@@ -59,7 +59,7 @@ public class InfoWin extends BaseDialogDialog {
             }
         });
 
-        jLabel1.setText("Daten trotzdem übernehmen?");
+        jLabel1.setText("Do you want to continue anyway?");
 
         jButtonOk.setText("Ja");
         jButtonOk.addActionListener(new java.awt.event.ActionListener() {

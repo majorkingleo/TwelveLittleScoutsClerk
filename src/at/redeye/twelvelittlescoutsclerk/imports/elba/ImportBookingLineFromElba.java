@@ -232,7 +232,7 @@ public class ImportBookingLineFromElba
                     
                     if( error_happened )
                     {
-                        InfoWin infowin = new InfoWin(mainwin.getRoot(), "Warnung", sb.toString() );
+                        InfoWin infowin = new InfoWin(mainwin.getRoot(), mainwin.MESSAGE_WARNING, sb.toString() );
                         infowin.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
                         infowin.setVisible(true);
                         infowin.toFront();
@@ -241,7 +241,7 @@ public class ImportBookingLineFromElba
                         if( infowin.pressedYes() )
                             do_commit = true;
                     } else {
-                        JOptionPane.showMessageDialog(mainwin, "Der Datenimport war erfolgreich");
+                        JOptionPane.showMessageDialog(mainwin, mainwin.MESSAGE_IMPORT_SUCCESSFUL);
                         do_commit = true;
                     }
                     

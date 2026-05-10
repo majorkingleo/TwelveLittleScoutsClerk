@@ -63,6 +63,8 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     public String MESSAGE_EDIT_MEMBER_S;
     public String MESSAGE_GOTO_CONTACTS_DIALOG;
     public String MESSAGE_EDIT_CONTACT_S;
+    public String MESSAGE_IMPORT_SUCCESSFUL;
+    public String MESSAGE_WARNING;
     
     Main main;
     String last_path;
@@ -135,7 +137,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         MESSAGE_EDIT_MEMBER_S = MlM("edit member: '%s'");
         
         MESSAGE_GOTO_CONTACTS_DIALOG = MlM("open Contacts dialog");
-        MESSAGE_EDIT_CONTACT_S = MlM("edit contact: '%s'");        
+        MESSAGE_EDIT_CONTACT_S = MlM("edit contact: '%s'");
+        MESSAGE_IMPORT_SUCCESSFUL = MlM("The data import was successful.");
+        MESSAGE_WARNING = MlM("Warning");        
     }    
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

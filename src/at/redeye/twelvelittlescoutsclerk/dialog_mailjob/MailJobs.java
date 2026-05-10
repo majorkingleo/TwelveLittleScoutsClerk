@@ -20,10 +20,13 @@ public class MailJobs extends BaseDialog {
     List<DBMailJob> values;
     TableManipulator tm;
 
+    private String MESSAGE_ONLY_FAILED_JOBS;
+
     public MailJobs(MainWin mainwin) {
-        super(mainwin.getRoot(), "Mail-Jobs");
+        super(mainwin.getRoot(), "Mail Jobs");
 
         initComponents();
+        initMessages();
 
         this.mainwin = mainwin;
 
@@ -50,6 +53,10 @@ public class MailJobs extends BaseDialog {
         tm.autoResize();
 
         tableFilter1.setFilter(jTContent);
+    }
+
+    private void initMessages() {
+        MESSAGE_ONLY_FAILED_JOBS = MlM("Only failed jobs can be retried.");
     }
 
     private void feed_table(boolean autombox) {
@@ -97,7 +104,7 @@ public class MailJobs extends BaseDialog {
         jScrollPane1.setViewportView(jTContent);
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -105,7 +112,7 @@ public class MailJobs extends BaseDialog {
         });
 
         jBRetry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
-        jBRetry.setText("Wiederholen");
+        jBRetry.setText("Retry");
         jBRetry.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBRetryActionPerformed(evt);
@@ -113,7 +120,7 @@ public class MailJobs extends BaseDialog {
         });
 
         jBRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/reload.png"))); // NOI18N
-        jBRefresh.setText("Aktualisieren");
+        jBRefresh.setText("Refresh");
         jBRefresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBRefreshActionPerformed(evt);
@@ -145,7 +152,7 @@ public class MailJobs extends BaseDialog {
         );
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        jLabel1.setText("Mail-Jobs");
+        jLabel1.setText("Mail Jobs");
 
         jLInfo.setText(" ");
         jLInfo.setAutoscrolls(true);
@@ -197,7 +204,7 @@ public class MailJobs extends BaseDialog {
         final DBMailJob job = values.get(row);
         if (job.state.getValue() != DBMailJob.State.FAILED.ordinal()) {
             JOptionPane.showMessageDialog(this,
-                    "Nur fehlgeschlagene Jobs können wiederholt werden.",
+                    MESSAGE_ONLY_FAILED_JOBS,
                     getTitle(), JOptionPane.INFORMATION_MESSAGE);
             return;
         }

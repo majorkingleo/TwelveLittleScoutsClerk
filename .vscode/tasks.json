@@ -14,7 +14,7 @@
 		{
 			"label": "Build project (Maven)",
 			"type": "shell",
-			"command": "bash -c 'mvn compile'",
+			"command": "bash -c 'mvn clean compile'",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -51,7 +51,7 @@
 		{
 			"label": "Run tests (Maven)",
 			"type": "shell",
-			"command": "bash -c 'mvn test'",
+			"command": "bash -c 'mvn clean test'",
 			"group": {
 				"kind": "test",
 				"isDefault": true

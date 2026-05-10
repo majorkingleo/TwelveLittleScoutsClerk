@@ -49,7 +49,7 @@ public class MailJobHelper {
             throws Exception {
 
         // 1. Load mail body ODT bytes from the configured DBBillTemplate
-        byte[] odtBytes = loadMailBodyOdtBytes(trans, eventMember.bp_idx.getValue());
+        byte[] odtBytes = loadMailBodyOdtBytes(trans, eventMember.bp_idx.getValue(), mainwin.getRoot());
 
         // Fetch DBBillingPeriod (needed for buildReplacementMap)
         DBBillingPeriod billingPeriod = new DBBillingPeriod();
@@ -65,7 +65,7 @@ public class MailJobHelper {
         // Build subject (same for all recipients)
         String billingNumber = bill.billingnr.getValue();
         String subject = "Rechnung " + billingNumber + " \u2013 "
-                + AppConfigDefinitions.Organisation.getConfigValue();
+                + mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.Organisation);
 
         // 5. Compute payment note (same for all recipients)
         double totalPaid = eventMember.paid.getValue() + eventMember.paid_cash.getValue();
@@ -132,10 +132,10 @@ public class MailJobHelper {
     // Private helpers
     // -----------------------------------------------------------------------
 
-    private static byte[] loadMailBodyOdtBytes(Transaction trans, int bpIdx)
+    private static byte[] loadMailBodyOdtBytes(Transaction trans, int bpIdx, at.redeye.FrameWork.base.Root root)
             throws SQLException, TableBindingNotRegisteredException,
                    UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException {
-        String templateName = AppConfigDefinitions.MailBodyTemplateName.getConfigValue();
+        String templateName = root.getSetup().getConfig(AppConfigDefinitions.MailBodyTemplateName);
         if (templateName == null || templateName.isBlank()) {
             throw new IOException(
                     "Kein E-Mail-Vorlagenname konfiguriert. "

@@ -25,6 +25,7 @@ import at.redeye.twelvelittlescoutsclerk.MemberSearch;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.EventHelper;
+import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.BillingHelper;
 import at.redeye.twelvelittlescoutsclerk.MailJobHelper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
@@ -156,10 +157,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         int row = tm.getSelectedRow();
         if (row < 0 || row >= values.size()) {
             jBSendMail.setEnabled(false);
+            logger.debug( "Send Mail button disabled: no row selected");
             return;
         }
         if (!mailTemplateAvailable()) {
             jBSendMail.setEnabled(false);
+            logger.debug( "Send Mail button disabled: no mail template configured");
             return;
         }
         DBEventMember em = values.get(row);
@@ -182,13 +185,20 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 }
             }
             jBSendMail.setEnabled(hasEmail);
+            if (!hasEmail) {
+                logger.debug( "Send Mail button disabled: no contact with email found");
+            }
         } catch (Exception ex) {
             jBSendMail.setEnabled(false);
+            logger.error("error", ex);
         }
     }
 
-    private static boolean mailTemplateAvailable() {
-        String name = at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions.MailBodyTemplateName.getConfigValue();
+    private boolean mailTemplateAvailable() {
+        String name = root.getSetup().getConfig(AppConfigDefinitions.MailBodyTemplateName);
+
+        logger.debug( String.format( "Checking mail template availability: configured name = '%s'", name)) ;
+
         return name != null && !name.isBlank();
     }
 

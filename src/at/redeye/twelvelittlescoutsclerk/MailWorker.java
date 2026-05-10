@@ -4,6 +4,7 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMailJob;
 import jakarta.mail.Authenticator;
@@ -30,8 +31,10 @@ public class MailWorker implements Runnable {
     private static final int POLL_INTERVAL_MS = 30_000;
 
     private final Transaction trans;
+    private final Root root;
 
-    public MailWorker(Transaction trans) {
+    public MailWorker(Root root, Transaction trans) {
+        this.root = root;
         this.trans = trans;
     }
 
@@ -122,13 +125,13 @@ public class MailWorker implements Runnable {
     // -----------------------------------------------------------------------
 
     private void sendMail(DBMailJob job) throws MessagingException {
-        String host     = AppConfigDefinitions.MailSmtpHost.getConfigValue();
-        String portStr  = AppConfigDefinitions.MailSmtpPort.getConfigValue();
-        String startTls = AppConfigDefinitions.MailSmtpStartTls.getConfigValue();
-        String from     = AppConfigDefinitions.MailFrom.getConfigValue();
-        String fromName = AppConfigDefinitions.MailFromName.getConfigValue();
-        String user     = AppConfigDefinitions.MailSmtpUser.getConfigValue();
-        String password = AppConfigDefinitions.MailSmtpPassword.getConfigValue();
+        String host     = root.getSetup().getConfig(AppConfigDefinitions.MailSmtpHost);
+        String portStr  = root.getSetup().getConfig(AppConfigDefinitions.MailSmtpPort);
+        String startTls = root.getSetup().getConfig(AppConfigDefinitions.MailSmtpStartTls);
+        String from     = root.getSetup().getConfig(AppConfigDefinitions.MailFrom);
+        String fromName = root.getSetup().getConfig(AppConfigDefinitions.MailFromName);
+        String user     = root.getSetup().getLocalConfig(AppConfigDefinitions.MailSmtpUser);
+        String password = root.getSetup().getLocalConfig(AppConfigDefinitions.MailSmtpPassword);
 
         Properties props = new Properties();
         props.put("mail.smtp.host", host);

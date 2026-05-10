@@ -33,14 +33,21 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
      DBMember member;
      boolean saved  = false;
      MainWin mainwin;
+
+    private String MESSAGE_MEMBER_ID_EMPTY;
+    private String MESSAGE_MEMBER_ID_EXISTS;
+    private String MESSAGE_NAME_EMPTY;
+    private String MESSAGE_FORNAME_EMPTY;
+    private String MESSAGE_MEMBER_NAME_EXISTS;
     
      
     /**
      * Creates new form CreateKunde
      */
     public CreateMember(MainWin mainwin, Member members, final DBMember member) {
-        super( members.getRoot(), "Neuer Kunde");
+        super( members.getRoot(), "New Member");
         initComponents();
+        initMessages();
         
         this.member = member;      
         this.mainwin = mainwin;
@@ -81,6 +88,14 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         field.setDocument(new DocumentFieldLimit(var.getMaxLen()));
     }    
 
+    private void initMessages() {
+        MESSAGE_MEMBER_ID_EMPTY     = MlM("The member ID must not be empty.");
+        MESSAGE_MEMBER_ID_EXISTS    = MlM("This member ID already exists.");
+        MESSAGE_NAME_EMPTY          = MlM("Please enter a name.");
+        MESSAGE_FORNAME_EMPTY       = MlM("Please enter a first name.");
+        MESSAGE_MEMBER_NAME_EXISTS  = MlM("A member with this name already exists.");
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -104,9 +119,9 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
 
         jLabel2.setText("Name");
 
-        jLabel3.setText("Eintrittsdatum");
+        jLabel3.setText("Entry Date");
 
-        jLabel4.setText("Vorname");
+        jLabel4.setText("First Name");
 
         jDEintrittsdatum.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -115,7 +130,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         });
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -123,7 +138,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -222,7 +237,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
         Transaction trans = getTransaction();
         
         if( member.member_registration_number.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Die Kundennummer darf nicht leer sein"));
+            JOptionPane.showMessageDialog(this, MESSAGE_MEMBER_ID_EMPTY);
             jTKundennummer.requestFocus();
             return false;
         }
@@ -231,19 +246,19 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
                 + " and " + trans.markColumn(member.member_registration_number) + " = '" + member.member_registration_number + "'" );
         
         if( !kunden_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Diese Kundennummer ist bereits vorhanden"));
+            JOptionPane.showMessageDialog(this, MESSAGE_MEMBER_ID_EXISTS);
             jTKundennummer.requestFocus();
             return false;
         }
         
         if( member.name.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Namen eingeben"));
+            JOptionPane.showMessageDialog(this, MESSAGE_NAME_EMPTY);
             jTName.requestFocus();
             return false;
         }
 
         if( member.forname.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Vornamen eingeben"));
+            JOptionPane.showMessageDialog(this, MESSAGE_FORNAME_EMPTY);
             jTName.requestFocus();
             return false;
         }        
@@ -253,7 +268,7 @@ public class CreateMember extends BaseDialogDialog implements NewSequenceValueIn
                 + " and " + trans.markColumn(member.forname) + " = '" + member.forname + "' ");
         
         if( !kunden_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Es existiert bereits ein Kunde mit diesem Namen"));
+            JOptionPane.showMessageDialog(this, MESSAGE_MEMBER_NAME_EXISTS);
             jTName.requestFocus();
             return false;
         }                        

@@ -67,6 +67,12 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
     DBMember member_old;
     boolean saved = false;
     MainWin mainwin;
+
+    private String MESSAGE_MEMBER_ID_EMPTY;
+    private String MESSAGE_MEMBER_ID_EXISTS;
+    private String MESSAGE_NAME_EMPTY;
+    private String MESSAGE_FORNAME_EMPTY;
+    private String MESSAGE_MEMBER_NAME_EXISTS;
     boolean started = false;
     List<DBMember2ContactView> m2csv = new ArrayList<>();
     List<DBMember2ContactView> m2csv_to_remove = new ArrayList<>();
@@ -79,6 +85,7 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
     {
         super(mainwin.root,  getTitle(member ));
         initComponents();
+        initMessages();
         
         
         registerHelpWin(
@@ -246,7 +253,7 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
         Transaction trans = getTransaction();
         
         if( member.member_registration_number.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Die Kundennummer darf nicht leer sein"));
+            JOptionPane.showMessageDialog(this, MESSAGE_MEMBER_ID_EMPTY);
             jTKundennummer.requestFocus();
             return false;
         }
@@ -256,19 +263,19 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                 + " and " + trans.markColumn(member.idx) + " != " + member.idx.getValue());
         
         if( !member_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Diese Kundennummer ist bereits vorhanden"));
+            JOptionPane.showMessageDialog(this, MESSAGE_MEMBER_ID_EXISTS);
             jTKundennummer.requestFocus();
             return false;
         }
         
         if( member.name.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Namen eingeben"));
+            JOptionPane.showMessageDialog(this, MESSAGE_NAME_EMPTY);
             jTName.requestFocus();
             return false;
         }
 
         if( member.forname.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("Bitte einen Vornamen eingeben"));
+            JOptionPane.showMessageDialog(this, MESSAGE_FORNAME_EMPTY);
             jTName.requestFocus();
             return false;
         }        
@@ -279,7 +286,7 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                 + " and " + trans.markColumn(member.idx) + " != " + member.idx.getValue());
         
         if( !member_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("Es existiert bereits ein Kunde mit diesem Namen"));
+            JOptionPane.showMessageDialog(this, MESSAGE_MEMBER_NAME_EXISTS);
             jTName.requestFocus();
             return false;
         }                        
@@ -290,6 +297,14 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
     public boolean pressedSave()
     {
         return saved;
+    }
+
+    private void initMessages() {
+        MESSAGE_MEMBER_ID_EMPTY    = MlM("The member ID must not be empty.");
+        MESSAGE_MEMBER_ID_EXISTS   = MlM("This member ID already exists.");
+        MESSAGE_NAME_EMPTY         = MlM("Please enter a name.");
+        MESSAGE_FORNAME_EMPTY      = MlM("Please enter a first name.");
+        MESSAGE_MEMBER_NAME_EXISTS = MlM("A member with this name already exists.");
     }
 
     private void feed_m2c_table() {
@@ -378,10 +393,10 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
 
         jLabel2.setText("Name");
 
-        jLabel3.setText("Vorname");
+        jLabel3.setText("First Name");
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -389,7 +404,7 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -426,7 +441,7 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                 .addContainerGap())
         );
 
-        jLabel4.setText("Eintrittsdatum");
+        jLabel4.setText("Entry Date");
 
         jDEintrittsdatum.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -434,13 +449,13 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
             }
         });
 
-        jLabel6.setText("Attribute");
+        jLabel6.setText("Attributes");
 
-        jLabel13.setText("Telefonnummer");
+        jLabel13.setText("Phone Number");
 
-        jCinaktiv.setText("inaktiv");
+        jCinaktiv.setText("inactive");
 
-        jCgekuendigt.setText("gekündigt");
+        jCgekuendigt.setText("de-registered");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);

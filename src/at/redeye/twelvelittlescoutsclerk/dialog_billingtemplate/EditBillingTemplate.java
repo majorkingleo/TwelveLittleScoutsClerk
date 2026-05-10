@@ -83,7 +83,7 @@ public class EditBillingTemplate extends BaseDialogDialog {
 
         jLabelDescription.setText("Beschreibung:");
 
-        jLabelFile.setText("Datei:");
+        jLabelFile.setText("File:");
 
         jLFileName.setText("(keine Datei)");
 
@@ -126,7 +126,7 @@ public class EditBillingTemplate extends BaseDialogDialog {
         );
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -134,7 +134,7 @@ public class EditBillingTemplate extends BaseDialogDialog {
         });
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -212,7 +212,7 @@ public class EditBillingTemplate extends BaseDialogDialog {
     private void jBUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUploadActionPerformed
 
         JFileChooser chooser = new JFileChooser(mainwin.getLastOpenPath());
-        chooser.setDialogTitle("Vorlage hochladen");
+        chooser.setDialogTitle("Upload Template");
         int result = chooser.showOpenDialog(this);
         if (result != JFileChooser.APPROVE_OPTION) {
             return;
@@ -246,7 +246,7 @@ public class EditBillingTemplate extends BaseDialogDialog {
         }
 
         JFileChooser chooser = new JFileChooser(mainwin.getLastOpenPath());
-        chooser.setDialogTitle("Vorlage speichern");
+        chooser.setDialogTitle("Save Template");
         chooser.setSelectedFile(new File(entity.file_name.toString()));
         int result = chooser.showSaveDialog(this);
         if (result != JFileChooser.APPROVE_OPTION) {

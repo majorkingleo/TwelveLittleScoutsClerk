@@ -31,7 +31,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
     TableManipulator tm;
 
     public BillingTemplate(MainWin mainwin) {
-        super(mainwin.getRoot(), "Abrechnungsvorlagen");
+        super(mainwin.getRoot(), "Billing Templates");
 
         initComponents();
 
@@ -128,7 +128,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         jScrollPane1.setViewportView(jTContent);
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -136,7 +136,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         });
 
         jBDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edittrash.gif"))); // NOI18N
-        jBDel.setText("Löschen");
+        jBDel.setText("Delete");
         jBDel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBDelActionPerformed(evt);
@@ -144,7 +144,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         });
 
         jBNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
-        jBNew.setText("Neu");
+        jBNew.setText("New");
         jBNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBNewActionPerformed(evt);
@@ -152,7 +152,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -160,7 +160,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         });
 
         jBEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edit.png"))); // NOI18N
-        jBEdit.setText("Bearbeiten");
+        jBEdit.setText("Edit");
         jBEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBEditActionPerformed(evt);
@@ -198,7 +198,7 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         );
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        jLabel1.setText("Abrechnungsvorlagen");
+        jLabel1.setText("Billing Templates");
 
         jLInfo.setText(" ");
         jLInfo.setAutoscrolls(true);

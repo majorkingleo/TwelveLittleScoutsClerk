@@ -188,11 +188,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     }
 
     private static boolean mailTemplateAvailable() {
-        String path = at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions.MailBodyOdtPath.getConfigValue();
-        if (path != null && !path.isBlank()) {
-            return new java.io.File(path).exists();
-        }
-        return new java.io.File("testdata/mail_body_template.odt").exists();
+        String name = at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions.MailBodyTemplateName.getConfigValue();
+        return name != null && !name.isBlank();
     }
 
     private void feed_table() {

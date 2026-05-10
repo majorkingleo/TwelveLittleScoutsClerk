@@ -19,10 +19,8 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMailJob;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +30,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class MailJobHelper {
-
-    private static final String DEFAULT_MAIL_BODY_PATH = "testdata/mail_body_template.odt";
 
     /**
      * Creates and inserts {@link DBMailJob} records for every contact e-mail
@@ -52,8 +48,8 @@ public class MailJobHelper {
             DBEvent event, DBEventMember eventMember, DBMember member)
             throws Exception {
 
-        // 1. Load mail body ODT bytes
-        byte[] odtBytes = loadMailBodyOdtBytes();
+        // 1. Load mail body ODT bytes from the configured DBBillTemplate
+        byte[] odtBytes = loadMailBodyOdtBytes(trans, eventMember.bp_idx.getValue());
 
         // Fetch DBBillingPeriod (needed for buildReplacementMap)
         DBBillingPeriod billingPeriod = new DBBillingPeriod();
@@ -136,19 +132,29 @@ public class MailJobHelper {
     // Private helpers
     // -----------------------------------------------------------------------
 
-    private static byte[] loadMailBodyOdtBytes() throws IOException {
-        String configPath = AppConfigDefinitions.MailBodyOdtPath.getConfigValue();
-        if (configPath != null && !configPath.isBlank()) {
-            return Files.readAllBytes(new File(configPath).toPath());
+    private static byte[] loadMailBodyOdtBytes(Transaction trans, int bpIdx)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException {
+        String templateName = AppConfigDefinitions.MailBodyTemplateName.getConfigValue();
+        if (templateName == null || templateName.isBlank()) {
+            throw new IOException(
+                    "Kein E-Mail-Vorlagenname konfiguriert. "
+                    + "Bitte 'MailBodyTemplateName' in den Einstellungen setzen.");
         }
-        // Fall back to testdata/mail_body_template.odt relative to working directory
-        File defaultFile = new File(DEFAULT_MAIL_BODY_PATH);
-        if (defaultFile.exists()) {
-            return Files.readAllBytes(defaultFile.toPath());
+        DBBillTemplate tmpl = new DBBillTemplate();
+        List<DBBillTemplate> results = trans.fetchTable2(tmpl,
+                "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + bpIdx
+                + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
+        if (results.isEmpty()) {
+            throw new IOException(
+                    "E-Mail-Vorlage '" + templateName + "' nicht gefunden.");
         }
-        throw new IOException("Mail body ODT template not found. "
-                + "Set MailBodyOdtPath in config or place the file at: "
-                + defaultFile.getAbsolutePath());
+        DBBillTemplate found = results.get(0);
+        if (found.odt_data.value == null || found.odt_data.value.length == 0) {
+            throw new IOException(
+                    "E-Mail-Vorlage '" + templateName + "' hat keine ODT-Datei.");
+        }
+        return found.odt_data.value;
     }
 
     private static List<DBContact> fetchRecipientsWithEmail(Transaction trans,

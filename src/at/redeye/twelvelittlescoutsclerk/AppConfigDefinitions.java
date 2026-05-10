@@ -24,7 +24,15 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig OrganisationAddressPostalCode = new DBConfig("OrganisationAddressPostalCode","12345","Adresse der Organisation");
     public static DBConfig OrganisationAddressCity = new DBConfig("OrganisationAddressCity","Musterstadt","Adresse der Organisation");
     public static DBConfig OrganisaiontIBAN = new DBConfig("OrganisaiontIBAN","AT00 0000 0000 0000 0000","IBAN der Organisation");    
-    
+
+    public static DBConfig MailSmtpHost = new DBConfig("MailSmtpHost","localhost","Hostname / IP des SMTP-Servers");
+    public static DBConfig MailSmtpPort = new DBConfig("MailSmtpPort","587","SMTP-Port (587 = STARTTLS)");
+    public static DBConfig MailSmtpStartTls = new DBConfig("MailSmtpStartTls","true","STARTTLS aktivieren (true/false)");
+    public static DBConfig MailFrom = new DBConfig("MailFrom","","Absender-E-Mail-Adresse");
+    public static DBConfig MailFromName = new DBConfig("MailFromName","","Absender-Anzeigename");
+    public static DBConfig MailSmtpUser = new DBConfig("MailSmtpUser","","SMTP-Benutzername");
+    public static DBConfig MailSmtpPassword = new DBConfig("MailSmtpPassword","","SMTP-Passwort");
+
     public static void registerDefinitions() {
 
         BaseRegisterDefinitions();
@@ -36,6 +44,13 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         add(OrganisationAddressPostalCode);
         add(OrganisationAddressCity);
         add(OrganisaiontIBAN);
+        add(MailSmtpHost);
+        add(MailSmtpPort);
+        add(MailSmtpStartTls);
+        add(MailFrom);
+        add(MailFromName);
+        addLocal(MailSmtpUser);
+        addLocal(MailSmtpPassword);
     
         GlobalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
         LocalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");

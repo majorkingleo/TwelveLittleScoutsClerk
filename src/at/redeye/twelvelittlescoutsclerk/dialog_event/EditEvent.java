@@ -54,6 +54,16 @@ import javax.swing.JTextField;
  */
 public class EditEvent extends BaseDialogDialog implements NewSequenceValueInterface {
 
+    private String MESSAGE_NO_BILLING_TEMPLATE;
+    private String MESSAGE_TEMPLATE_HAS_NO_FILE;
+    private String MESSAGE_BILL_CREATED;
+    private String MESSAGE_MAIL_JOBS_CREATED;
+    private String MESSAGE_EVENT_NAME_MANDATORY;
+    private String MESSAGE_EVENT_NAME_EXISTS;
+    private String MESSAGE_NO_BOOKING_LINE;
+    private String MESSAGE_NO_BILL_FOR_MEMBER;
+    private String MESSAGE_TOTAL_PAID;
+
     DBEvent event;
     DBEvent event_old;
     boolean saved = false;
@@ -72,6 +82,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         super( mainwin.root,  event.name.getValue() );
         initComponents();
         
+        initMessages();
         
         registerHelpWin(
                 new Runnable() {
@@ -151,6 +162,18 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         });
     }
     
+    private void initMessages() {
+        MESSAGE_NO_BILLING_TEMPLATE  = MlM("No billing template found with name: %s");
+        MESSAGE_TEMPLATE_HAS_NO_FILE = MlM("Billing template has no file: %s");
+        MESSAGE_BILL_CREATED         = MlM("Bill created and saved.");
+        MESSAGE_MAIL_JOBS_CREATED    = MlM("Mail job(s) created and queued.");
+        MESSAGE_EVENT_NAME_MANDATORY = MlM("The event name is mandatory.");
+        MESSAGE_EVENT_NAME_EXISTS    = MlM("There exists already an event with this name.");
+        MESSAGE_NO_BOOKING_LINE      = MlM("No booking line is assigned to the selected event member.");
+        MESSAGE_NO_BILL_FOR_MEMBER   = MlM("No bill has been created for this member yet.");
+        MESSAGE_TOTAL_PAID           = MlM("Total paid: %1$.2f, total costs: %2$.2f");
+    }
+
     /** Enable "Send Mail" only when a row is selected, a mail template exists,
      *  and the selected member has at least one contact with an e-mail address. */
     private void updateSendMailButton() {
@@ -269,7 +292,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     }
                 }
 
-                jStatusBar.setText(String.format(MlM("Total paid: %1$.2f, total costs: %2$.2f"), total_paid, total_costs));
+                jStatusBar.setText(String.format(MESSAGE_TOTAL_PAID, total_paid, total_costs));
             }
         };
     }     
@@ -311,8 +334,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 jTBillingTemplate.addItem(t.name.getValue());
             }
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(EditEvent.class.getName())
-                    .log(java.util.logging.Level.WARNING, "Failed to load billing templates", ex);
+            logger.error("Failed to load billing templates", ex);
         }
     }
 
@@ -352,7 +374,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         Transaction trans = getTransaction();
         
         if( event.name.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("The event name is mandatory."));
+            JOptionPane.showMessageDialog(this, MESSAGE_EVENT_NAME_MANDATORY);
             jTName.requestFocus();
             return false;
         }
@@ -362,7 +384,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 + " and " + trans.markColumn(event.idx) + " != " + event.idx.toString() );
         
         if( !event_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("There exists already an event with this name."));
+            JOptionPane.showMessageDialog(this, MESSAGE_EVENT_NAME_EXISTS);
             jTName.requestFocus();
             return false;
         }
@@ -858,8 +880,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                                 + " and " + trans.markColumn(booking_line_mapping.member_idx) + " = " + event_member.member_idx.toString());
 
                 if (assigned_booking_lines.isEmpty()) {
-                    JOptionPane.showMessageDialog(EditEvent.this,
-                            MlM("No booking line is assigned to the selected event member."));
+                    JOptionPane.showMessageDialog(EditEvent.this, MESSAGE_NO_BOOKING_LINE);
                     return;
                 }
 
@@ -911,7 +932,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 if (templates.isEmpty()) {
                     JOptionPane.showMessageDialog(null,
-                            "Keine Rechnungsvorlage gefunden mit dem Namen: " + templateName);
+                            String.format(MESSAGE_NO_BILLING_TEMPLATE, templateName));
                     return;
                 }
 
@@ -919,7 +940,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 if (template.odt_data.value == null || template.odt_data.value.length == 0) {
                     JOptionPane.showMessageDialog(null,
-                            "Rechnungsvorlage hat keine Datei: " + templateName);
+                            String.format(MESSAGE_TEMPLATE_HAS_NO_FILE, templateName));
                     return;
                 }
 
@@ -976,7 +997,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 trans.commit();
 
-                JOptionPane.showMessageDialog(null, "Rechnung erstellt und gespeichert.");
+                JOptionPane.showMessageDialog(null, MESSAGE_BILL_CREATED);
             }
         };
     }//GEN-LAST:event_jBCreateBillActionPerformed
@@ -998,8 +1019,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 int billIdx = event_member.bill_idx.getValue();
                 if (billIdx <= 0) {
-                    JOptionPane.showMessageDialog(null,
-                            "Für dieses Mitglied wurde noch keine Rechnung erstellt.");
+                    JOptionPane.showMessageDialog(null, MESSAGE_NO_BILL_FOR_MEMBER);
                     return;
                 }
 
@@ -1023,7 +1043,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 MailJobHelper.createMailJobs(trans, mainwin, bill, template, event, event_member, member);
                 trans.commit();
 
-                JOptionPane.showMessageDialog(null, "Mail-Job(s) erstellt und in die Warteschlange eingereiht.");
+                JOptionPane.showMessageDialog(null, MESSAGE_MAIL_JOBS_CREATED);
             }
         };
     }

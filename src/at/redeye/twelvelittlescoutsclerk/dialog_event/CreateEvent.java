@@ -29,6 +29,11 @@ import javax.swing.JTextField;
  */
 public class CreateEvent extends BaseDialogDialog implements NewSequenceValueInterface {
 
+     
+
+     private String MESSAGE_EVENT_NAME_MANDATORY;
+    private String MESSAGE_EVENT_NAME_EXISTS;
+
      DBEvent event;
      boolean saved  = false;
      MainWin mainwin;
@@ -38,8 +43,9 @@ public class CreateEvent extends BaseDialogDialog implements NewSequenceValueInt
      * Creates new form CreateKunde
      */
     public CreateEvent(MainWin mainwin, Event events, final DBEvent event) {
-        super( events.getRoot(), "Neues Event");
+        super( events.getRoot(), "New Event");
         initComponents();
+        initMessages();
         
         this.event = event;
         this.mainwin = mainwin;
@@ -61,6 +67,11 @@ public class CreateEvent extends BaseDialogDialog implements NewSequenceValueInt
         var_to_gui();
     }
     
+    private void initMessages() {
+        MESSAGE_EVENT_NAME_MANDATORY = MlM("The event name is mandatory.");
+        MESSAGE_EVENT_NAME_EXISTS    = MlM("There exists already an event with this name.");
+    }
+
     final public void bindVar( JTextField field, DBDouble var )
     {
         super.bindVar(field, var);
@@ -184,7 +195,7 @@ public class CreateEvent extends BaseDialogDialog implements NewSequenceValueInt
         Transaction trans = getTransaction();
         
         if( event.name.isEmptyTrimmed() ) {
-            JOptionPane.showMessageDialog(this, MlM("The event name is mandatory."));
+            JOptionPane.showMessageDialog(this, MESSAGE_EVENT_NAME_MANDATORY);
             jTName.requestFocus();
             return false;
         }
@@ -193,7 +204,7 @@ public class CreateEvent extends BaseDialogDialog implements NewSequenceValueInt
                 + " and " + trans.markColumn(event.name) + " = '" + event.name + "'" );
         
         if( !event_list.isEmpty() ) {
-            JOptionPane.showMessageDialog(this, MlM("There exists already an event with this name."));
+            JOptionPane.showMessageDialog(this, MESSAGE_EVENT_NAME_EXISTS);
             jTName.requestFocus();
             return false;
         }

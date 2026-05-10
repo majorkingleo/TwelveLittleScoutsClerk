@@ -65,6 +65,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     public String MESSAGE_EDIT_CONTACT_S;
     public String MESSAGE_IMPORT_SUCCESSFUL;
     public String MESSAGE_WARNING;
+    public String MESSAGE_RESET_DATABASE;
+    public String MESSAGE_DATABASE_IMPORT;
+    public String MESSAGE_PLEASE_SET_BILLING_PERIOD;
     
     Main main;
     String last_path;
@@ -125,11 +128,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             return;
         }
 
-        MESSAGE_REALLY_IMPORT_DATABASE = MlM("Wollen Sie tasächlich eine andere Datenbank importieren und die existierende Löschen?");
-        MESSAGE_REALLY_REALLY_IMPORT_DATABASE = MlM("Die existierende Datenbank wird tatsächlich gelöscht! Wollen Sie trotzdem weitermachen?");
-        MESSAGE_REALLY_RESET_DATABASE = MlM("Wollen Sie tatsächlich die Datenbank in den Ursprungszustand zurücksetztn und dabei alle Daten,"
-                + "die sie nicht exportiert haben verlieren?");
-        MESSAGE_REALLY_REALLY_RESET_DATABASE = MlM("Sind Sie sicher?");    
+        MESSAGE_REALLY_IMPORT_DATABASE = MlM("Do you really want to import another database and delete the existing one?");
+        MESSAGE_REALLY_REALLY_IMPORT_DATABASE = MlM("The existing database will actually be deleted! Do you still want to continue?");
+        MESSAGE_REALLY_RESET_DATABASE = MlM("Do you really want to reset the database to its initial state and lose all data you have not exported?");
+        MESSAGE_REALLY_REALLY_RESET_DATABASE = MlM("Are you sure?");    
         MESSAGE_GOTO_EVENTS_DIALOG = MlM("open Events dialog");
         MESSAGE_EDIT_EVENT_S = MlM("edit event: '%s'");
         
@@ -139,7 +141,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         MESSAGE_GOTO_CONTACTS_DIALOG = MlM("open Contacts dialog");
         MESSAGE_EDIT_CONTACT_S = MlM("edit contact: '%s'");
         MESSAGE_IMPORT_SUCCESSFUL = MlM("The data import was successful.");
-        MESSAGE_WARNING = MlM("Warning");        
+        MESSAGE_WARNING = MlM("Warning");
+        MESSAGE_RESET_DATABASE = MlM("Reset Database");
+        MESSAGE_DATABASE_IMPORT = MlM("Database Import");
+        MESSAGE_PLEASE_SET_BILLING_PERIOD = MlM("Please define a billing period.");        
     }    
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -194,10 +199,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
 
-        jLabel1.setText("Abrechnungszeitraum");
+        jLabel1.setText("Billing Period");
 
         jBNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
-        jBNew.setToolTipText("Neuer Abrechnungszeitraum");
+        jBNew.setToolTipText("New Billing Period");
         jBNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBNewActionPerformed(evt);
@@ -209,21 +214,21 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jScrollPane1.setViewportView(jTComment);
 
         jBChange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edit.png"))); // NOI18N
-        jBChange.setToolTipText("Neuer Abrechnungszeitraum");
+        jBChange.setToolTipText("Edit Billing Period");
         jBChange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBChangeActionPerformed(evt);
             }
         });
 
-        jMenu1.setText("Programm");
+        jMenu1.setText("Program");
         jMenu1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenu1ActionPerformed(evt);
             }
         });
 
-        jMDatabase.setText("Datenbankverbindung");
+        jMDatabase.setText("Database Connection");
         jMDatabase.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMDatabaseActionPerformed(evt);
@@ -231,7 +236,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu1.add(jMDatabase);
 
-        jMDBExport.setText("Datenbank exportieren");
+        jMDBExport.setText("Export Database");
         jMDBExport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMDBExportActionPerformed(evt);
@@ -239,7 +244,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu1.add(jMDBExport);
 
-        jMDBImport.setText("Datenbank importieren");
+        jMDBImport.setText("Import Database");
         jMDBImport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMDBImportActionPerformed(evt);
@@ -247,7 +252,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu1.add(jMDBImport);
 
-        jMResetDB.setText("Datenbank zurücksetzten");
+        jMResetDB.setText("Reset Database");
         jMResetDB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMResetDBActionPerformed(evt);
@@ -256,7 +261,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jMenu1.add(jMResetDB);
         jMenu1.add(jSeparator1);
 
-        jMenuItem12.setText("Abrechnungszeitraum löschen");
+        jMenuItem12.setText("Delete Billing Period");
         jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem12ActionPerformed(evt);
@@ -264,7 +269,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu1.add(jMenuItem12);
 
-        jMScoregMemberImport.setText("Mitgliederdaten von Scoreg importieren");
+        jMScoregMemberImport.setText("Import Member Data from Scoreg");
         jMScoregMemberImport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMScoregMemberImportActionPerformed(evt);
@@ -280,7 +285,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu1.add(jMElbaBookingLineImport);
 
-        jMQuit.setText("Beenden");
+        jMQuit.setText("Quit");
         jMQuit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMQuitActionPerformed(evt);
@@ -290,7 +295,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenuBar1.add(jMenu1);
 
-        jMenu5.setText("Daten");
+        jMenu5.setText("Data");
 
         jMenuItem2.setText("Booking Lines");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -324,7 +329,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu5.add(jMenuItemEvents);
 
-        jMenuItemBillingTemplates.setText("Abrechnungsvorlagen");
+        jMenuItemBillingTemplates.setText("Billing Templates");
         jMenuItemBillingTemplates.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemBillingTemplatesActionPerformed(evt);
@@ -332,7 +337,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu5.add(jMenuItemBillingTemplates);
 
-        jMenuItemBills.setText("Rechnungen");
+        jMenuItemBills.setText("Bills");
         jMenuItemBills.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemBillsActionPerformed(evt);
@@ -340,7 +345,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu5.add(jMenuItemBills);
 
-        jMenuItemMailJobs.setText("Mail-Jobs");
+        jMenuItemMailJobs.setText("Mail Jobs");
         jMenuItemMailJobs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemMailJobsActionPerformed(evt);
@@ -350,7 +355,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenuBar1.add(jMenu5);
 
-        jMenu6.setText("Berichte");
+        jMenu6.setText("Reports");
 
         jMenuItem7.setText("Audit");
         jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
@@ -362,12 +367,12 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenuBar1.add(jMenu6);
 
-        jMenu4.setText("Einstellungen");
+        jMenu4.setText("Settings");
 
         jMenuDesign.setText("Design");
         jMenu4.add(jMenuDesign);
 
-        jMSettings.setText("Einstellungen");
+        jMSettings.setText("Settings");
         jMSettings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMSettingsActionPerformed(evt);
@@ -375,7 +380,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu4.add(jMSettings);
 
-        jMenuItem1.setText("Globale Einstellungen");
+        jMenuItem1.setText("Global Settings");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
@@ -387,7 +392,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         jMenu2.setText("Info");
 
-        jMAbout.setText("Über");
+        jMAbout.setText("About");
         jMAbout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMAboutActionPerformed(evt);
@@ -395,7 +400,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         });
         jMenu2.add(jMAbout);
 
-        jMChangeLog.setText("Änderungsprotokoll");
+        jMChangeLog.setText("Changelog");
         jMChangeLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMChangeLogActionPerformed(evt);
@@ -479,7 +484,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         int ret = JOptionPane.showConfirmDialog(
                 this,
                 StringUtils.autoLineBreak(MESSAGE_REALLY_IMPORT_DATABASE),
-                MlM("Datenbankimport"), JOptionPane.OK_CANCEL_OPTION);
+                MlM(MESSAGE_DATABASE_IMPORT), JOptionPane.OK_CANCEL_OPTION);
 
         if (ret != JOptionPane.OK_OPTION) {
             return;
@@ -487,16 +492,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         logger.error("User "
                 + root.getUserName()
-                + " will einen Datenbankimport Starten und hat die erste Frage mit Ja beantwortet");
+                + " wants to start a database import and confirmed the first question with Yes");
 
         ret = JOptionPane.showConfirmDialog(
                 this,
                 StringUtils.autoLineBreak(MESSAGE_REALLY_REALLY_IMPORT_DATABASE),
-                "Datenbankimport", JOptionPane.OK_CANCEL_OPTION);
+                MESSAGE_DATABASE_IMPORT, JOptionPane.OK_CANCEL_OPTION);
 
         logger.error("User "
                 + root.getUserName()
-                + " will einen Datenbankimport Starten und hat die zweite Frage auch mit Ja beantwortet");
+                + " wants to start a database import and also confirmed the second question with Yes");
 
         if (ret != JOptionPane.OK_OPTION) {
             return;
@@ -606,7 +611,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         int ret = JOptionPane.showConfirmDialog(
                 this,
                 StringUtils.autoLineBreak(MESSAGE_REALLY_RESET_DATABASE),
-                MlM("Datenbank zurücksetzten"), JOptionPane.OK_CANCEL_OPTION);
+                MESSAGE_RESET_DATABASE, JOptionPane.OK_CANCEL_OPTION);
 
         if (ret != JOptionPane.OK_OPTION) {
             return;
@@ -614,12 +619,12 @@ public class MainWin extends BaseDialog implements MainWinInterface {
 
         logger.error("User "
                 + root.getUserName()
-                + " will die Datenbank zurücksetzten und hat die erste Frage mit Ja beantwortet");        
+                + " wants to reset the database and confirmed the first question with Yes");        
 
         ret = JOptionPane.showConfirmDialog(
                 this,
                 StringUtils.autoLineBreak(MESSAGE_REALLY_REALLY_RESET_DATABASE),
-                MlM("Datenbank zurücksetzten"), JOptionPane.OK_CANCEL_OPTION);
+                MESSAGE_RESET_DATABASE, JOptionPane.OK_CANCEL_OPTION);
 
         if (ret != JOptionPane.OK_OPTION) {
             return;
@@ -627,7 +632,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         
         logger.error("User "
                 + root.getUserName()
-                + " will die Datenbank zurücksetzten und hat die zweite Frage mit Ja beantwortet");          
+                + " wants to reset the database and confirmed the second question with Yes");          
         
         final MainWin mainwin = this;
         
@@ -1029,7 +1034,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     {
         if( getBPIdx() == 0 )
         {
-            JOptionPane.showMessageDialog(this, MlM("Bitte legen sie einen Abrechnungszeitraum fest."));
+            JOptionPane.showMessageDialog(this, MESSAGE_PLEASE_SET_BILLING_PERIOD);
             jBNewActionPerformed(null);
             return false;
         }

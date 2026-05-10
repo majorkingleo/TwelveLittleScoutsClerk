@@ -73,18 +73,18 @@ public class MailJobHelper {
         String paymentNote;
         String transferRequest;
         if (totalPaid >= costs) {
-            paymentNote = "Hinweis: Diese Rechnung ist bereits vollstaendig bezahlt. "
-                    + "Es ist keine weitere Ueberweisung erforderlich.";
+            paymentNote = "Note: This invoice has already been paid in full. "
+                    + "No further transfer is required.";
             transferRequest = "";
         } else if (totalPaid > 0) {
             double remaining = costs - totalPaid;
             paymentNote = String.format(
-                    "Hinweis: Ein Teilbetrag von %.2f EUR wurde bereits bezahlt. "
-                    + "Offener Restbetrag: %.2f EUR.", totalPaid, remaining);
-            transferRequest = "Bitte ueberweisen Sie den Betrag auf folgendes Konto:";
+                    "Note: A partial amount of %.2f EUR has already been paid. "
+                    + "Outstanding balance: %.2f EUR.", totalPaid, remaining);
+            transferRequest = "Please transfer the amount to the following account:";
         } else {
             paymentNote = "";
-            transferRequest = "Bitte ueberweisen Sie den Betrag auf folgendes Konto:";
+            transferRequest = "Please transfer the amount to the following account:";
         }
 
         // 8. Create a DBMailJob for each recipient address
@@ -213,7 +213,7 @@ public class MailJobHelper {
         if (others.isEmpty()) {
             return "";
         }
-        return "Hinweis: Diese Rechnung wurde ebenfalls an folgende Adressen gesendet:\n"
+        return "Note: This invoice was also sent to the following addresses:\n"
                 + String.join(", ", others);
     }
 

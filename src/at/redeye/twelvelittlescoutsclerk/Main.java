@@ -201,7 +201,7 @@ public class Main extends BaseModuleLauncher
 
         if( my_db_conn.isClosed() )
         {
-            logger.error("Erzeugen der Datenbank " + db_name + " nicht mögglich");
+            logger.error("Could not create database " + db_name);
             return false;
         }
 

@@ -26,7 +26,7 @@ public class BPEdit extends BaseDialogDialog {
      */
     public BPEdit(Root root, JFrame parent, DBBillingPeriod az )
     {
-        super( parent, root, "Abrechnungszeitraum Editieren");
+        super( parent, root, "Edit Billing Period");
         
         initComponents();
         
@@ -63,10 +63,10 @@ public class BPEdit extends BaseDialogDialog {
 
         jLabel1.setText("Name:");
 
-        jCheckBox1.setText("gesperrt");
+        jCheckBox1.setText("locked");
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jButton1.setText("Schließen");
+        jButton1.setText("Close");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -74,7 +74,7 @@ public class BPEdit extends BaseDialogDialog {
         });
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);

@@ -44,28 +44,28 @@ public class UpdateMember
         
         if( !kunden_old.forname.getValue().equals(kunden_new.forname.getValue()) ) {            
             differs = true;
-            messages.add(String.format(root.MlM("Änderung des Vornamens von '%s' auf '%s'"),kunden_old.forname, kunden_new.forname));
+            messages.add(String.format(root.MlM("Change of first name from '%s' to '%s'"),kunden_old.forname, kunden_new.forname));
         }
         
         if( !kunden_old.name.getValue().equals(kunden_new.name.getValue()) ) {
             differs = true;
-            messages.add(String.format(root.MlM("Änderung des Namens von '%s' auf '%s'"),kunden_old.name, kunden_new.name));
+            messages.add(String.format(root.MlM("Change of last name from '%s' to '%s'"),kunden_old.name, kunden_new.name));
         }
         
         if( !kunden_old.member_registration_number.getValue().equals(kunden_new.member_registration_number.getValue()) ) {
             differs = true;
-            messages.add(String.format(root.MlM("Änderung der Kundennummer von '%s' auf '%s'"),kunden_old.member_registration_number, kunden_new.member_registration_number));
+            messages.add(String.format(root.MlM("Change of member number from '%s' to '%s'"),kunden_old.member_registration_number, kunden_new.member_registration_number));
         }
         
         if( !kunden_old.entry_date.getDateStr().equals(kunden_new.entry_date.getDateStr() )) {
             differs = true;
-            messages.add(String.format(root.MlM("Änderung des Eintrittsdatums von '%s' auf '%s'"),
+            messages.add(String.format(root.MlM("Change of entry date from '%s' to '%s'"),
                     kunden_old.entry_date.getDateStr(), kunden_new.entry_date.getDateStr()));
         }
         
         if( !kunden_old.group.getValue().equals(kunden_new.group.getValue() )) {
             differs = true;
-            messages.add(String.format(root.MlM("Änderung der Gruppe von '%s' auf '%s'"),
+            messages.add(String.format(root.MlM("Change of group from '%s' to '%s'"),
                     kunden_old.group.getValue(), kunden_new.group.getValue()));
         }        
                

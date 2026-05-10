@@ -56,13 +56,15 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
     DBBillingPeriod az = new DBBillingPeriod();
     DBBillingPeriod bp_other = new DBBillingPeriod();
     MainWin mainwin;
+    private String MESSAGE_PLEASE_SELECT_NAME;
     /**
      * Creates new form CreateAZ
      */
     public CreateBP(MainWin mainwin) {
-        super( mainwin.getRoot(), "Abrechnungszeitraum" );
-        initComponents();        
-                
+        super( mainwin.getRoot(), "Billing Period" );
+        initComponents();
+        initMessages();
+        
         this.mainwin = mainwin;
         
         jTextArea1.setCaretPosition(0);
@@ -116,6 +118,10 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         return false;
     }
 
+    private void initMessages() {
+        MESSAGE_PLEASE_SELECT_NAME = MlM("Please select a name.");
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -134,16 +140,16 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
-        jTextArea1.setText("Es wird ein neuer Abrechnungzeitraum erstellt. Dabei werden alle Daten von einem vorhergehend Abrechnungszeitraum in den neuen kopiert. Somit ist es immer möglich den Zustand der Daten zu einem beliebigen anderen Zeitpunkt erneut einzusehen.\n\nWählen Sie einen Namen zb: \"2012 Jan\" und den vorhergehenden Abrechungszeitraum von dem die Daten kopiert werden sollen.\n");
+        jTextArea1.setText("A new billing period will be created. All data from a previous billing period will be copied into the new one. This makes it always possible to review the state of the data at any previous point in time.\n\nChoose a name, e.g. \"2012 Jan\", and the previous billing period from which the data should be copied.\n");
         jTextArea1.setWrapStyleWord(true);
         jScrollPane1.setViewportView(jTextArea1);
 
-        jLabel1.setText("Neuer Name:");
+        jLabel1.setText("New Name:");
 
-        jLabel2.setText("Vorhergehender Zeitraum:");
+        jLabel2.setText("Previous Period:");
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
-        jBSave.setText("Speichern");
+        jBSave.setText("Save");
         jBSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSaveActionPerformed(evt);
@@ -151,7 +157,7 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
         });
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -219,7 +225,7 @@ public class CreateBP extends BaseDialogDialog implements NewSequenceValueInterf
     {
         if( az.title.isEmptyTrimmed() )
         {
-            JOptionPane.showMessageDialog(this,"Bitte wählen Sie einen Namen");
+            JOptionPane.showMessageDialog(this, MESSAGE_PLEASE_SELECT_NAME);
             jTName.requestFocus();
             return;
         }

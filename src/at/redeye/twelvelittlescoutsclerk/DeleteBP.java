@@ -36,13 +36,16 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
     private DBBillingPeriod az = new DBBillingPeriod();
     private MainWin mainwin;
     private String MESSAGE_REALLY_DELETE_AZ;
+    private String MESSAGE_PLEASE_SELECT_NAME;
+    private String MESSAGE_DELETE_BILLING_PERIOD;
     
     /**
      * Creates new form CreateAZ
      */
     public DeleteBP(MainWin mainwin) {
-        super( mainwin.getRoot(), "Abrechnungszeitraum" );
-        initComponents();        
+        super( mainwin.getRoot(), "Billing Period" );
+        initComponents();
+        initMessages();        
                 
         this.mainwin = mainwin;               
         
@@ -74,10 +77,8 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
                 if( preselect >= 0 )
                     jCold.setSelectedIndex(preselect);
             }
-        };                   
-        
-        MESSAGE_REALLY_DELETE_AZ = MlM("Den Abrechnungszeitraum '%s' wirklich löschen?");
-                
+        };
+                   
         var_to_gui();
     }
     
@@ -94,6 +95,12 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
         return false;
     }
 
+    private void initMessages() {
+        MESSAGE_REALLY_DELETE_AZ = MlM("Do you really want to delete the billing period '%s'?");
+        MESSAGE_PLEASE_SELECT_NAME = MlM("Please select a name.");
+        MESSAGE_DELETE_BILLING_PERIOD = MlM("Delete Billing Period");
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -106,10 +113,10 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel2.setText("zu löschender AZ");
+        jLabel2.setText("Billing Period to Delete");
 
         jBDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/messagebox_critical.gif"))); // NOI18N
-        jBDel.setText("Löschen");
+        jBDel.setText("Delete");
         jBDel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBDelActionPerformed(evt);
@@ -117,7 +124,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
         });
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Abbrechen");
+        jBClose.setText("Cancel");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -129,7 +136,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
         jTextArea1.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
-        jTextArea1.setText("Hinweis:\nDer aktuell im Hauptfenster ausgewählte Abrechnungszeitraum kann nicht gelöscht werden und steht daher hier nicht zur Auswahl.");
+        jTextArea1.setText("Note:\nThe billing period currently selected in the main window cannot be deleted and is therefore not available for selection here.");
         jTextArea1.setWrapStyleWord(true);
         jScrollPane1.setViewportView(jTextArea1);
 
@@ -190,7 +197,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
      
         if( az.title.isEmptyTrimmed() )
         {
-            JOptionPane.showMessageDialog(this,"Bitte wählen Sie einen Namen");
+            JOptionPane.showMessageDialog(this, MESSAGE_PLEASE_SELECT_NAME);
             jCold.requestFocus();
             return false;
         }        
@@ -198,7 +205,7 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
         int ret = JOptionPane.showConfirmDialog(
                 this,
                 StringUtils.autoLineBreak( String.format(MESSAGE_REALLY_DELETE_AZ, az.title.getValue())),
-                MlM("Abrechnugszeitraum löschen"), JOptionPane.OK_CANCEL_OPTION);
+                MESSAGE_DELETE_BILLING_PERIOD, JOptionPane.OK_CANCEL_OPTION);
 
         if (ret != JOptionPane.OK_OPTION) {
             return false;
@@ -206,9 +213,9 @@ public class DeleteBP extends BaseDialogDialog implements NewSequenceValueInterf
 
         logger.error("User "
                 + root.getUserName()
-                + " will den Abrechnugszeitraum '" + az.title.getValue() + "' löschen und hat die erste Frage mit Ja beantwortet");        
+                + " wants to delete billing period '" + az.title.getValue() + "' and confirmed the first question with Yes");        
                 
-        ExportDialog exporter = new ExportDialog(root, "Automatische Sicherung");  
+        ExportDialog exporter = new ExportDialog(root, "Automatic Backup");  
         
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss"); 
         

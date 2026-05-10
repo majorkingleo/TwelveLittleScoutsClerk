@@ -297,4 +297,4 @@ A "Retry" button re-sets FAILED jobs back to PENDING.
    - Button disabled until a row is selected, `MailBodyTemplateName` is configured, and the member has at least one contact with an e-mail
 9. `Main.java` — start `MailWorker` daemon thread  ✅ **DONE**
 10. `testdata/mail_body_template.odt`  ✅ **DONE** (already existed)
-11. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry  ❌ **TODO**
+11. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry  ✅ **DONE**

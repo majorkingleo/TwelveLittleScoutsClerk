@@ -967,7 +967,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 // Generate bill ODT from template blob
                 java.io.File odtFile = BillingHelper.generateBillFromTemplate(
-                        root, trans, template, event, event_member, false);
+                        root, trans, template, event, event_member, false, String.valueOf(newIdx));
 
                 // Convert ODT to PDF
                 java.io.File pdfFile = BillingHelper.convertToPdf(

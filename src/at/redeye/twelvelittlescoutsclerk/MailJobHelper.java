@@ -116,8 +116,7 @@ public class MailJobHelper {
 
                 // 2. Build replacement map with current contact
                 Map<String, String> replacements = BillingHelper.buildReplacementMap( root,
-                        member, contact, event, eventMember, billingPeriod);
-                replacements.put("${billing_number}", billingNumber);
+                        member, contact, event, eventMember, billingPeriod, billingNumber);
 
                 // 6. Add mail-specific placeholders
                 replacements.put("${mail.also_sent_to}", alsoSentTo);

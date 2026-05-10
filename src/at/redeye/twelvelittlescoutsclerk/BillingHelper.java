@@ -190,7 +190,7 @@ public class BillingHelper {
         return contact;
     }
 
-    private static Map<String, String> buildReplacementMap(DBMember member,
+    static Map<String, String> buildReplacementMap(DBMember member,
             DBContact contact, DBEvent event, DBEventMember eventMember,
             DBBillingPeriod billingPeriod) {
 
@@ -290,7 +290,7 @@ public class BillingHelper {
         }
     }
 
-    private static void replaceInNode(Node node, Map<String, String> replacements) {
+    static void replaceInNode(Node node, Map<String, String> replacements) {
         if (node.getNodeType() == Node.TEXT_NODE) {
             String text = node.getNodeValue();
             for (Map.Entry<String, String> entry : replacements.entrySet()) {

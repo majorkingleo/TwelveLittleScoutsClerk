@@ -26,6 +26,7 @@ import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.BillingHelper;
+import at.redeye.twelvelittlescoutsclerk.MailJobHelper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
@@ -338,6 +339,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBBookingLine = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jBCreateBill = new javax.swing.JButton();
+        jBSendMail = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jCCacheOpen = new javax.swing.JCheckBox();
@@ -446,6 +448,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
+        jBSendMail.setText("Send Mail");
+        jBSendMail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBSendMailActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -459,7 +468,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jBEditMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator1)
                     .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jBCreateBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jBCreateBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBSendMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -479,6 +489,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBCreateBill)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBSendMail)
                 .addContainerGap(132, Short.MAX_VALUE))
         );
 
@@ -909,12 +921,60 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         };
     }//GEN-LAST:event_jBCreateBillActionPerformed
 
+    private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                if (!checkAnyAndSingleSelection(jTMembers)) {
+                    return;
+                }
+
+                int row = tm.getSelectedRow();
+                if (row < 0 || row >= values.size()) {
+                    return;
+                }
+
+                DBEventMember event_member = values.get(row);
+
+                int billIdx = event_member.bill_idx.getValue();
+                if (billIdx <= 0) {
+                    JOptionPane.showMessageDialog(null,
+                            "Für dieses Mitglied wurde noch keine Rechnung erstellt.");
+                    return;
+                }
+
+                Transaction trans = getTransaction();
+
+                DBBill bill = new DBBill();
+                bill.idx.loadFromCopy(billIdx);
+                trans.fetchTableWithPrimkey(bill);
+
+                String templateName = event.billing_template.getValue().trim();
+                DBBillTemplate tmpl = new DBBillTemplate();
+                java.util.List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
+                        "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
+                DBBillTemplate template = templates.isEmpty() ? new DBBillTemplate() : templates.get(0);
+
+                DBMember member = new DBMember();
+                member.idx.loadFromCopy(event_member.member_idx.getValue());
+                trans.fetchTableWithPrimkey(member);
+
+                MailJobHelper.createMailJobs(trans, mainwin, bill, template, event, event_member, member);
+                trans.commit();
+
+                JOptionPane.showMessageDialog(null, "Mail-Job(s) erstellt und in die Warteschlange eingereiht.");
+            }
+        };
+    }
+
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAddMember;
     private javax.swing.JButton jBBookingLine;
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBCreateBill;
+    private javax.swing.JButton jBSendMail;
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;

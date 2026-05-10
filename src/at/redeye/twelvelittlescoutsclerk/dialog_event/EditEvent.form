@@ -243,6 +243,7 @@
                           <Component id="jSeparator1" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBBookingLine" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBCreateBill" alignment="0" max="32767" attributes="0"/>
+                          <Component id="jBSendMail" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -265,6 +266,8 @@
                       <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBCreateBill" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jBSendMail" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="132" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -313,6 +316,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCreateBillActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="jBSendMail">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Send Mail"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBSendMailActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

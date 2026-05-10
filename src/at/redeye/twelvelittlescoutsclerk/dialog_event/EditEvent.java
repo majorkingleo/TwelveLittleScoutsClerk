@@ -140,8 +140,61 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         tableFilter1.setFilter(jTMembers);
         tm.showRowHeader();
+
+        // Disable Send Mail button initially; update whenever selection changes
+        jBSendMail.setEnabled(false);
+        jTMembers.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateSendMailButton();
+            }
+        });
     }
     
+    /** Enable "Send Mail" only when a row is selected, a mail template exists,
+     *  and the selected member has at least one contact with an e-mail address. */
+    private void updateSendMailButton() {
+        int row = tm.getSelectedRow();
+        if (row < 0 || row >= values.size()) {
+            jBSendMail.setEnabled(false);
+            return;
+        }
+        if (!mailTemplateAvailable()) {
+            jBSendMail.setEnabled(false);
+            return;
+        }
+        DBEventMember em = values.get(row);
+        try {
+            Transaction trans = getTransaction();
+            at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts m2c =
+                    new at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts();
+            java.util.List<at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts> links =
+                    trans.fetchTable2(m2c, "where " + trans.markColumn(m2c.member_idx)
+                            + " = " + em.member_idx.toString());
+            boolean hasEmail = false;
+            for (var link : links) {
+                at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact c =
+                        new at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact();
+                c.idx.loadFromCopy(link.contact_idx.getValue());
+                trans.fetchTableWithPrimkey(c);
+                if (c.email.getValue() != null && !c.email.getValue().isBlank()) {
+                    hasEmail = true;
+                    break;
+                }
+            }
+            jBSendMail.setEnabled(hasEmail);
+        } catch (Exception ex) {
+            jBSendMail.setEnabled(false);
+        }
+    }
+
+    private static boolean mailTemplateAvailable() {
+        String path = at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions.MailBodyOdtPath.getConfigValue();
+        if (path != null && !path.isBlank()) {
+            return new java.io.File(path).exists();
+        }
+        return new java.io.File("testdata/mail_body_template.odt").exists();
+    }
+
     private void feed_table() {
         feed_table(true);
     }

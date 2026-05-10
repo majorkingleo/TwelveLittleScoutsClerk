@@ -25,7 +25,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig OrganisationAddressCity = new DBConfig("OrganisationAddressCity","Musterstadt","Adresse der Organisation");
     public static DBConfig OrganisaiontIBAN = new DBConfig("OrganisaiontIBAN","AT00 0000 0000 0000 0000","IBAN der Organisation");    
 
-    public static DBConfig MailBodyOdtPath = new DBConfig("MailBodyOdtPath","","Pfad zur ODT-Vorlage für E-Mail-Text (leer = eingebaute Standardvorlage)");
+    public static DBConfig MailBodyOdtPath = new DBConfig("MailBodyOdtPath","","ODT-Vorlage für E-Mail-Text");
     public static DBConfig MailSmtpHost = new DBConfig("MailSmtpHost","localhost","Hostname / IP des SMTP-Servers");
     public static DBConfig MailSmtpPort = new DBConfig("MailSmtpPort","587","SMTP-Port (587 = STARTTLS)");
     public static DBConfig MailSmtpStartTls = new DBConfig("MailSmtpStartTls","true","STARTTLS aktivieren (true/false)");

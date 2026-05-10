@@ -19,14 +19,14 @@ public class ViewBill extends BaseDialogDialog {
     MainWin mainwin;
 
     public ViewBill(MainWin mainwin, DBBill entity) {
-        super(mainwin.getRoot(), "Rechnung anzeigen");
+        super(mainwin.getRoot(), "View Bill");
         initComponents();
 
         this.entity = entity;
         this.mainwin = mainwin;
 
         jLBillingnr.setText(entity.billingnr.toString());
-        jLFileName.setText(entity.file_name.toString().isEmpty() ? "(keine Datei)" : entity.file_name.toString());
+        jLFileName.setText(entity.file_name.toString().isEmpty() ? "(no file)" : entity.file_name.toString());
         jLState.setText(entity.state.handler.getValueAsString());
         jLDirection.setText(entity.direction.handler.getValueAsString());
 
@@ -54,16 +54,16 @@ public class ViewBill extends BaseDialogDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(480, 280));
 
-        jLabelBillingnr.setText("Rechnungsnummer:");
+        jLabelBillingnr.setText("Bill Number:");
         jLBillingnr.setText(" ");
 
-        jLabelFileName.setText("Dateiname:");
-        jLFileName.setText("(keine Datei)");
+        jLabelFileName.setText("File Name:");
+        jLFileName.setText("(no file)");
 
-        jLabelState.setText("Status:");
+        jLabelState.setText("State:");
         jLState.setText(" ");
 
-        jLabelDirection.setText("Richtung:");
+        jLabelDirection.setText("Direction:");
         jLDirection.setText(" ");
 
         jBDownloadODT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
@@ -106,7 +106,7 @@ public class ViewBill extends BaseDialogDialog {
         );
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -203,7 +203,7 @@ public class ViewBill extends BaseDialogDialog {
         }
 
         JFileChooser chooser = new JFileChooser(mainwin.getLastOpenPath());
-        chooser.setDialogTitle("Datei speichern");
+        chooser.setDialogTitle("Save File");
         chooser.setSelectedFile(new java.io.File(suggestedName));
         int result = chooser.showSaveDialog(this);
         if (result != JFileChooser.APPROVE_OPTION) {

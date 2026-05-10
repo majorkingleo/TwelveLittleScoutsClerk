@@ -20,7 +20,7 @@ public class Bills extends BaseDialog {
     TableManipulator tm;
 
     public Bills(MainWin mainwin) {
-        super(mainwin.getRoot(), "Rechnungen");
+        super(mainwin.getRoot(), "Bills");
 
         initComponents();
 
@@ -108,7 +108,7 @@ public class Bills extends BaseDialog {
         jScrollPane1.setViewportView(jTContent);
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBClose.setText("Schließen");
+        jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
@@ -116,7 +116,7 @@ public class Bills extends BaseDialog {
         });
 
         jBView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edit.png"))); // NOI18N
-        jBView.setText("Anzeigen");
+        jBView.setText("View");
         jBView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBViewActionPerformed(evt);
@@ -145,7 +145,7 @@ public class Bills extends BaseDialog {
         );
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        jLabel1.setText("Rechnungen");
+        jLabel1.setText("Bills");
 
         jLInfo.setText(" ");
         jLInfo.setAutoscrolls(true);

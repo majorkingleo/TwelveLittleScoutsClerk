@@ -160,8 +160,8 @@ public class DBBill extends DBStrukt {
     public DBString        file_name  = new DBString("file_name", "File Name", 255);
     public DBBlob          odt_data   = new DBBlob("odt_data");
     public DBBlob          pdf_data   = new DBBlob("pdf_data");
-    public DBEnumAsInteger state      = new DBEnumAsInteger("state", new StateHandler());
-    public DBEnumAsInteger direction  = new DBEnumAsInteger("direction", new DirectionHandler());
+    public DBEnumAsInteger state      = new DBEnumAsInteger("state", "State", new StateHandler());
+    public DBEnumAsInteger direction  = new DBEnumAsInteger("direction", "Direction", new DirectionHandler());
     public DBHistory       hist       = new DBHistory("hist");
 
     public DBBill() {

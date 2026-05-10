@@ -16,7 +16,6 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
-import com.google.zxing.WriterException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

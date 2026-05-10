@@ -35,6 +35,36 @@ import java.util.HashSet;
 
 public class MailJobHelper {
 
+    private Root root;
+
+    // -----------------------------------------------------------------------
+    // Translatable messages
+    // -----------------------------------------------------------------------
+    private String MESSAGE_SUBJECT_PREFIX;
+    private String MESSAGE_PAID_IN_FULL;
+    private String MESSAGE_PARTIAL_PAYMENT;
+    private String MESSAGE_TRANSFER_REQUEST;
+    private String MESSAGE_ALSO_SENT_TO;
+    private String MESSAGE_NO_MAIL_TEMPLATE_NAME;
+    private String MESSAGE_MAIL_TEMPLATE_NOT_FOUND;
+    private String MESSAGE_MAIL_TEMPLATE_NO_FILE;
+
+    public MailJobHelper(Root root) {
+        this.root = root;
+        initMessages();
+    }
+
+    private void initMessages() {
+        MESSAGE_SUBJECT_PREFIX          = root.MlM("Invoice");
+        MESSAGE_PAID_IN_FULL            = root.MlM("Note: This invoice has already been paid in full. No further transfer is required.");
+        MESSAGE_PARTIAL_PAYMENT         = root.MlM("Note: A partial amount of %.2f EUR has already been paid. Outstanding balance: %.2f EUR.");
+        MESSAGE_TRANSFER_REQUEST        = root.MlM("Please transfer the amount to the following account:");
+        MESSAGE_ALSO_SENT_TO            = root.MlM("Note: This invoice was also sent to the following addresses:");
+        MESSAGE_NO_MAIL_TEMPLATE_NAME   = root.MlM("No e-mail template name configured. Please set 'MailBodyTemplateName' in the settings.");
+        MESSAGE_MAIL_TEMPLATE_NOT_FOUND = root.MlM("E-mail template '%s' not found.");
+        MESSAGE_MAIL_TEMPLATE_NO_FILE   = root.MlM("E-mail template '%s' has no ODT file.");
+    }
+
     /**
      * Creates and inserts {@link DBMailJob} records for every contact e-mail
      * address linked to the member of the given event-member.
@@ -47,13 +77,13 @@ public class MailJobHelper {
      * @param eventMember  the event-member record
      * @param member       the member
      */
-    public static void createMailJobs(Root root, Transaction trans, MainWinInterface mainwin,
+    public void createMailJobs(Transaction trans, MainWinInterface mainwin,
             DBBill bill, DBBillTemplate template,
             DBEvent event, DBEventMember eventMember, DBMember member)
             throws Exception {
 
         // 1. Load mail body ODT bytes from the configured DBBillTemplate
-        byte[] odtBytes = loadMailBodyOdtBytes(trans, eventMember.bp_idx.getValue(), mainwin.getRoot());
+        byte[] odtBytes = loadMailBodyOdtBytes(trans, eventMember.bp_idx.getValue());
 
         // Fetch DBBillingPeriod (needed for buildReplacementMap)
         DBBillingPeriod billingPeriod = new DBBillingPeriod();
@@ -68,8 +98,8 @@ public class MailJobHelper {
 
         // Build subject (same for all recipients)
         String billingNumber = bill.billingnr.getValue();
-        String subject = "Rechnung " + billingNumber + " \u2013 "
-                + mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.Organisation);
+        String subject = MESSAGE_SUBJECT_PREFIX + " " + billingNumber + " \u2013 "
+                + root.getSetup().getConfig(AppConfigDefinitions.Organisation);
 
         // 5. Compute payment note (same for all recipients)
         double totalPaid = eventMember.paid.getValue() + eventMember.paid_cash.getValue();
@@ -77,18 +107,15 @@ public class MailJobHelper {
         String paymentNote;
         String transferRequest;
         if (totalPaid >= costs) {
-            paymentNote = "Note: This invoice has already been paid in full. "
-                    + "No further transfer is required.";
+            paymentNote = MESSAGE_PAID_IN_FULL;
             transferRequest = "";
         } else if (totalPaid > 0) {
             double remaining = costs - totalPaid;
-            paymentNote = String.format(
-                    "Note: A partial amount of %.2f EUR has already been paid. "
-                    + "Outstanding balance: %.2f EUR.", totalPaid, remaining);
-            transferRequest = "Please transfer the amount to the following account:";
+            paymentNote = String.format(MESSAGE_PARTIAL_PAYMENT, totalPaid, remaining);
+            transferRequest = MESSAGE_TRANSFER_REQUEST;
         } else {
             paymentNote = "";
-            transferRequest = "Please transfer the amount to the following account:";
+            transferRequest = MESSAGE_TRANSFER_REQUEST;
         }
 
         // 8. Create a DBMailJob for each recipient address
@@ -115,7 +142,7 @@ public class MailJobHelper {
                 String alsoSentTo = buildAlsoSentTo(allAddresses, address);
 
                 // 2. Build replacement map with current contact
-                Map<String, String> replacements = BillingHelper.buildReplacementMap( root,
+                Map<String, String> replacements = BillingHelper.buildReplacementMap(root,
                         member, contact, event, eventMember, billingPeriod, billingNumber);
 
                 // 6. Add mail-specific placeholders
@@ -152,32 +179,28 @@ public class MailJobHelper {
     // Private helpers
     // -----------------------------------------------------------------------
 
-    private static byte[] loadMailBodyOdtBytes(Transaction trans, int bpIdx, at.redeye.FrameWork.base.Root root)
+    private byte[] loadMailBodyOdtBytes(Transaction trans, int bpIdx)
             throws SQLException, TableBindingNotRegisteredException,
                    UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException {
         String templateName = root.getSetup().getConfig(AppConfigDefinitions.MailBodyTemplateName);
         if (templateName == null || templateName.isBlank()) {
-            throw new IOException(
-                    "Kein E-Mail-Vorlagenname konfiguriert. "
-                    + "Bitte 'MailBodyTemplateName' in den Einstellungen setzen.");
+            throw new IOException(MESSAGE_NO_MAIL_TEMPLATE_NAME);
         }
         DBBillTemplate tmpl = new DBBillTemplate();
         List<DBBillTemplate> results = trans.fetchTable2(tmpl,
                 "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + bpIdx
                 + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
         if (results.isEmpty()) {
-            throw new IOException(
-                    "E-Mail-Vorlage '" + templateName + "' nicht gefunden.");
+            throw new IOException(String.format(MESSAGE_MAIL_TEMPLATE_NOT_FOUND, templateName));
         }
         DBBillTemplate found = results.get(0);
         if (found.odt_data.value == null || found.odt_data.value.length == 0) {
-            throw new IOException(
-                    "E-Mail-Vorlage '" + templateName + "' hat keine ODT-Datei.");
+            throw new IOException(String.format(MESSAGE_MAIL_TEMPLATE_NO_FILE, templateName));
         }
         return found.odt_data.value;
     }
 
-    private static List<DBContact> fetchRecipientsWithEmail(Transaction trans,
+    private List<DBContact> fetchRecipientsWithEmail(Transaction trans,
             DBEventMember eventMember)
             throws SQLException, TableBindingNotRegisteredException,
                    UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException {
@@ -199,7 +222,7 @@ public class MailJobHelper {
         return recipients;
     }
 
-    private static List<String> splitEmails(String raw) {
+    private List<String> splitEmails(String raw) {
         List<String> result = new ArrayList<>();
         if (raw == null || raw.isBlank()) {
             return result;
@@ -213,7 +236,7 @@ public class MailJobHelper {
         return result;
     }
 
-    private static String buildAlsoSentTo(Collection<String> allAddresses, String currentAddress) {
+    private String buildAlsoSentTo(Collection<String> allAddresses, String currentAddress) {
         List<String> others = new ArrayList<>();
         for (String addr : allAddresses) {
             if (!addr.equalsIgnoreCase(currentAddress)) {
@@ -223,17 +246,16 @@ public class MailJobHelper {
         if (others.isEmpty()) {
             return "";
         }
-        return "Note: This invoice was also sent to the following addresses:\n"
-                + String.join(", ", others);
+        return MESSAGE_ALSO_SENT_TO + "\n" + String.join(", ", others);
     }
 
-    private static String extractText(Node node) {
+    private String extractText(Node node) {
         StringBuilder sb = new StringBuilder();
         extractTextFrom(node, sb);
         return sb.toString();
     }
 
-    private static void extractTextFrom(Node node, StringBuilder sb) {
+    private void extractTextFrom(Node node, StringBuilder sb) {
         if (node.getNodeType() == Node.TEXT_NODE) {
             sb.append(node.getNodeValue());
         }

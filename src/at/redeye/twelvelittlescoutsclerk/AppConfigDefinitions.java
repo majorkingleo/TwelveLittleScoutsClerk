@@ -34,6 +34,8 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig MailSmtpUser = new DBConfig("MailSmtpUser","","SMTP username");
     public static DBConfig MailSmtpPassword = new DBConfig("MailSmtpPassword","","SMTP password");
 
+    public static DBConfig OpenCommand = new DBConfig("OpenCommand","","Command to open files (e.g. PDF viewer). Use %s as placeholder for the file path. If empty, java.awt.Desktop.open() is used.");
+
     public static void registerDefinitions() {
 
         BaseRegisterDefinitions();
@@ -53,6 +55,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         add(MailFromName);
         addLocal(MailSmtpUser);
         addLocal(MailSmtpPassword);
+        add(OpenCommand);
     
         GlobalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
         LocalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");

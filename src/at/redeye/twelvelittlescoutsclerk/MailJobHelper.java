@@ -23,11 +23,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.odftoolkit.odfdom.doc.OdfTextDocument;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.HashSet;
 
 public class MailJobHelper {
 
@@ -89,16 +92,23 @@ public class MailJobHelper {
 
         // 8. Create a DBMailJob for each recipient address
         // Collect all individual addresses for the also_sent_to note
-        List<String> allAddresses = new ArrayList<>();
+        HashSet<String> allAddresses = new HashSet<>();
         for (DBContact c : allRecipients) {
-            allAddresses.addAll(splitEmails(c.email.getValue()));
+            List<String> emails = splitEmails(c.email.getValue());
+            for (String email : emails) {
+                allAddresses.add(email);
+            }
         }
 
+        HashSet<String> processedAddresses = new HashSet<>();
         for (DBContact contact : allRecipients) {
             List<String> addresses = splitEmails(contact.email.getValue());
             String recipientName = (contact.forname.getValue() + " " + contact.name.getValue()).trim();
 
             for (String address : addresses) {
+                if (!processedAddresses.add(address)) {
+                    continue; // duplicate address – skip to avoid double mail jobs
+                }
 
                 // 4. Build ${mail.also_sent_to} for this specific address
                 String alsoSentTo = buildAlsoSentTo(allAddresses, address);
@@ -203,7 +213,7 @@ public class MailJobHelper {
         return result;
     }
 
-    private static String buildAlsoSentTo(List<String> allAddresses, String currentAddress) {
+    private static String buildAlsoSentTo(Collection<String> allAddresses, String currentAddress) {
         List<String> others = new ArrayList<>();
         for (String addr : allAddresses) {
             if (!addr.equalsIgnoreCase(currentAddress)) {

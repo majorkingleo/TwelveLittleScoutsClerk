@@ -9,8 +9,11 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMailJob;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 import javax.swing.JOptionPane;
 
@@ -21,6 +24,7 @@ public class MailJobs extends BaseDialog {
     TableManipulator tm;
 
     private String MESSAGE_ONLY_FAILED_JOBS;
+    private String MESSAGE_NO_PDF;
 
     public MailJobs(MainWin mainwin) {
         super(mainwin.getRoot(), "Mail Jobs");
@@ -57,6 +61,7 @@ public class MailJobs extends BaseDialog {
 
     private void initMessages() {
         MESSAGE_ONLY_FAILED_JOBS = MlM("Only failed jobs can be retried.");
+        MESSAGE_NO_PDF = MlM("This mail job has no PDF attachment.");
     }
 
     private void feed_table(boolean autombox) {
@@ -84,6 +89,7 @@ public class MailJobs extends BaseDialog {
         jBClose = new javax.swing.JButton();
         jBRetry = new javax.swing.JButton();
         jBRefresh = new javax.swing.JButton();
+        jBView = new javax.swing.JButton();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -127,12 +133,22 @@ public class MailJobs extends BaseDialog {
             }
         });
 
+        jBView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/twelvelittlescoutsclerk/resources/icons/pdf_view.png"))); // NOI18N
+        jBView.setText("View PDF");
+        jBView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBViewActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jBView)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRetry)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRefresh)
@@ -145,6 +161,7 @@ public class MailJobs extends BaseDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBView)
                     .addComponent(jBRetry)
                     .addComponent(jBRefresh)
                     .addComponent(jBClose))
@@ -224,10 +241,45 @@ public class MailJobs extends BaseDialog {
         feed_table(false);
     }//GEN-LAST:event_jBRefreshActionPerformed
 
+    private void jBViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBViewActionPerformed
+        if (!checkAnyAndSingleSelection(jTContent)) {
+            return;
+        }
+        final int row = tm.getSelectedRow();
+        if (row < 0 || row >= values.size()) {
+            return;
+        }
+        final DBMailJob job = values.get(row);
+        if (job.pdf_data.value == null || job.pdf_data.value.length == 0) {
+            JOptionPane.showMessageDialog(this, MESSAGE_NO_PDF, getTitle(), JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+                File tmpFile = File.createTempFile("mailjob_", ".pdf");
+                tmpFile.deleteOnExit();
+                try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                    fos.write(job.pdf_data.value);
+                }
+                String openCmd = mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.OpenCommand);
+                if (openCmd != null && !openCmd.isBlank()) {
+                    String resolved = openCmd.contains("%s")
+                            ? openCmd.replace("%s", tmpFile.getAbsolutePath())
+                            : openCmd + " " + tmpFile.getAbsolutePath();
+                    new ProcessBuilder(resolved.split("\\s+")).start();
+                } else {
+                    java.awt.Desktop.getDesktop().open(tmpFile);
+                }
+            }
+        };
+    }//GEN-LAST:event_jBViewActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBRefresh;
     private javax.swing.JButton jBRetry;
+    private javax.swing.JButton jBView;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

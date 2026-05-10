@@ -6,6 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_bill;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialogDialog;
+import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import java.io.File;
@@ -32,6 +33,7 @@ public class ViewBill extends BaseDialogDialog {
 
         jBDownloadODT.setEnabled(entity.odt_data.value != null && entity.odt_data.value.length > 0);
         jBDownloadPDF.setEnabled(entity.pdf_data.value != null && entity.pdf_data.value.length > 0);
+        jBViewPDF.setEnabled(entity.pdf_data.value != null && entity.pdf_data.value.length > 0);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -48,6 +50,7 @@ public class ViewBill extends BaseDialogDialog {
         jPanelButtons = new javax.swing.JPanel();
         jBDownloadODT = new javax.swing.JButton();
         jBDownloadPDF = new javax.swing.JButton();
+        jBViewPDF = new javax.swing.JButton();
         jPanelActions = new javax.swing.JPanel();
         jBClose = new javax.swing.JButton();
 
@@ -67,7 +70,7 @@ public class ViewBill extends BaseDialogDialog {
         jLDirection.setText(" ");
 
         jBDownloadODT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBDownloadODT.setText("ODT herunterladen");
+        jBDownloadODT.setText("Download ODT");
         jBDownloadODT.setEnabled(false);
         jBDownloadODT.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -76,11 +79,20 @@ public class ViewBill extends BaseDialogDialog {
         });
 
         jBDownloadPDF.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
-        jBDownloadPDF.setText("PDF herunterladen");
+        jBDownloadPDF.setText("Download PDF");
         jBDownloadPDF.setEnabled(false);
         jBDownloadPDF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBDownloadPDFActionPerformed(evt);
+            }
+        });
+
+        jBViewPDF.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/twelvelittlescoutsclerk/resources/icons/pdf_view.png"))); // NOI18N
+        jBViewPDF.setText("View PDF");
+        jBViewPDF.setEnabled(false);
+        jBViewPDF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBViewPDFActionPerformed(evt);
             }
         });
 
@@ -90,6 +102,8 @@ public class ViewBill extends BaseDialogDialog {
             jPanelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelButtonsLayout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jBViewPDF)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBDownloadODT)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBDownloadPDF)
@@ -100,6 +114,7 @@ public class ViewBill extends BaseDialogDialog {
             .addGroup(jPanelButtonsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBViewPDF)
                     .addComponent(jBDownloadODT)
                     .addComponent(jBDownloadPDF))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -197,6 +212,31 @@ public class ViewBill extends BaseDialogDialog {
         downloadFile(entity.pdf_data.value, name);
     }//GEN-LAST:event_jBDownloadPDFActionPerformed
 
+    private void jBViewPDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBViewPDFActionPerformed
+        if (entity.pdf_data.value == null || entity.pdf_data.value.length == 0) {
+            return;
+        }
+        new AutoMBox(ViewBill.class.getName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                File tmpFile = File.createTempFile("bill_", ".pdf");
+                tmpFile.deleteOnExit();
+                try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                    fos.write(entity.pdf_data.value);
+                }
+                String openCmd = mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.OpenCommand);
+                if (openCmd != null && !openCmd.isBlank()) {
+                    String resolved = openCmd.contains("%s")
+                            ? openCmd.replace("%s", tmpFile.getAbsolutePath())
+                            : openCmd + " " + tmpFile.getAbsolutePath();
+                    new ProcessBuilder(resolved.split("\\s+")).start();
+                } else {
+                    java.awt.Desktop.getDesktop().open(tmpFile);
+                }
+            }
+        };
+    }//GEN-LAST:event_jBViewPDFActionPerformed
+
     private void downloadFile(byte[] data, String suggestedName) {
         if (data == null || data.length == 0) {
             return;
@@ -227,6 +267,7 @@ public class ViewBill extends BaseDialogDialog {
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBDownloadODT;
     private javax.swing.JButton jBDownloadPDF;
+    private javax.swing.JButton jBViewPDF;
     private javax.swing.JLabel jLBillingnr;
     private javax.swing.JLabel jLDirection;
     private javax.swing.JLabel jLFileName;

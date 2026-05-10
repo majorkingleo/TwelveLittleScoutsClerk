@@ -281,14 +281,20 @@ A "Retry" button re-sets FAILED jobs back to PENDING.
 
 ## 8  Implementation Order
 
-1. `pom.xml` — add angus-mail dependency
-2. `AppConfigDefinitions.java` — add 7 mail config entries
-3. `DBBillTemplate.java` — add `mail_body_odt_data` BLOB, bump to version 3
-4. `DBMailJob.java` — new bindtype, version 1
-5. `Main.java` — register `DBMailJob` with `BindtypeManager`
-6. `MailJobHelper.java` — `createMailJobs()` (ODT body load → text extract → job insert)
-7. `MailWorker.java` — polling loop + `sendMail()`
-8. `EditEvent.java` — call `MailJobHelper.createMailJobs()` after bill insert
-9. `Main.java` — start daemon thread
-10. `testdata/mail_body_template.odt` ✅ already created — ship in resources or testdata
-11. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry
+1. `pom.xml` — add angus-mail dependency  ✅ **DONE**
+2. `AppConfigDefinitions.java` — add mail config entries  ✅ **DONE**
+   - Added: `MailBodyTemplateName`, `MailSmtpHost`, `MailSmtpPort`, `MailSmtpStartTls`, `MailFrom`, `MailFromName` (global); `MailSmtpUser`, `MailSmtpPassword` (local)
+3. `DBBillTemplate.java` — no extra BLOB field; mail body ODT comes from a separate template looked up by `MailBodyTemplateName`  ✅ **DONE** (version stays at 2)
+4. `DBMailJob.java` — new bindtype, version 1  ✅ **DONE**
+5. `Main.java` — register `DBMailJob` with `BindtypeManager`  ✅ **DONE**
+6. `MailJobHelper.java` — `createMailJobs()` implemented  ✅ **DONE**
+   - Loads ODT from the `DBBillTemplate` named by `MailBodyTemplateName`
+   - Applies replacement map + mail-specific placeholders
+   - Inserts `DBMailJob` rows (state PENDING) for each contact with e-mail
+7. `MailWorker.java` — polling loop + `sendMail()`  ❌ **TODO**
+8. `EditEvent.java` — "Send Mail" button added  ✅ **DONE**
+   - Separate from "Create Bill"; calls `MailJobHelper.createMailJobs()`
+   - Button disabled until a row is selected, `MailBodyTemplateName` is configured, and the member has at least one contact with an e-mail
+9. `Main.java` — start `MailWorker` daemon thread  ❌ **TODO** (depends on step 7)
+10. `testdata/mail_body_template.odt`  ✅ **DONE** (already existed)
+11. *(optional)* `MailJobs.java` + `ViewMailJob.java` — list dialog + menu entry  ❌ **TODO**

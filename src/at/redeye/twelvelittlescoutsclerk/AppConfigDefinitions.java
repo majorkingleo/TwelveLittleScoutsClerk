@@ -19,20 +19,20 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     
     public static DBConfig UserName = new DBConfig("UserName","");
     public static DBConfig Password = new DBConfig("Password","");    
-    public static DBConfig Organisation = new DBConfig("Organisation","Pfadfindergruppe XY","Name der Organisation");
-    public static DBConfig OrganisationAddressStreet = new DBConfig("OrganisationAddressStreet","Musterstraße 1","Adresse der Organisation");
-    public static DBConfig OrganisationAddressPostalCode = new DBConfig("OrganisationAddressPostalCode","12345","Adresse der Organisation");
-    public static DBConfig OrganisationAddressCity = new DBConfig("OrganisationAddressCity","Musterstadt","Adresse der Organisation");
-    public static DBConfig OrganisaiontIBAN = new DBConfig("OrganisaiontIBAN","AT00 0000 0000 0000 0000","IBAN der Organisation");    
+    public static DBConfig Organisation = new DBConfig("Organisation","Pfadfindergruppe XY","Name of the organisation");
+    public static DBConfig OrganisationAddressStreet = new DBConfig("OrganisationAddressStreet","Musterstraße 1","Address of the organisation");
+    public static DBConfig OrganisationAddressPostalCode = new DBConfig("OrganisationAddressPostalCode","12345","Address of the organisation");
+    public static DBConfig OrganisationAddressCity = new DBConfig("OrganisationAddressCity","Musterstadt","Address of the organisation");
+    public static DBConfig OrganisaiontIBAN = new DBConfig("OrganisaiontIBAN","AT00 0000 0000 0000 0000","IBAN of the organisation");    
 
-    public static DBConfig MailBodyTemplateName = new DBConfig("MailBodyTemplateName","","Name der Rechnungsvorlage (DBBillTemplate) für den E-Mail-Text");
-    public static DBConfig MailSmtpHost = new DBConfig("MailSmtpHost","localhost","Hostname / IP des SMTP-Servers");
-    public static DBConfig MailSmtpPort = new DBConfig("MailSmtpPort","587","SMTP-Port (587 = STARTTLS)");
-    public static DBConfig MailSmtpStartTls = new DBConfig("MailSmtpStartTls","true","STARTTLS aktivieren (true/false)");
-    public static DBConfig MailFrom = new DBConfig("MailFrom","","Absender-E-Mail-Adresse");
-    public static DBConfig MailFromName = new DBConfig("MailFromName","","Absender-Anzeigename");
-    public static DBConfig MailSmtpUser = new DBConfig("MailSmtpUser","","SMTP-Benutzername");
-    public static DBConfig MailSmtpPassword = new DBConfig("MailSmtpPassword","","SMTP-Passwort");
+    public static DBConfig MailBodyTemplateName = new DBConfig("MailBodyTemplateName","","Name of the billing template (DBBillTemplate) for the email body");
+    public static DBConfig MailSmtpHost = new DBConfig("MailSmtpHost","localhost","Hostname / IP of the SMTP server");
+    public static DBConfig MailSmtpPort = new DBConfig("MailSmtpPort","587","SMTP port (587 = STARTTLS)");
+    public static DBConfig MailSmtpStartTls = new DBConfig("MailSmtpStartTls","true","Enable STARTTLS (true/false)");
+    public static DBConfig MailFrom = new DBConfig("MailFrom","","Sender email address");
+    public static DBConfig MailFromName = new DBConfig("MailFromName","","Sender display name");
+    public static DBConfig MailSmtpUser = new DBConfig("MailSmtpUser","","SMTP username");
+    public static DBConfig MailSmtpPassword = new DBConfig("MailSmtpPassword","","SMTP password");
 
     public static void registerDefinitions() {
 

@@ -283,7 +283,7 @@ public class EditContact extends BaseDialogDialog implements NewSequenceValueInt
 
         jLabel2.setText("Name");
 
-        jLabel3.setText("Vorname");
+        jLabel3.setText("First Name");
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBClose.setText("Close");
@@ -331,7 +331,7 @@ public class EditContact extends BaseDialogDialog implements NewSequenceValueInt
                 .addContainerGap())
         );
 
-        jLabel13.setText("Telefonnummer");
+        jLabel13.setText("Phone Number");
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Members"));
 

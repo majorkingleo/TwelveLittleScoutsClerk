@@ -5,6 +5,7 @@
 package at.redeye.twelvelittlescoutsclerk;
 
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
+import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
@@ -46,7 +47,7 @@ public class MailJobHelper {
      * @param eventMember  the event-member record
      * @param member       the member
      */
-    public static void createMailJobs(Transaction trans, MainWinInterface mainwin,
+    public static void createMailJobs(Root root, Transaction trans, MainWinInterface mainwin,
             DBBill bill, DBBillTemplate template,
             DBEvent event, DBEventMember eventMember, DBMember member)
             throws Exception {
@@ -114,7 +115,7 @@ public class MailJobHelper {
                 String alsoSentTo = buildAlsoSentTo(allAddresses, address);
 
                 // 2. Build replacement map with current contact
-                Map<String, String> replacements = BillingHelper.buildReplacementMap(
+                Map<String, String> replacements = BillingHelper.buildReplacementMap( root,
                         member, contact, event, eventMember, billingPeriod);
                 replacements.put("${billing_number}", billingNumber);
 

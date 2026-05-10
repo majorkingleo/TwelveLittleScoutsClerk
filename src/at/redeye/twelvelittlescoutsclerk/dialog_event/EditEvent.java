@@ -967,7 +967,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 // Generate bill ODT from template blob
                 java.io.File odtFile = BillingHelper.generateBillFromTemplate(
-                        trans, template, event, event_member, false);
+                        root, trans, template, event, event_member, false);
 
                 // Convert ODT to PDF
                 java.io.File pdfFile = BillingHelper.convertToPdf(
@@ -1040,7 +1040,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 member.idx.loadFromCopy(event_member.member_idx.getValue());
                 trans.fetchTableWithPrimkey(member);
 
-                MailJobHelper.createMailJobs(trans, mainwin, bill, template, event, event_member, member);
+                MailJobHelper.createMailJobs(root, trans, mainwin, bill, template, event, event_member, member);
                 trans.commit();
 
                 JOptionPane.showMessageDialog(null, MESSAGE_MAIL_JOBS_CREATED);

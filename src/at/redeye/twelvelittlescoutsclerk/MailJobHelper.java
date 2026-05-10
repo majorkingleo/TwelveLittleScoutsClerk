@@ -87,44 +87,54 @@ public class MailJobHelper {
             transferRequest = "Bitte ueberweisen Sie den Betrag auf folgendes Konto:";
         }
 
-        // 8. Create a DBMailJob for each recipient
+        // 8. Create a DBMailJob for each recipient address
+        // Collect all individual addresses for the also_sent_to note
+        List<String> allAddresses = new ArrayList<>();
+        for (DBContact c : allRecipients) {
+            allAddresses.addAll(splitEmails(c.email.getValue()));
+        }
+
         for (DBContact contact : allRecipients) {
-
-            // 4. Build ${mail.also_sent_to} for this recipient
-            String alsoSentTo = buildAlsoSentTo(allRecipients, contact);
-
-            // 2. Build replacement map with current recipient as contact
-            Map<String, String> replacements = BillingHelper.buildReplacementMap(
-                    member, contact, event, eventMember, billingPeriod);
-            replacements.put("${billing_number}", billingNumber);
-
-            // 6. Add mail-specific placeholders
-            replacements.put("${mail.also_sent_to}", alsoSentTo);
-            replacements.put("${mail.payment_note}", paymentNote);
-            replacements.put("${mail.transfer_request}", transferRequest);
-
-            // 7. Load fresh ODT copy, apply replacements, extract plain text
-            OdfTextDocument doc = OdfTextDocument.loadDocument(
-                    new ByteArrayInputStream(odtBytes));
-            BillingHelper.replaceInNode(doc.getContentDom(), replacements);
-            String body = extractText(doc.getContentDom());
-
-            // Build and insert DBMailJob
-            DBMailJob job = new DBMailJob();
-            job.idx.loadFromCopy(mainwin.getNewSequenceValue(DBMailJob.MAIL_JOB_IDX_SEQUENCE));
-            job.bp_idx.loadFromCopy(bill.bp_idx.getValue());
-            job.bill_idx.loadFromCopy(bill.idx.getValue());
-            job.recipient_email.loadFromString(contact.email.getValue());
+            List<String> addresses = splitEmails(contact.email.getValue());
             String recipientName = (contact.forname.getValue() + " " + contact.name.getValue()).trim();
-            job.recipient_name.loadFromString(recipientName);
-            job.subject.loadFromString(subject);
-            job.body.value = body.getBytes(StandardCharsets.UTF_8);
-            job.pdf_data.value = bill.pdf_data.value;
-            job.state.handler.setValue(DBMailJob.State.PENDING.ordinal());
-            job.retry_count.loadFromCopy(0);
 
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
-                    trans, job, job.hist, MailJobHelper.class.getSimpleName());
+            for (String address : addresses) {
+
+                // 4. Build ${mail.also_sent_to} for this specific address
+                String alsoSentTo = buildAlsoSentTo(allAddresses, address);
+
+                // 2. Build replacement map with current contact
+                Map<String, String> replacements = BillingHelper.buildReplacementMap(
+                        member, contact, event, eventMember, billingPeriod);
+                replacements.put("${billing_number}", billingNumber);
+
+                // 6. Add mail-specific placeholders
+                replacements.put("${mail.also_sent_to}", alsoSentTo);
+                replacements.put("${mail.payment_note}", paymentNote);
+                replacements.put("${mail.transfer_request}", transferRequest);
+
+                // 7. Load fresh ODT copy, apply replacements, extract plain text
+                OdfTextDocument doc = OdfTextDocument.loadDocument(
+                        new ByteArrayInputStream(odtBytes));
+                BillingHelper.replaceInNode(doc.getContentDom(), replacements);
+                String body = extractText(doc.getContentDom());
+
+                // Build and insert DBMailJob
+                DBMailJob job = new DBMailJob();
+                job.idx.loadFromCopy(mainwin.getNewSequenceValue(DBMailJob.MAIL_JOB_IDX_SEQUENCE));
+                job.bp_idx.loadFromCopy(bill.bp_idx.getValue());
+                job.bill_idx.loadFromCopy(bill.idx.getValue());
+                job.recipient_email.loadFromString(address);
+                job.recipient_name.loadFromString(recipientName);
+                job.subject.loadFromString(subject);
+                job.body.value = body.getBytes(StandardCharsets.UTF_8);
+                job.pdf_data.value = bill.pdf_data.value;
+                job.state.handler.setValue(DBMailJob.State.PENDING.ordinal());
+                job.retry_count.loadFromCopy(0);
+
+                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                        trans, job, job.hist, MailJobHelper.class.getSimpleName());
+            }
         }
     }
 
@@ -179,12 +189,25 @@ public class MailJobHelper {
         return recipients;
     }
 
-    private static String buildAlsoSentTo(List<DBContact> allRecipients, DBContact current) {
+    private static List<String> splitEmails(String raw) {
+        List<String> result = new ArrayList<>();
+        if (raw == null || raw.isBlank()) {
+            return result;
+        }
+        for (String part : raw.split("[,;\\s]+")) {
+            String addr = part.trim();
+            if (!addr.isEmpty()) {
+                result.add(addr);
+            }
+        }
+        return result;
+    }
+
+    private static String buildAlsoSentTo(List<String> allAddresses, String currentAddress) {
         List<String> others = new ArrayList<>();
-        for (DBContact c : allRecipients) {
-            if (!c.idx.getValue().equals(current.idx.getValue())) {
-                String name = (c.forname.getValue() + " " + c.name.getValue()).trim();
-                others.add(name + " <" + c.email.getValue() + ">");
+        for (String addr : allAddresses) {
+            if (!addr.equalsIgnoreCase(currentAddress)) {
+                others.add(addr);
             }
         }
         if (others.isEmpty()) {

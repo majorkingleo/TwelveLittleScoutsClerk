@@ -21,7 +21,7 @@ public class DBMember extends DBStrukt
     public DBDateTime     entry_date = new DBDateTime("entry_date", "Entry Date");
     public DBHistory      hist = new DBHistory( "hist" );
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBString       note = new DBString("note", "Notiz", 300);
+    public DBString       note = new DBString("note", "Note", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
     public DBFlagInteger  inaktiv = new DBFlagInteger("inactiv","Inactiv");
     public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");

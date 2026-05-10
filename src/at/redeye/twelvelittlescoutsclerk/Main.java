@@ -34,7 +34,7 @@ public class Main extends BaseModuleLauncher
         
         root = new LocalRoot( getAppName(), getAppTitle(), true, false);
 
-        root.setBaseLanguage("de");
+        root.setBaseLanguage("en");
         root.setDefaultLanguage("en");
           
         BaseAppConfigDefinitions.LoggingLevel.setConfigValue("DEBUG");

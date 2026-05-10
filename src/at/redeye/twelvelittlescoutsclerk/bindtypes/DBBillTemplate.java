@@ -18,8 +18,8 @@ public class DBBillTemplate extends DBStrukt {
     public DBInteger idx         = new DBInteger("idx");
     public DBInteger bp_idx      = new DBInteger("bp_idx");
     public DBString  name        = new DBString("name", "Name", 255);
-    public DBString  description = new DBString("description", "Beschreibung", 500);
-    public DBString  file_name   = new DBString("file_name", "Dateiname", 255);
+    public DBString  description = new DBString("description", "Description", 500);
+    public DBString  file_name   = new DBString("file_name", "File Name", 255);
     public DBBlob    odt_data    = new DBBlob("odt_data");
     public DBHistory hist        = new DBHistory("hist");
 

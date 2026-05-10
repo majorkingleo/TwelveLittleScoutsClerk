@@ -89,13 +89,13 @@ public class DBMailJob extends DBStrukt {
     public DBInteger       bp_idx          = new DBInteger("bp_idx");
     public DBInteger       bill_idx        = new DBInteger("bill_idx");
     public DBString        recipient_email = new DBString("recipient_email", "E-Mail", 200);
-    public DBString        recipient_name  = new DBString("recipient_name", "Empfänger", 200);
-    public DBString        subject         = new DBString("subject", "Betreff", 500);
+    public DBString        recipient_name  = new DBString("recipient_name", "Recipient", 200);
+    public DBString        subject         = new DBString("subject", "Subject", 500);
     public DBBlob          body            = new DBBlob("body");
     public DBBlob          pdf_data        = new DBBlob("pdf_data");
     public DBEnumAsInteger state           = new DBEnumAsInteger("state", new StateHandler());
     public DBInteger       retry_count     = new DBInteger("retry_count");
-    public DBString        error_message   = new DBString("error_message", "Fehler", 2000);
+    public DBString        error_message   = new DBString("error_message", "Error", 2000);
     public DBHistory       hist            = new DBHistory("hist");
 
     public DBMailJob() {

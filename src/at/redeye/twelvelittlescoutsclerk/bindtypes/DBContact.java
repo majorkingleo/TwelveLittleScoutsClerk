@@ -22,7 +22,7 @@ public class DBContact extends DBStrukt
     public DBString       name = new DBString("name", "Name", 50 );
     public DBString       forname = new DBString("forname", "Forname", 50 );    
     public DBHistory      hist = new DBHistory( "hist" );    
-    public DBString       note = new DBString("note", "Notiz", 300);
+    public DBString       note = new DBString("note", "Note", 300);
     public DBString       tel = new DBString("tel", "Phone Number", 50 );
     public DBString       email = new DBString("email", "Email", 200 );
     public DBString       bank_account_iban = new DBString("bank_account_iban", "Bank account IBAN", 50 );

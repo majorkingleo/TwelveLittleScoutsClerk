@@ -22,8 +22,8 @@ public class DBAudit extends DBStrukt
     public DBInteger bp_idx = new DBInteger( "bp_idx" );
     public DBInteger member_idx = new DBInteger("member_idx", "Idx");
     public DBString  message = new DBString( "message", "Text", 3000 );
-    public DBDateTime date = new DBDateTime( "date", "Datum" );
-    public DBString  user = new DBString("user", "Benutzer", 50);
+    public DBDateTime date = new DBDateTime( "date", "Date" );
+    public DBString  user = new DBString("user", "User", 50);
 
     
     public DBAudit()

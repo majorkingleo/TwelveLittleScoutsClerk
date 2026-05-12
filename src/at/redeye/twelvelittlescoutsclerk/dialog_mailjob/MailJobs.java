@@ -87,9 +87,9 @@ public class MailJobs extends BaseDialog {
         jTContent = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
         jBClose = new javax.swing.JButton();
+        jBView = new javax.swing.JButton();
         jBRetry = new javax.swing.JButton();
         jBRefresh = new javax.swing.JButton();
-        jBView = new javax.swing.JButton();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -117,6 +117,14 @@ public class MailJobs extends BaseDialog {
             }
         });
 
+        jBView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/twelvelittlescoutsclerk/resources/icons/pdf_view.png"))); // NOI18N
+        jBView.setText("View PDF");
+        jBView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBViewActionPerformed(evt);
+            }
+        });
+
         jBRetry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/bookmark.png"))); // NOI18N
         jBRetry.setText("Retry");
         jBRetry.addActionListener(new java.awt.event.ActionListener() {
@@ -133,14 +141,6 @@ public class MailJobs extends BaseDialog {
             }
         });
 
-        jBView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/twelvelittlescoutsclerk/resources/icons/pdf_view.png"))); // NOI18N
-        jBView.setText("View PDF");
-        jBView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBViewActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -152,7 +152,7 @@ public class MailJobs extends BaseDialog {
                 .addComponent(jBRetry)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRefresh)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 303, Short.MAX_VALUE)
                 .addComponent(jBClose)
                 .addContainerGap())
         );
@@ -161,10 +161,10 @@ public class MailJobs extends BaseDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBView)
                     .addComponent(jBRetry)
                     .addComponent(jBRefresh)
-                    .addComponent(jBClose))
+                    .addComponent(jBClose)
+                    .addComponent(jBView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 

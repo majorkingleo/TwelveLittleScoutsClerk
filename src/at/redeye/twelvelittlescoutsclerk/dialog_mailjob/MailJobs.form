@@ -88,7 +88,7 @@
                   <Component id="jBRetry" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jBRefresh" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="42" max="32767" attributes="0"/>
+                  <EmptySpace pref="303" max="32767" attributes="0"/>
                   <Component id="jBClose" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -99,10 +99,10 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jBView" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jBRetry" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jBRefresh" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jBClose" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jBView" alignment="3" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -120,17 +120,19 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCloseActionPerformed"/>
           </Events>
-        </Component>        <Component class="javax.swing.JButton" name="jBView">
+        </Component>
+        <Component class="javax.swing.JButton" name="jBView">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/at/redeye/FrameWork/base/resources/icons/zoom.png"/>
+              <Image iconType="3" name="/at/redeye/twelvelittlescoutsclerk/resources/icons/pdf_view.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="View PDF"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBViewActionPerformed"/>
           </Events>
-        </Component>        <Component class="javax.swing.JButton" name="jBRetry">
+        </Component>
+        <Component class="javax.swing.JButton" name="jBRetry">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/at/redeye/FrameWork/base/resources/icons/bookmark.png"/>

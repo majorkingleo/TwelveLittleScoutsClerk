@@ -68,6 +68,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     public String MESSAGE_RESET_DATABASE;
     public String MESSAGE_DATABASE_IMPORT;
     public String MESSAGE_PLEASE_SET_BILLING_PERIOD;
+    public String MESSAGE_MAIL_STATUS_IDLE;
+    public String MESSAGE_MAIL_STATUS_PENDING;
+    public String MESSAGE_MAIL_STATUS_FAILED;
     
     Main main;
     String last_path;
@@ -144,7 +147,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         MESSAGE_WARNING = MlM("Warning");
         MESSAGE_RESET_DATABASE = MlM("Reset Database");
         MESSAGE_DATABASE_IMPORT = MlM("Database Import");
-        MESSAGE_PLEASE_SET_BILLING_PERIOD = MlM("Please define a billing period.");        
+        MESSAGE_PLEASE_SET_BILLING_PERIOD = MlM("Please define a billing period.");
+        MESSAGE_MAIL_STATUS_IDLE = MlM("Mail: \u2014");
+        MESSAGE_MAIL_STATUS_PENDING = MlM("pending");
+        MESSAGE_MAIL_STATUS_FAILED = MlM("failed");
     }    
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -871,13 +877,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
                     "where " + trans.markColumn(proto.state) + " = "
                     + DBMailJob.State.FAILED.ordinal()).size();
             if (pending == 0 && failed == 0) {
-                jLMailStatus.setText("Mail: \u2014");
+                jLMailStatus.setText(MESSAGE_MAIL_STATUS_IDLE);
             } else {
                 StringBuilder sb = new StringBuilder("Mail:");
-                if (pending > 0) sb.append(" ").append(pending).append(" pending");
+                if (pending > 0) sb.append(" ").append(pending).append(" ").append(MESSAGE_MAIL_STATUS_PENDING);
                 if (failed > 0) {
                     if (pending > 0) sb.append(",");
-                    sb.append(" ").append(failed).append(" failed");
+                    sb.append(" ").append(failed).append(" ").append(MESSAGE_MAIL_STATUS_FAILED);
                 }
                 jLMailStatus.setText(sb.toString());
             }

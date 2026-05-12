@@ -42,4 +42,6 @@ public interface MainWinInterface
     public Audit getAudit();
     
     public Root getRoot();
+
+    public String MlM( String message );
 }

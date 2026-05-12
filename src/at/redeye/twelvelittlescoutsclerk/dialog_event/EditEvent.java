@@ -80,8 +80,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     public EditEvent(MainWin mainwin, DBEvent event) 
     {
         super( mainwin.root,  event.name.getValue() );
-        initComponents();
-        
+        this.mainwin = mainwin;
+
+        initComponents();                
         initMessages();
         
         registerHelpWin(
@@ -93,8 +94,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     }
                 });          
         
-        this.event = event;
-        this.mainwin = mainwin;
+        this.event = event;        
         
         event_old = new DBEvent();
         event_old.loadFromCopy(event);
@@ -174,7 +174,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         MESSAGE_TOTAL_PAID           = MlM("Total paid: %1$.2f, total costs: %2$.2f");
 
         // to invokde translations texts
-        new MailJobHelper(root);        
+        new MailJobHelper(root, this);        
     }
 
     /** Enable "Send Mail" only when a row is selected, a mail template exists,
@@ -1006,6 +1006,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     }//GEN-LAST:event_jBCreateBillActionPerformed
 
     private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {
+
+        final EditEvent me = this;
+
         new AutoMBox(this.getClass().getCanonicalName()) {
             @Override
             public void do_stuff() throws Exception {
@@ -1043,7 +1046,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 member.idx.loadFromCopy(event_member.member_idx.getValue());
                 trans.fetchTableWithPrimkey(member);
 
-                new MailJobHelper(root).createMailJobs(trans, mainwin, bill, template, event, event_member, member);
+                new MailJobHelper(root, me).createMailJobs(trans, mainwin, bill, template, event, event_member, member);
                 trans.commit();
 
                 JOptionPane.showMessageDialog(null, MESSAGE_MAIL_JOBS_CREATED);

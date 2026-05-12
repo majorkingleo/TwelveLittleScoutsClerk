@@ -4,6 +4,8 @@
  */
 package at.redeye.twelvelittlescoutsclerk;
 
+import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.BaseDialogBase;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.base.transaction.Transaction;
@@ -36,6 +38,7 @@ import java.util.HashSet;
 public class MailJobHelper {
 
     private Root root;
+    private BaseDialogBase parent;
 
     // -----------------------------------------------------------------------
     // Translatable messages
@@ -49,20 +52,21 @@ public class MailJobHelper {
     private String MESSAGE_MAIL_TEMPLATE_NOT_FOUND;
     private String MESSAGE_MAIL_TEMPLATE_NO_FILE;
 
-    public MailJobHelper(Root root) {
+    public MailJobHelper(Root root, BaseDialogBase parent) {
+        this.parent = parent;
         this.root = root;
         initMessages();
     }
 
     private void initMessages() {
-        MESSAGE_SUBJECT_PREFIX          = root.MlM("Invoice");
-        MESSAGE_PAID_IN_FULL            = root.MlM("Note: This invoice has already been paid in full. No further transfer is required.");
-        MESSAGE_PARTIAL_PAYMENT         = root.MlM("Note: A partial amount of %.2f EUR has already been paid. Outstanding balance: %.2f EUR.");
-        MESSAGE_TRANSFER_REQUEST        = root.MlM("Please transfer the amount to the following account:");
-        MESSAGE_ALSO_SENT_TO            = root.MlM("Note: This invoice was also sent to the following addresses:");
-        MESSAGE_NO_MAIL_TEMPLATE_NAME   = root.MlM("No e-mail template name configured. Please set 'MailBodyTemplateName' in the settings.");
-        MESSAGE_MAIL_TEMPLATE_NOT_FOUND = root.MlM("E-mail template '%s' not found.");
-        MESSAGE_MAIL_TEMPLATE_NO_FILE   = root.MlM("E-mail template '%s' has no ODT file.");
+        MESSAGE_SUBJECT_PREFIX          = parent.MlM("Invoice");
+        MESSAGE_PAID_IN_FULL            = parent.MlM("Note: This invoice has already been paid in full. No further transfer is required.");
+        MESSAGE_PARTIAL_PAYMENT         = parent.MlM("Note: A partial amount of %.2f EUR has already been paid. Outstanding balance: %.2f EUR.");
+        MESSAGE_TRANSFER_REQUEST        = parent.MlM("Please transfer the amount to the following account:");
+        MESSAGE_ALSO_SENT_TO            = parent.MlM("Note: This invoice was also sent to the following addresses:");
+        MESSAGE_NO_MAIL_TEMPLATE_NAME   = parent.MlM("No e-mail template name configured. Please set 'MailBodyTemplateName' in the settings.");
+        MESSAGE_MAIL_TEMPLATE_NOT_FOUND = parent.MlM("E-mail template '%s' not found.");
+        MESSAGE_MAIL_TEMPLATE_NO_FILE   = parent.MlM("E-mail template '%s' has no ODT file.");
     }
 
     /**

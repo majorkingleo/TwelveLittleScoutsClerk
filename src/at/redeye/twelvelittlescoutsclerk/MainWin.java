@@ -1064,6 +1064,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         super.bindVar(field, var);
         field.setDocument(new DocumentFieldLimit(var.getMaxLen()));
     }
-    
+
+    @Override
+    public String MlM(String key) {
+        return helper.MlM(key);
+    }
     
 }

@@ -69,7 +69,7 @@ public class ViewBill extends BaseDialogDialog {
         jLabelDirection.setText("Direction:");
         jLDirection.setText(" ");
 
-        jBDownloadODT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
+        jBDownloadODT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N;
         jBDownloadODT.setText("Download ODT");
         jBDownloadODT.setEnabled(false);
         jBDownloadODT.addActionListener(new java.awt.event.ActionListener() {
@@ -78,7 +78,7 @@ public class ViewBill extends BaseDialogDialog {
             }
         });
 
-        jBDownloadPDF.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
+        jBDownloadPDF.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N;
         jBDownloadPDF.setText("Download PDF");
         jBDownloadPDF.setEnabled(false);
         jBDownloadPDF.addActionListener(new java.awt.event.ActionListener() {

@@ -874,10 +874,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
                 jLMailStatus.setText("Mail: \u2014");
             } else {
                 StringBuilder sb = new StringBuilder("Mail:");
-                if (pending > 0) sb.append(" ").append(pending).append(" ausstehend");
+                if (pending > 0) sb.append(" ").append(pending).append(" pending");
                 if (failed > 0) {
                     if (pending > 0) sb.append(",");
-                    sb.append(" ").append(failed).append(" fehlgeschlagen");
+                    sb.append(" ").append(failed).append(" failed");
                 }
                 jLMailStatus.setText(sb.toString());
             }

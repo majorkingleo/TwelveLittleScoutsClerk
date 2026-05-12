@@ -25,6 +25,7 @@ public class MailJobs extends BaseDialog {
 
     private String MESSAGE_ONLY_FAILED_JOBS;
     private String MESSAGE_NO_PDF;
+    private String MESSAGE_NO_MAIL_BODY;
 
     public MailJobs(MainWin mainwin) {
         super(mainwin.getRoot(), "Mail Jobs");
@@ -62,6 +63,7 @@ public class MailJobs extends BaseDialog {
     private void initMessages() {
         MESSAGE_ONLY_FAILED_JOBS = MlM("Only failed jobs can be retried.");
         MESSAGE_NO_PDF = MlM("This mail job has no PDF attachment.");
+        MESSAGE_NO_MAIL_BODY = MlM("This mail job has no mail body.");
     }
 
     private void feed_table(boolean autombox) {
@@ -87,6 +89,7 @@ public class MailJobs extends BaseDialog {
         jTContent = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
         jBClose = new javax.swing.JButton();
+        jBPreviewMail = new javax.swing.JButton();
         jBView = new javax.swing.JButton();
         jBRetry = new javax.swing.JButton();
         jBRefresh = new javax.swing.JButton();
@@ -114,6 +117,14 @@ public class MailJobs extends BaseDialog {
         jBClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBCloseActionPerformed(evt);
+            }
+        });
+
+        jBPreviewMail.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/contents2.png"))); // NOI18N
+        jBPreviewMail.setText("Preview Mail");
+        jBPreviewMail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBPreviewMailActionPerformed(evt);
             }
         });
 
@@ -147,6 +158,8 @@ public class MailJobs extends BaseDialog {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jBPreviewMail)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBView)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRetry)
@@ -161,6 +174,7 @@ public class MailJobs extends BaseDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBPreviewMail)
                     .addComponent(jBRetry)
                     .addComponent(jBRefresh)
                     .addComponent(jBClose)
@@ -241,6 +255,22 @@ public class MailJobs extends BaseDialog {
         feed_table(false);
     }//GEN-LAST:event_jBRefreshActionPerformed
 
+    private void jBPreviewMailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBPreviewMailActionPerformed
+        if (!checkAnyAndSingleSelection(jTContent)) {
+            return;
+        }
+        final int row = tm.getSelectedRow();
+        if (row < 0 || row >= values.size()) {
+            return;
+        }
+        final DBMailJob job = values.get(row);
+        if (job.body.value == null || job.body.value.length == 0) {
+            JOptionPane.showMessageDialog(this, MESSAGE_NO_MAIL_BODY, getTitle(), JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        invokeDialogUnique(new MailJobPreview(this, mainwin, job));
+    }//GEN-LAST:event_jBPreviewMailActionPerformed
+
     private void jBViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBViewActionPerformed
         if (!checkAnyAndSingleSelection(jTContent)) {
             return;
@@ -277,6 +307,7 @@ public class MailJobs extends BaseDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
+    private javax.swing.JButton jBPreviewMail;
     private javax.swing.JButton jBRefresh;
     private javax.swing.JButton jBRetry;
     private javax.swing.JButton jBView;

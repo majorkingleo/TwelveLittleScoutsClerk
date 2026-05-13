@@ -10,3 +10,5 @@
 
 * When asked to create a new dialog, list view, CRUD screen, or menu entry in the Daten menu, use the skill at `.github/skills/netbeans-dialog/SKILL.md`.
 
+on any dialog menupilation read netbeans-dialog skill
+

@@ -51,6 +51,9 @@ public class MailJobHelper {
     private String MESSAGE_NO_MAIL_TEMPLATE_NAME;
     private String MESSAGE_MAIL_TEMPLATE_NOT_FOUND;
     private String MESSAGE_MAIL_TEMPLATE_NO_FILE;
+    private String MESSAGE_NO_REGISTRATION_MAIL_TEMPLATE_NAME;
+    private String MESSAGE_REGISTRATION_MAIL_TEMPLATE_NOT_FOUND;
+    private String MESSAGE_REGISTRATION_MAIL_TEMPLATE_NO_FILE;
 
     public MailJobHelper(Root root, BaseDialogBase parent) {
         this.parent = parent;
@@ -67,6 +70,9 @@ public class MailJobHelper {
         MESSAGE_NO_MAIL_TEMPLATE_NAME   = parent.MlM("No e-mail template name configured. Please set 'MailBodyTemplateName' in the settings.");
         MESSAGE_MAIL_TEMPLATE_NOT_FOUND = parent.MlM("E-mail template '%s' not found.");
         MESSAGE_MAIL_TEMPLATE_NO_FILE   = parent.MlM("E-mail template '%s' has no ODT file.");
+        MESSAGE_NO_REGISTRATION_MAIL_TEMPLATE_NAME   = parent.MlM("No registration e-mail template name configured. Please set 'MailBodyRegistrationTemplateName' in the settings.");
+        MESSAGE_REGISTRATION_MAIL_TEMPLATE_NOT_FOUND = parent.MlM("Registration e-mail template '%s' not found.");
+        MESSAGE_REGISTRATION_MAIL_TEMPLATE_NO_FILE   = parent.MlM("Registration e-mail template '%s' has no ODT file.");
     }
 
     /**
@@ -179,6 +185,81 @@ public class MailJobHelper {
         }
     }
 
+    /**
+     * Creates {@link DBMailJob} records for a registration, using the
+     * {@code MailBodyRegistrationTemplateName} template and the registration bill.
+     */
+    public void createRegistrationMailJobs(Transaction trans, MainWinInterface mainwin,
+            DBBill registrationBill, DBEvent event, DBEventMember eventMember, DBMember member)
+            throws Exception {
+
+        byte[] odtBytes = loadRegistrationMailBodyOdtBytes(trans, eventMember.bp_idx.getValue());
+
+        DBBillingPeriod billingPeriod = new DBBillingPeriod();
+        billingPeriod.idx.loadFromCopy(eventMember.bp_idx.getValue());
+        trans.fetchTableWithPrimkey(billingPeriod);
+
+        List<DBContact> allRecipients = fetchRecipientsWithEmail(trans, eventMember);
+        if (allRecipients.isEmpty()) {
+            return;
+        }
+
+        String subject = MESSAGE_SUBJECT_PREFIX + " \u2013 "
+                + event.name.getValue() + " \u2013 "
+                + root.getSetup().getConfig(AppConfigDefinitions.Organisation);
+
+        HashSet<String> allAddresses = new HashSet<>();
+        for (DBContact c : allRecipients) {
+            for (String email : splitEmails(c.email.getValue())) {
+                allAddresses.add(email);
+            }
+        }
+
+        HashSet<String> processedAddresses = new HashSet<>();
+        for (DBContact contact : allRecipients) {
+            List<String> addresses = splitEmails(contact.email.getValue());
+            String recipientName = (contact.forname.getValue() + " " + contact.name.getValue()).trim();
+
+            for (String address : addresses) {
+                if (!processedAddresses.add(address)) {
+                    continue;
+                }
+
+                String alsoSentTo = buildAlsoSentTo(allAddresses, address);
+
+                int regNumber = registrationBill.registration_number.getValue();
+                Map<String, String> replacements = BillingHelper.buildReplacementMap(root,
+                        member, contact, event, eventMember, billingPeriod, "",
+                        event.registration_costs.getValue(), regNumber);
+
+                replacements.put("${mail.also_sent_to}", alsoSentTo);
+                replacements.put("${mail.payment_note}", "");
+                replacements.put("${mail.transfer_request}", MESSAGE_TRANSFER_REQUEST);
+
+                OdfTextDocument doc = OdfTextDocument.loadDocument(
+                        new ByteArrayInputStream(odtBytes));
+                BillingHelper.replaceAcrossSpans(doc.getContentDom(), replacements);
+                BillingHelper.replaceInNode(doc.getContentDom(), replacements);
+                String body = extractText(doc.getContentDom());
+
+                DBMailJob job = new DBMailJob();
+                job.idx.loadFromCopy(mainwin.getNewSequenceValue(DBMailJob.MAIL_JOB_IDX_SEQUENCE));
+                job.bp_idx.loadFromCopy(registrationBill.bp_idx.getValue());
+                job.bill_idx.loadFromCopy(registrationBill.idx.getValue());
+                job.recipient_email.loadFromString(address);
+                job.recipient_name.loadFromString(recipientName);
+                job.subject.loadFromString(subject);
+                job.body.value = body.getBytes(StandardCharsets.UTF_8);
+                job.pdf_data.value = registrationBill.pdf_data.value;
+                job.state.handler.setValue(DBMailJob.State.PENDING.ordinal());
+                job.retry_count.loadFromCopy(0);
+
+                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                        trans, job, job.hist, MailJobHelper.class.getSimpleName());
+            }
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Private helpers
     // -----------------------------------------------------------------------
@@ -200,6 +281,27 @@ public class MailJobHelper {
         DBBillTemplate found = results.get(0);
         if (found.odt_data.value == null || found.odt_data.value.length == 0) {
             throw new IOException(String.format(MESSAGE_MAIL_TEMPLATE_NO_FILE, templateName));
+        }
+        return found.odt_data.value;
+    }
+
+    private byte[] loadRegistrationMailBodyOdtBytes(Transaction trans, int bpIdx)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException {
+        String templateName = root.getSetup().getConfig(AppConfigDefinitions.MailBodyRegistrationTemplateName);
+        if (templateName == null || templateName.isBlank()) {
+            throw new IOException(MESSAGE_NO_REGISTRATION_MAIL_TEMPLATE_NAME);
+        }
+        DBBillTemplate tmpl = new DBBillTemplate();
+        List<DBBillTemplate> results = trans.fetchTable2(tmpl,
+                "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + bpIdx
+                + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
+        if (results.isEmpty()) {
+            throw new IOException(String.format(MESSAGE_REGISTRATION_MAIL_TEMPLATE_NOT_FOUND, templateName));
+        }
+        DBBillTemplate found = results.get(0);
+        if (found.odt_data.value == null || found.odt_data.value.length == 0) {
+            throw new IOException(String.format(MESSAGE_REGISTRATION_MAIL_TEMPLATE_NO_FILE, templateName));
         }
         return found.odt_data.value;
     }

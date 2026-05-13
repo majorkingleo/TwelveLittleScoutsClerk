@@ -26,6 +26,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig OrganisaiontIBAN = new DBConfig("OrganisaiontIBAN","AT00 0000 0000 0000 0000","IBAN of the organisation");    
 
     public static DBConfig MailBodyTemplateName = new DBConfig("MailBodyTemplateName","","Name of the billing template (DBBillTemplate) for the email body");
+    public static DBConfig MailBodyRegistrationTemplateName = new DBConfig("MailBodyRegistrationTemplateName","","Name of the registration template (DBBillTemplate) for the email body");
     public static DBConfig MailSmtpHost = new DBConfig("MailSmtpHost","localhost","Hostname / IP of the SMTP server");
     public static DBConfig MailSmtpPort = new DBConfig("MailSmtpPort","587","SMTP port (587 = STARTTLS)");
     public static DBConfig MailSmtpStartTls = new DBConfig("MailSmtpStartTls","true","Enable STARTTLS (true/false)");
@@ -48,6 +49,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         add(OrganisationAddressCity);
         add(OrganisaiontIBAN);
         add(MailBodyTemplateName);
+        add(MailBodyRegistrationTemplateName);
         add(MailSmtpHost);
         add(MailSmtpPort);
         add(MailSmtpStartTls);

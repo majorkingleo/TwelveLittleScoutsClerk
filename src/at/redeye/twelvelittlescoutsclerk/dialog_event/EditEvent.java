@@ -66,6 +66,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private String MESSAGE_NO_REGISTRATION_TEMPLATE;
     private String MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE;
     private String MESSAGE_REGISTRATION_CREATED;
+    private String MESSAGE_REGISTRATION_MAIL_JOBS_CREATED;
 
     DBEvent event;
     DBEvent event_old;
@@ -161,11 +162,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         tableFilter1.setFilter(jTMembers);
         tm.showRowHeader();
 
-        // Disable Send Mail button initially; update whenever selection changes
-        jBSendMail.setEnabled(false);
+        // Disable Send Mail buttons initially; update whenever selection changes
+        jBSendBillMail.setEnabled(false);
+        jBSendRegistrationMail.setEnabled(false);
         jTMembers.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateSendMailButton();
+                updateSendRegistrationMailButton();
             }
         });
     }
@@ -183,6 +186,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         MESSAGE_NO_REGISTRATION_TEMPLATE         = MlM("No registration template found with name: %s");
         MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE = MlM("Registration template has no file: %s");
         MESSAGE_REGISTRATION_CREATED             = MlM("Registration created and saved.");
+        MESSAGE_REGISTRATION_MAIL_JOBS_CREATED    = MlM("Registration mail job(s) created and queued.");
 
         // to invokde translations texts
         new MailJobHelper(root, this);        
@@ -193,12 +197,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private void updateSendMailButton() {
         int row = tm.getSelectedRow();
         if (row < 0 || row >= values.size()) {
-            jBSendMail.setEnabled(false);
+            jBSendBillMail.setEnabled(false);
             logger.debug( "Send Mail button disabled: no row selected");
             return;
         }
         if (!mailTemplateAvailable()) {
-            jBSendMail.setEnabled(false);
+            jBSendBillMail.setEnabled(false);
             logger.debug( "Send Mail button disabled: no mail template configured");
             return;
         }
@@ -221,12 +225,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     break;
                 }
             }
-            jBSendMail.setEnabled(hasEmail);
+            jBSendBillMail.setEnabled(hasEmail);
             if (!hasEmail) {
                 logger.debug( "Send Mail button disabled: no contact with email found");
             }
         } catch (Exception ex) {
-            jBSendMail.setEnabled(false);
+            jBSendBillMail.setEnabled(false);
             logger.error("error", ex);
         }
     }
@@ -236,6 +240,54 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         logger.debug( String.format( "Checking mail template availability: configured name = '%s'", name)) ;
 
+        return name != null && !name.isBlank();
+    }
+
+    /** Enable "Send Registration Mail" only when a row is selected, a registration
+     *  mail template is configured, event.registration_costs > 0,
+     *  and the member has at least one contact with an e-mail address. */
+    private void updateSendRegistrationMailButton() {
+        int row = tm.getSelectedRow();
+        if (row < 0 || row >= values.size()) {
+            jBSendRegistrationMail.setEnabled(false);
+            return;
+        }
+        if (!registrationMailTemplateAvailable()) {
+            jBSendRegistrationMail.setEnabled(false);
+            return;
+        }
+        if (event.registration_costs.getValue() <= 0.0) {
+            jBSendRegistrationMail.setEnabled(false);
+            return;
+        }
+        DBEventMember em = values.get(row);
+        try {
+            Transaction trans = getTransaction();
+            at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts m2c =
+                    new at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts();
+            java.util.List<at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts> links =
+                    trans.fetchTable2(m2c, "where " + trans.markColumn(m2c.member_idx)
+                            + " = " + em.member_idx.toString());
+            boolean hasEmail = false;
+            for (var link : links) {
+                at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact c =
+                        new at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact();
+                c.idx.loadFromCopy(link.contact_idx.getValue());
+                trans.fetchTableWithPrimkey(c);
+                if (c.email.getValue() != null && !c.email.getValue().isBlank()) {
+                    hasEmail = true;
+                    break;
+                }
+            }
+            jBSendRegistrationMail.setEnabled(hasEmail);
+        } catch (Exception ex) {
+            jBSendRegistrationMail.setEnabled(false);
+            logger.error("error", ex);
+        }
+    }
+
+    private boolean registrationMailTemplateAvailable() {
+        String name = root.getSetup().getConfig(AppConfigDefinitions.MailBodyRegistrationTemplateName);
         return name != null && !name.isBlank();
     }
 
@@ -457,7 +509,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jLabel6 = new javax.swing.JLabel();
         jTRegistrationTemplate = new javax.swing.JComboBox();
         jTRegistrationCosts = new javax.swing.JTextField();
-        jBSendMail = new javax.swing.JButton();
+        jBSendBillMail = new javax.swing.JButton();
+        jBSendRegistrationMail = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jCCacheOpen = new javax.swing.JCheckBox();
@@ -573,10 +626,18 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
-        jBSendMail.setText("Send Mail");
-        jBSendMail.addActionListener(new java.awt.event.ActionListener() {
+        jBSendBillMail.setText("Send Bill Mail");
+        jBSendBillMail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBSendMailActionPerformed(evt);
+            }
+        });
+
+        jBSendRegistrationMail.setText("Send Registration Mail");
+        jBSendRegistrationMail.setEnabled(false);
+        jBSendRegistrationMail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBSendRegistrationMailActionPerformed(evt);
             }
         });
 
@@ -595,7 +656,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBCreateBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBCreateRegistration, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jBSendMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jBSendBillMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBSendRegistrationMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -618,8 +680,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBCreateRegistration)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jBSendMail)
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addComponent(jBSendBillMail)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBSendRegistrationMail)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
@@ -1167,7 +1231,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         };
     }
 
-    private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {
+    private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSendMailActionPerformed
 
         final EditEvent me = this;
 
@@ -1214,6 +1278,49 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 JOptionPane.showMessageDialog(null, MESSAGE_MAIL_JOBS_CREATED);
             }
         };
+    }//GEN-LAST:event_jBSendMailActionPerformed
+
+    private void jBSendRegistrationMailActionPerformed(java.awt.event.ActionEvent evt) {
+
+        final EditEvent me = this;
+
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                if (!checkAnyAndSingleSelection(jTMembers)) {
+                    return;
+                }
+
+                int row = tm.getSelectedRow();
+                if (row < 0 || row >= values.size()) {
+                    return;
+                }
+
+                DBEventMember event_member = values.get(row);
+
+                int regBillIdx = event_member.registration_bill_idx.getValue();
+                if (regBillIdx <= 0) {
+                    JOptionPane.showMessageDialog(null, MESSAGE_NO_BILL_FOR_MEMBER);
+                    return;
+                }
+
+                Transaction trans = getTransaction();
+
+                DBBill regBill = new DBBill();
+                regBill.idx.loadFromCopy(regBillIdx);
+                trans.fetchTableWithPrimkey(regBill);
+
+                DBMember member = new DBMember();
+                member.idx.loadFromCopy(event_member.member_idx.getValue());
+                trans.fetchTableWithPrimkey(member);
+
+                new MailJobHelper(root, me).createRegistrationMailJobs(
+                        trans, mainwin, regBill, event, event_member, member);
+                trans.commit();
+
+                JOptionPane.showMessageDialog(null, MESSAGE_REGISTRATION_MAIL_JOBS_CREATED);
+            }
+        };
     }
 
   
@@ -1223,7 +1330,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBCreateBill;
     private javax.swing.JButton jBCreateRegistration;
-    private javax.swing.JButton jBSendMail;
+    private javax.swing.JButton jBSendBillMail;
+    private javax.swing.JButton jBSendRegistrationMail;
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;

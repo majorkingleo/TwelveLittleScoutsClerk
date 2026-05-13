@@ -117,6 +117,16 @@ public class BillingHelper {
             throws SQLException, TableBindingNotRegisteredException,
                    UnsupportedDBDataTypeException, WrongBindFileFormatException,
                    IOException, Exception {
+        return generateBillFromTemplate(root, trans, template, event, eventMember,
+                convertToPdf, billingNumber, 0.0);
+    }
+
+    public static File generateBillFromTemplate(Root root, Transaction trans,
+            DBBillTemplate template, DBEvent event, DBEventMember eventMember,
+            boolean convertToPdf, String billingNumber, double registrationPayment)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException,
+                   IOException, Exception {
 
         // 1. Fetch DBMember
         DBMember member = new DBMember();
@@ -132,7 +142,7 @@ public class BillingHelper {
         trans.fetchTableWithPrimkey(billingPeriod);
 
         // 3. Build replacement map
-        Map<String, String> replacements = buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber);
+        Map<String, String> replacements = buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, registrationPayment);
 
         // 4+5. Load ODT template from blob bytes
         OdfTextDocument doc = OdfTextDocument.loadDocument(
@@ -193,12 +203,18 @@ public class BillingHelper {
     static Map<String, String> buildReplacementMap(Root root, DBMember member,
             DBContact contact, DBEvent event, DBEventMember eventMember,
             DBBillingPeriod billingPeriod) {
-        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, "");
+        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, "", 0.0);
     }
 
     static Map<String, String> buildReplacementMap(Root root, DBMember member,
             DBContact contact, DBEvent event, DBEventMember eventMember,
             DBBillingPeriod billingPeriod, String billingNumber) {
+        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, 0.0);
+    }
+
+    static Map<String, String> buildReplacementMap(Root root, DBMember member,
+            DBContact contact, DBEvent event, DBEventMember eventMember,
+            DBBillingPeriod billingPeriod, String billingNumber, double registrationPayment) {
 
         Map<String, String> map = new HashMap<>();
 
@@ -236,6 +252,10 @@ public class BillingHelper {
 
         // Billing period
         map.put("${billing_period.title}", billingPeriod.title.getValue());
+
+        // Registration payment (deposit already paid; 0.00 when not applicable)
+        map.put("${registration_payment}",
+                String.format(java.util.Locale.GERMANY, "%.2f", registrationPayment));
 
         // Organisation (from global config)
         map.put("${org.name}",                root.getSetup().getConfig(AppConfigDefinitions.Organisation));

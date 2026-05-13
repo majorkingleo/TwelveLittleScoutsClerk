@@ -63,6 +63,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private String MESSAGE_NO_BOOKING_LINE;
     private String MESSAGE_NO_BILL_FOR_MEMBER;
     private String MESSAGE_TOTAL_PAID;
+    private String MESSAGE_NO_REGISTRATION_TEMPLATE;
+    private String MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE;
+    private String MESSAGE_REGISTRATION_CREATED;
 
     DBEvent event;
     DBEvent event_old;
@@ -105,6 +108,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                
         populateBillingTemplateCombo();
         bindVar(jTBillingTemplate, event.billing_template);
+        populateRegistrationTemplateCombo();
+        bindVar(jTRegistrationTemplate, event.registration_template);
         var_to_gui();
         
         started = true;
@@ -129,6 +134,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         tm.hide(members.event_idx);
         tm.hide(members.member_idx);
         tm.hide(members.group_idx);
+        tm.hide(members.bill_idx);
+        tm.hide(members.registration_bill_idx);
         
         tm.setEditable(members.costs);
         tm.setEditable(members.comment);
@@ -172,6 +179,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         MESSAGE_NO_BOOKING_LINE      = MlM("No booking line is assigned to the selected event member.");
         MESSAGE_NO_BILL_FOR_MEMBER   = MlM("No bill has been created for this member yet.");
         MESSAGE_TOTAL_PAID           = MlM("Total paid: %1$.2f, total costs: %2$.2f");
+        MESSAGE_NO_REGISTRATION_TEMPLATE         = MlM("No registration template found with name: %s");
+        MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE = MlM("Registration template has no file: %s");
+        MESSAGE_REGISTRATION_CREATED             = MlM("Registration created and saved.");
 
         // to invokde translations texts
         new MailJobHelper(root, this);        
@@ -341,6 +351,23 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         }
     }
 
+    private void populateRegistrationTemplateCombo() {
+        jTRegistrationTemplate.removeAllItems();
+        jTRegistrationTemplate.addItem(null);
+        try {
+            Transaction trans = getTransaction();
+            DBBillTemplate tmpl = new DBBillTemplate();
+            List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
+                    "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
+                    + " order by " + trans.markColumn(tmpl, tmpl.name));
+            for (DBBillTemplate t : templates) {
+                jTRegistrationTemplate.addItem(t.name.getValue());
+            }
+        } catch (Exception ex) {
+            logger.error("Failed to load registration templates", ex);
+        }
+    }
+
     final public void bindVar( JTextField field, DBString var )
     {
         super.bindVar(field, var);
@@ -424,6 +451,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBBookingLine = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jBCreateBill = new javax.swing.JButton();
+        jBCreateRegistration = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jTRegistrationTemplate = new javax.swing.JComboBox();
         jBSendMail = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -533,6 +563,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
+        jBCreateRegistration.setText("Create Registration");
+        jBCreateRegistration.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBCreateRegistrationActionPerformed(evt);
+            }
+        });
+
         jBSendMail.setText("Send Mail");
         jBSendMail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -554,6 +591,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jSeparator1)
                     .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBCreateBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBCreateRegistration, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBSendMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -574,6 +612,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBCreateBill)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBCreateRegistration)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBSendMail)
                 .addContainerGap(132, Short.MAX_VALUE))
@@ -656,6 +696,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         jLabel4.setText("Billing Template");
 
+        jLabel5.setText("Registration Template");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -669,10 +711,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)
-                            .addComponent(jLabel4))
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
                         .addGap(62, 62, 62)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jTBillingTemplate)
+                            .addComponent(jTRegistrationTemplate)
                             .addComponent(jTCosts)
                             .addComponent(jTName))))
                 .addContainerGap())
@@ -692,6 +736,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(jTBillingTemplate))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jTRegistrationTemplate))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -969,8 +1017,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 }
 
                 // Generate bill ODT from template blob
+                // Pass registration amount so ${registration_payment} is filled in the template
+                double registrationPayment = 0.0;
+                if (event_member.registration_bill_idx.getValue() > 0) {
+                    registrationPayment = event_member.costs.getValue();
+                }
                 java.io.File odtFile = BillingHelper.generateBillFromTemplate(
-                        root, trans, template, event, event_member, false, String.valueOf(newIdx));
+                        root, trans, template, event, event_member, false, String.valueOf(newIdx), registrationPayment);
 
                 // Convert ODT to PDF
                 java.io.File pdfFile = BillingHelper.convertToPdf(
@@ -1004,6 +1057,101 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         };
     }//GEN-LAST:event_jBCreateBillActionPerformed
+
+    private void jBCreateRegistrationActionPerformed(java.awt.event.ActionEvent evt) {
+
+        new AutoMBox(this.getClass().getCanonicalName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                if (!checkAnyAndSingleSelection(jTMembers)) {
+                    return;
+                }
+
+                int row = tm.getSelectedRow();
+                if (row < 0 || row >= values.size()) {
+                    return;
+                }
+
+                DBEventMember event_member = values.get(row);
+                Transaction trans = getTransaction();
+
+                // Look up matching registration template by name
+                String templateName = event.registration_template.getValue().trim();
+                DBBillTemplate tmpl = new DBBillTemplate();
+                java.util.List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
+                        "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
+
+                if (templates.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            String.format(MESSAGE_NO_REGISTRATION_TEMPLATE, templateName));
+                    return;
+                }
+
+                DBBillTemplate template = templates.get(0);
+
+                if (template.odt_data.value == null || template.odt_data.value.length == 0) {
+                    JOptionPane.showMessageDialog(null,
+                            String.format(MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE, templateName));
+                    return;
+                }
+
+                // Allocate bill idx
+                int newIdx = mainwin.getNewSequenceValue(DBBill.BILL_IDX_SEQUENCE);
+
+                // Build registration name: YYYY-MM Idx "Registration" EventName MemberForname MemberName
+                String billMonth = java.time.YearMonth.now()
+                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
+                String registrationName = billMonth + " " + newIdx
+                        + " Registration " + event.name.getValue()
+                        + " " + event_member.forname.getValue() + " " + event_member.name.getValue();
+
+                // Cancel the existing registration bill (if any)
+                int oldRegIdx = event_member.registration_bill_idx.getValue();
+                if (oldRegIdx > 0) {
+                    DBBill oldBill = new DBBill();
+                    oldBill.idx.loadFromCopy(oldRegIdx);
+                    trans.fetchTableWithPrimkey(oldBill);
+                    oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                    DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                            trans, oldBill, oldBill.hist, root.getUserName());
+                }
+
+                // Generate ODT (billingnr is empty for registrations)
+                java.io.File odtFile = BillingHelper.generateBillFromTemplate(
+                        root, trans, template, event, event_member, false, "");
+
+                // Convert ODT to PDF
+                java.io.File pdfFile = BillingHelper.convertToPdf(
+                        odtFile, odtFile.getParentFile());
+
+                // Read both files
+                byte[] odtBytes = java.nio.file.Files.readAllBytes(odtFile.toPath());
+                byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
+
+                // Create BILLS record with bill_type = REGISTRATION, billingnr = ""
+                DBBill bill = new DBBill();
+                bill.idx.loadFromCopy(newIdx);
+                bill.bp_idx.loadFromCopy(mainwin.getBPIdx());
+                bill.billingnr.loadFromString("");
+                bill.file_name.loadFromString(registrationName);
+                bill.odt_data.value = odtBytes;
+                bill.pdf_data.value = pdfBytes;
+                bill.direction.handler.setValue(DBBill.Direction.OUTGOING.ordinal());
+                bill.bill_type.handler.setValue(DBBill.BillType.REGISTRATION.ordinal());
+                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                        trans, bill, bill.hist, root.getUserName());
+
+                // Update event_member
+                event_member.registration_bill_idx.loadFromCopy(newIdx);
+                trans.updateValues(event_member);
+
+                trans.commit();
+
+                JOptionPane.showMessageDialog(null, MESSAGE_REGISTRATION_CREATED);
+            }
+        };
+    }
 
     private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {
 
@@ -1060,6 +1208,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBBookingLine;
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBCreateBill;
+    private javax.swing.JButton jBCreateRegistration;
     private javax.swing.JButton jBSendMail;
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
@@ -1069,6 +1218,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -1080,6 +1230,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel jStatusBar;
     private javax.swing.JComboBox jTBillingTemplate;
+    private javax.swing.JComboBox jTRegistrationTemplate;
     private javax.swing.JTextField jTCosts;
     private javax.swing.JTable jTMembers;
     private javax.swing.JTextField jTName;

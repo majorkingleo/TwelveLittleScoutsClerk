@@ -154,6 +154,75 @@ public class DBBill extends DBStrukt {
         }
     }
 
+    public enum BillType { INVOICE, REGISTRATION }
+
+    public static class BillTypeHandler extends DBEnumAsInteger.EnumAsIntegerHandler {
+
+        private int value = BillType.INVOICE.ordinal();
+
+        @Override
+        public int getMaxSize() {
+            return BillType.values().length;
+        }
+
+        @Override
+        public boolean setValue(String val) {
+            for (BillType t : BillType.values()) {
+                if (t.name().equalsIgnoreCase(val)) {
+                    value = t.ordinal();
+                    return true;
+                }
+            }
+            try {
+                int i = Integer.parseInt(val);
+                if (i >= 0 && i < BillType.values().length) {
+                    value = i;
+                    return true;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            return false;
+        }
+
+        @Override
+        public boolean setValue(Integer val) {
+            if (val >= 0 && val < BillType.values().length) {
+                value = val;
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Integer getValue() {
+            return value;
+        }
+
+        @Override
+        public String getValueAsString() {
+            return BillType.values()[value].name();
+        }
+
+        @Override
+        public DBEnumAsInteger.EnumAsIntegerHandler getNewOne() {
+            return new BillTypeHandler();
+        }
+
+        @Override
+        public Vector<String> getPossibleValues() {
+            Vector<String> res = new Vector<>();
+            for (BillType t : BillType.values()) {
+                res.add(t.name());
+            }
+            return res;
+        }
+
+        @Override
+        public void refresh() {
+            // nothing to do
+        }
+    }
+
     public DBInteger       idx        = new DBInteger("idx");
     public DBInteger       bp_idx     = new DBInteger("bp_idx");
     public DBString        billingnr  = new DBString("billingnr", "Billing Nr", 50);
@@ -162,6 +231,7 @@ public class DBBill extends DBStrukt {
     public DBBlob          pdf_data   = new DBBlob("pdf_data");
     public DBEnumAsInteger state      = new DBEnumAsInteger("state", "State", new StateHandler());
     public DBEnumAsInteger direction  = new DBEnumAsInteger("direction", "Direction", new DirectionHandler());
+    public DBEnumAsInteger bill_type  = new DBEnumAsInteger("bill_type", "Bill Type", new BillTypeHandler());
     public DBHistory       hist       = new DBHistory("hist");
 
     public DBBill() {
@@ -175,13 +245,14 @@ public class DBBill extends DBStrukt {
         add(pdf_data);
         add(state);
         add(direction, 2);
+        add(bill_type, 3);
         add(hist);
 
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        setVersion(2);
+        setVersion(3);
     }
 
     @Override
@@ -191,5 +262,9 @@ public class DBBill extends DBStrukt {
 
     public boolean isCanceled() {
         return State.CANCELED.ordinal() == state.getValue();
+    }
+
+    public boolean isRegistration() {
+        return BillType.REGISTRATION.ordinal() == bill_type.getValue();
     }
 }

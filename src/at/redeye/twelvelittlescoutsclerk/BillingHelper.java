@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,9 @@ public class BillingHelper {
         OdfTextDocument doc = OdfTextDocument.loadDocument(templateFile);
 
         // 6. Walk all text nodes in content and styles (headers/footers) and apply replacements
+        replaceAcrossSpans(doc.getContentDom(), replacements);
         replaceInNode(doc.getContentDom(), replacements);
+        replaceAcrossSpans(doc.getStylesDom(), replacements);
         replaceInNode(doc.getStylesDom(), replacements);
 
         // 7. Save to a temp ODT file
@@ -118,12 +121,23 @@ public class BillingHelper {
                    UnsupportedDBDataTypeException, WrongBindFileFormatException,
                    IOException, Exception {
         return generateBillFromTemplate(root, trans, template, event, eventMember,
-                convertToPdf, billingNumber, 0.0);
+                convertToPdf, billingNumber, 0.0, 0);
     }
 
     public static File generateBillFromTemplate(Root root, Transaction trans,
             DBBillTemplate template, DBEvent event, DBEventMember eventMember,
             boolean convertToPdf, String billingNumber, double registrationPayment)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException,
+                   IOException, Exception {
+        return generateBillFromTemplate(root, trans, template, event, eventMember,
+                convertToPdf, billingNumber, registrationPayment, 0);
+    }
+
+    public static File generateBillFromTemplate(Root root, Transaction trans,
+            DBBillTemplate template, DBEvent event, DBEventMember eventMember,
+            boolean convertToPdf, String billingNumber, double registrationPayment,
+            int registrationNumber)
             throws SQLException, TableBindingNotRegisteredException,
                    UnsupportedDBDataTypeException, WrongBindFileFormatException,
                    IOException, Exception {
@@ -142,14 +156,16 @@ public class BillingHelper {
         trans.fetchTableWithPrimkey(billingPeriod);
 
         // 3. Build replacement map
-        Map<String, String> replacements = buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, registrationPayment);
+        Map<String, String> replacements = buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, registrationPayment, registrationNumber);
 
         // 4+5. Load ODT template from blob bytes
         OdfTextDocument doc = OdfTextDocument.loadDocument(
                 new java.io.ByteArrayInputStream(template.odt_data.value));
 
         // 6. Walk all text nodes in content and styles (headers/footers) and apply replacements
+        replaceAcrossSpans(doc.getContentDom(), replacements);
         replaceInNode(doc.getContentDom(), replacements);
+        replaceAcrossSpans(doc.getStylesDom(), replacements);
         replaceInNode(doc.getStylesDom(), replacements);
 
         // 6b. Inject EPC QR code image
@@ -203,18 +219,25 @@ public class BillingHelper {
     static Map<String, String> buildReplacementMap(Root root, DBMember member,
             DBContact contact, DBEvent event, DBEventMember eventMember,
             DBBillingPeriod billingPeriod) {
-        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, "", 0.0);
+        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, "", 0.0, 0);
     }
 
     static Map<String, String> buildReplacementMap(Root root, DBMember member,
             DBContact contact, DBEvent event, DBEventMember eventMember,
             DBBillingPeriod billingPeriod, String billingNumber) {
-        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, 0.0);
+        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, 0.0, 0);
     }
 
     static Map<String, String> buildReplacementMap(Root root, DBMember member,
             DBContact contact, DBEvent event, DBEventMember eventMember,
             DBBillingPeriod billingPeriod, String billingNumber, double registrationPayment) {
+        return buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, registrationPayment, 0);
+    }
+
+    static Map<String, String> buildReplacementMap(Root root, DBMember member,
+            DBContact contact, DBEvent event, DBEventMember eventMember,
+            DBBillingPeriod billingPeriod, String billingNumber, double registrationPayment,
+            int registrationNumber) {
 
         Map<String, String> map = new HashMap<>();
 
@@ -256,6 +279,9 @@ public class BillingHelper {
         // Registration payment (deposit already paid; 0.00 when not applicable)
         map.put("${registration_payment}",
                 String.format(java.util.Locale.GERMANY, "%.2f", registrationPayment));
+
+        // Registration number (sequential number from REGISTRATION_IDX_SEQ; 0 when not applicable)
+        map.put("${registration_number}", registrationNumber > 0 ? String.valueOf(registrationNumber) : "");
 
         // Organisation (from global config)
         map.put("${org.name}",                root.getSetup().getConfig(AppConfigDefinitions.Organisation));
@@ -316,6 +342,60 @@ public class BillingHelper {
             // Non-fatal: log and continue without QR code
             java.util.logging.Logger.getLogger(BillingHelper.class.getName())
                     .log(java.util.logging.Level.WARNING, "Failed to inject EPC QR code", ex);
+        }
+    }
+
+    /**
+     * Collects all text nodes that are descendants of {@code node} (in document order).
+     */
+    private static void collectTextNodes(Node node, List<Node> result) {
+        if (node.getNodeType() == Node.TEXT_NODE) {
+            result.add(node);
+        }
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            collectTextNodes(children.item(i), result);
+        }
+    }
+
+    /**
+     * Handles placeholders that LibreOffice has split across multiple
+     * {@code <text:span>} elements within a single paragraph or heading.
+     * For each {@code text:p} / {@code text:h} element whose concatenated
+     * text content contains a placeholder key, the replacement is applied to
+     * the full text and the paragraph's child nodes are replaced with a single
+     * plain text node.  Paragraphs without any placeholder are left untouched.
+     */
+    static void replaceAcrossSpans(Node root, Map<String, String> replacements) {
+        final String NS_TEXT = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+        if (root.getNodeType() == Node.ELEMENT_NODE) {
+            String ns = root.getNamespaceURI();
+            String local = root.getLocalName();
+            if (NS_TEXT.equals(ns) && ("p".equals(local) || "h".equals(local))) {
+                List<Node> textNodes = new ArrayList<>();
+                collectTextNodes(root, textNodes);
+                StringBuilder sb = new StringBuilder();
+                for (Node tn : textNodes) {
+                    String v = tn.getNodeValue();
+                    sb.append(v != null ? v : "");
+                }
+                String full = sb.toString();
+                String replaced = full;
+                for (Map.Entry<String, String> e : replacements.entrySet()) {
+                    replaced = replaced.replace(e.getKey(), e.getValue());
+                }
+                if (!replaced.equals(full)) {
+                    while (root.hasChildNodes()) {
+                        root.removeChild(root.getFirstChild());
+                    }
+                    root.appendChild(root.getOwnerDocument().createTextNode(replaced));
+                }
+                return; // do not recurse into this paragraph
+            }
+        }
+        NodeList children = root.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            replaceAcrossSpans(children.item(i), replacements);
         }
     }
 

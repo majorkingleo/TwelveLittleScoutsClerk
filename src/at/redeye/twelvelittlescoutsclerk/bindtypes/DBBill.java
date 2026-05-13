@@ -16,6 +16,7 @@ import java.util.Vector;
 public class DBBill extends DBStrukt {
 
     public static final String BILL_IDX_SEQUENCE = "BILL_IDX_SEQ";
+    public static final String REGISTRATION_IDX_SEQUENCE = "REGISTRATION_IDX_SEQ";
 
     public enum State { NORMAL, CANCELED }
     public enum Direction { OUTGOING, INCOMING }
@@ -223,16 +224,17 @@ public class DBBill extends DBStrukt {
         }
     }
 
-    public DBInteger       idx        = new DBInteger("idx");
-    public DBInteger       bp_idx     = new DBInteger("bp_idx");
-    public DBString        billingnr  = new DBString("billingnr", "Billing Nr", 50);
-    public DBString        file_name  = new DBString("file_name", "File Name", 255);
-    public DBBlob          odt_data   = new DBBlob("odt_data");
-    public DBBlob          pdf_data   = new DBBlob("pdf_data");
-    public DBEnumAsInteger state      = new DBEnumAsInteger("state", "State", new StateHandler());
-    public DBEnumAsInteger direction  = new DBEnumAsInteger("direction", "Direction", new DirectionHandler());
-    public DBEnumAsInteger bill_type  = new DBEnumAsInteger("bill_type", "Bill Type", new BillTypeHandler());
-    public DBHistory       hist       = new DBHistory("hist");
+    public DBInteger       idx                  = new DBInteger("idx");
+    public DBInteger       bp_idx               = new DBInteger("bp_idx");
+    public DBString        billingnr            = new DBString("billingnr", "Billing Nr", 50);
+    public DBString        file_name            = new DBString("file_name", "File Name", 255);
+    public DBBlob          odt_data             = new DBBlob("odt_data");
+    public DBBlob          pdf_data             = new DBBlob("pdf_data");
+    public DBEnumAsInteger state                = new DBEnumAsInteger("state", "State", new StateHandler());
+    public DBEnumAsInteger direction            = new DBEnumAsInteger("direction", "Direction", new DirectionHandler());
+    public DBEnumAsInteger bill_type            = new DBEnumAsInteger("bill_type", "Bill Type", new BillTypeHandler());
+    public DBInteger       registration_number  = new DBInteger("registration_number");  // seq from REGISTRATION_IDX_SEQ
+    public DBHistory       hist                 = new DBHistory("hist");
 
     public DBBill() {
         super("BILLS");
@@ -246,13 +248,14 @@ public class DBBill extends DBStrukt {
         add(state);
         add(direction, 2);
         add(bill_type, 3);
+        add(registration_number, 4);
         add(hist);
 
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        setVersion(3);
+        setVersion(4);
     }
 
     @Override

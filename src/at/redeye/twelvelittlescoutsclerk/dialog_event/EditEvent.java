@@ -1107,8 +1107,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     return;
                 }
 
-                // Allocate bill idx
+                // Allocate bill idx and registration number
                 int newIdx = mainwin.getNewSequenceValue(DBBill.BILL_IDX_SEQUENCE);
+                int regNumber = mainwin.getNewSequenceValue(DBBill.REGISTRATION_IDX_SEQUENCE);
 
                 // Build registration name: YYYY-MM Idx "Registration" EventName MemberForname MemberName
                 String billMonth = java.time.YearMonth.now()
@@ -1130,7 +1131,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
                 // Generate ODT (billingnr is empty for registrations)
                 java.io.File odtFile = BillingHelper.generateBillFromTemplate(
-                        root, trans, template, event, event_member, false, "");
+                        root, trans, template, event, event_member, false, "", 0.0, regNumber);
 
                 // Convert ODT to PDF
                 java.io.File pdfFile = BillingHelper.convertToPdf(
@@ -1150,6 +1151,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 bill.pdf_data.value = pdfBytes;
                 bill.direction.handler.setValue(DBBill.Direction.OUTGOING.ordinal());
                 bill.bill_type.handler.setValue(DBBill.BillType.REGISTRATION.ordinal());
+                bill.registration_number.loadFromCopy(regNumber);
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                         trans, bill, bill.hist, root.getUserName());
 

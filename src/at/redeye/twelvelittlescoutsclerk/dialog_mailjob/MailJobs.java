@@ -9,7 +9,7 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.transaction.Transaction;
-import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
+import at.redeye.FrameWork.base.FrameWorkConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMailJob;
 import java.io.File;
@@ -292,15 +292,8 @@ public class MailJobs extends BaseDialog {
                 try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
                     fos.write(job.pdf_data.value);
                 }
-                String openCmd = mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.OpenCommand);
-                if (openCmd != null && !openCmd.isBlank()) {
-                    String resolved = openCmd.contains("%s")
-                            ? openCmd.replace("%s", tmpFile.getAbsolutePath())
-                            : openCmd + " " + tmpFile.getAbsolutePath();
-                    new ProcessBuilder(resolved.split("\\s+")).start();
-                } else {
-                    java.awt.Desktop.getDesktop().open(tmpFile);
-                }
+                String openCmd = mainwin.getRoot().getSetup().getLocalConfig(FrameWorkConfigDefinitions.OpenCommand);
+                Runtime.getRuntime().exec(new String[]{openCmd, tmpFile.getAbsolutePath()});
             }
         };
     }//GEN-LAST:event_jBViewActionPerformed

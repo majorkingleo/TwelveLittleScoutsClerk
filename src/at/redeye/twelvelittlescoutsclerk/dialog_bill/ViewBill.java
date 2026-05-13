@@ -6,7 +6,7 @@ package at.redeye.twelvelittlescoutsclerk.dialog_bill;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialogDialog;
-import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
+import at.redeye.FrameWork.base.FrameWorkConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import java.io.File;
@@ -224,15 +224,8 @@ public class ViewBill extends BaseDialogDialog {
                 try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
                     fos.write(entity.pdf_data.value);
                 }
-                String openCmd = mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.OpenCommand);
-                if (openCmd != null && !openCmd.isBlank()) {
-                    String resolved = openCmd.contains("%s")
-                            ? openCmd.replace("%s", tmpFile.getAbsolutePath())
-                            : openCmd + " " + tmpFile.getAbsolutePath();
-                    new ProcessBuilder(resolved.split("\\s+")).start();
-                } else {
-                    java.awt.Desktop.getDesktop().open(tmpFile);
-                }
+                String openCmd = mainwin.getRoot().getSetup().getLocalConfig(FrameWorkConfigDefinitions.OpenCommand);
+                Runtime.getRuntime().exec(new String[]{openCmd, tmpFile.getAbsolutePath()});
             }
         };
     }//GEN-LAST:event_jBViewPDFActionPerformed

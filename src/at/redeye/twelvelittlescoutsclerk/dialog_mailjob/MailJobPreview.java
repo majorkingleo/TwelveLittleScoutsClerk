@@ -6,7 +6,7 @@
 package at.redeye.twelvelittlescoutsclerk.dialog_mailjob;
 
 import at.redeye.FrameWork.base.BaseDialogDialog;
-import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
+import at.redeye.FrameWork.base.FrameWorkConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMailJob;
 import java.io.File;
@@ -173,15 +173,8 @@ public class MailJobPreview extends BaseDialogDialog {
             try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
                 fos.write(job.pdf_data.value);
             }
-            String openCmd = mainwin.getRoot().getSetup().getConfig(AppConfigDefinitions.OpenCommand);
-            if (openCmd != null && !openCmd.isBlank()) {
-                String resolved = openCmd.contains("%s")
-                        ? openCmd.replace("%s", tmpFile.getAbsolutePath())
-                        : openCmd + " " + tmpFile.getAbsolutePath();
-                new ProcessBuilder(resolved.split("\\s+")).start();
-            } else {
-                java.awt.Desktop.getDesktop().open(tmpFile);
-            }
+            String openCmd = mainwin.getRoot().getSetup().getLocalConfig(FrameWorkConfigDefinitions.OpenCommand);
+            Runtime.getRuntime().exec(new String[]{openCmd, tmpFile.getAbsolutePath()});
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
         }

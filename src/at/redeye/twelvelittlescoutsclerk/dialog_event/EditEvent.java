@@ -104,6 +104,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         bindVar(jTName, event.name);
         bindVar(jTCosts, event.costs);
+        bindVar(jTRegistrationCosts, event.registration_costs);
         // populated and bound below after template list is loaded
                
         populateBillingTemplateCombo();
@@ -453,7 +454,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBCreateBill = new javax.swing.JButton();
         jBCreateRegistration = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
         jTRegistrationTemplate = new javax.swing.JComboBox();
+        jTRegistrationCosts = new javax.swing.JTextField();
         jBSendMail = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -698,6 +701,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         jLabel5.setText("Registration Template");
 
+        jLabel6.setText("Registration Costs");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -712,11 +717,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel5))
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
                         .addGap(62, 62, 62)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jTBillingTemplate)
                             .addComponent(jTRegistrationTemplate)
+                            .addComponent(jTRegistrationCosts)
                             .addComponent(jTCosts)
                             .addComponent(jTName))))
                 .addContainerGap())
@@ -740,6 +747,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(jTRegistrationTemplate))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(jTRegistrationCosts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1219,6 +1230,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -1231,6 +1243,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JLabel jStatusBar;
     private javax.swing.JComboBox jTBillingTemplate;
     private javax.swing.JComboBox jTRegistrationTemplate;
+    private javax.swing.JTextField jTRegistrationCosts;
     private javax.swing.JTextField jTCosts;
     private javax.swing.JTable jTMembers;
     private javax.swing.JTextField jTName;

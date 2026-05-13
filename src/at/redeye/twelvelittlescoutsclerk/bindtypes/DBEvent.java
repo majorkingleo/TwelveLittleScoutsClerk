@@ -24,6 +24,7 @@ public class DBEvent extends DBStrukt {
     public DBDouble       planned_costs = new DBDouble( "planned_costs", "Planned Costs" );
     public DBString       billing_template      = new DBString( "billing_template", "Billing Template", 512 );
     public DBString       registration_template = new DBString( "registration_template", "Registration Template", 512 );
+    public DBDouble       registration_costs    = new DBDouble( "registration_costs", "Registration Costs" );
     
     public DBEvent()
     {
@@ -38,12 +39,13 @@ public class DBEvent extends DBStrukt {
         add(planned_costs, 3);
         add(billing_template, 4);
         add(registration_template, 5);
+        add(registration_costs, 6);
         
         hist.setTitle(" ");
         
         idx.setAsPrimaryKey();
 
-        setVersion(5);
+        setVersion(6);
     }
     
     @Override

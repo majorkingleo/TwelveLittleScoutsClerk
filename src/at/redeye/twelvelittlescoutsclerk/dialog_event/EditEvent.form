@@ -43,10 +43,14 @@
                           <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jTBillingTemplate" max="32767" attributes="0"/>
+                          <Component id="jTRegistrationTemplate" max="32767" attributes="0"/>
+                          <Component id="jTRegistrationCosts" max="32767" attributes="0"/>
                           <Component id="jTCosts" max="32767" attributes="0"/>
                           <Component id="jTName" max="32767" attributes="0"/>
                       </Group>
@@ -73,6 +77,16 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTBillingTemplate" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jTRegistrationTemplate" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jTRegistrationCosts" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel2" max="32767" attributes="0"/>
@@ -243,6 +257,7 @@
                           <Component id="jSeparator1" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBBookingLine" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBCreateBill" alignment="0" max="32767" attributes="0"/>
+                          <Component id="jBCreateRegistration" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBSendMail" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -266,6 +281,8 @@
                       <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBCreateBill" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jBCreateRegistration" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBSendMail" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="132" max="32767" attributes="0"/>
@@ -316,6 +333,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCreateBillActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="jBCreateRegistration">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Create Registration"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCreateRegistrationActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JButton" name="jBSendMail">
@@ -406,6 +431,20 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="jTBillingTemplate">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel5">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Registration Template"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="jTRegistrationTemplate">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel6">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Registration Costs"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="jTRegistrationCosts">
     </Component>
   </SubComponents>
 </Form>

@@ -37,6 +37,8 @@ import java.util.HashSet;
 
 public class MailJobHelper {
 
+    private static final String NS_TEXT = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+
     private Root root;
     private BaseDialogBase parent;
 
@@ -362,12 +364,56 @@ public class MailJobHelper {
     }
 
     private void extractTextFrom(Node node, StringBuilder sb) {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            String ns = node.getNamespaceURI();
+            String local = node.getLocalName();
+            if (NS_TEXT.equals(ns) && local != null) {
+                switch (local) {
+                    case "line-break":
+                        sb.append('\n');
+                        return;
+                    case "tab":
+                        sb.append('\t');
+                        return;
+                    case "s":
+                        sb.append(" ".repeat(getSpaceCount(node)));
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+
         if (node.getNodeType() == Node.TEXT_NODE) {
             sb.append(node.getNodeValue());
         }
+
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             extractTextFrom(children.item(i), sb);
+        }
+
+        if (node.getNodeType() == Node.ELEMENT_NODE
+                && NS_TEXT.equals(node.getNamespaceURI())) {
+            String local = node.getLocalName();
+            if ("p".equals(local) || "h".equals(local)) {
+                sb.append('\n');
+            }
+        }
+    }
+
+    private int getSpaceCount(Node node) {
+        Node c = node.getAttributes() != null
+                ? node.getAttributes().getNamedItemNS(NS_TEXT, "c")
+                : null;
+        if (c == null || c.getNodeValue() == null || c.getNodeValue().isBlank()) {
+            return 1;
+        }
+        try {
+            int count = Integer.parseInt(c.getNodeValue().trim());
+            return Math.max(count, 1);
+        } catch (NumberFormatException ex) {
+            return 1;
         }
     }
 }

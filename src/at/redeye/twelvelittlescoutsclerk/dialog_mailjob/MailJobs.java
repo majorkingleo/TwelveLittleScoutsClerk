@@ -38,8 +38,7 @@ public class MailJobs extends BaseDialog {
         DBMailJob proto = new DBMailJob();
 
         tm = new TableManipulator(root, jTContent, proto);
-
-        tm.hide(proto.idx);
+        
         tm.hide(proto.bp_idx);
         tm.hide(proto.bill_idx);
         tm.hide(proto.body);
@@ -47,9 +46,9 @@ public class MailJobs extends BaseDialog {
         tm.hide(proto.hist.lo_user);
         tm.hide(proto.hist.lo_zeit);
         tm.hide(proto.hist.ae_user);
-        tm.hide(proto.hist.an_user);
+        // tm.hide(proto.hist.an_user);
         tm.hide(proto.hist.an_zeit);
-        tm.hide(proto.hist.ae_zeit);
+        // tm.hide(proto.hist.ae_zeit);
 
         tm.prepareTable();
 

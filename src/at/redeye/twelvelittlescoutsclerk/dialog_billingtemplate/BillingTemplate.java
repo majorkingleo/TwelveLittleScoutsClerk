@@ -45,8 +45,8 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         tm.hide(tmpl.hist.lo_zeit);
         tm.hide(tmpl.hist.ae_user);
         tm.hide(tmpl.hist.an_user);
-        tm.hide(tmpl.hist.an_zeit);
-        tm.hide(tmpl.hist.ae_zeit);
+        //tm.hide(tmpl.hist.an_zeit);
+        //tm.hide(tmpl.hist.ae_zeit);
         tm.hide(tmpl.bp_idx);
         tm.hide(tmpl.odt_data);
         tm.hide(tmpl.file_name);

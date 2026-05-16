@@ -296,6 +296,9 @@ public class BillingHelper {
         map.put("${org.address_city}",        root.getSetup().getConfig(AppConfigDefinitions.OrganisationAddressCity));
         map.put("${org.iban}",                root.getSetup().getConfig(AppConfigDefinitions.OrganisaiontIBAN));
 
+        String remittance = event.name.getValue() + " - " + member.forname.getValue() + " " + member.name.getValue();
+        map.put("${remittance}", remittance);
+
         return map;
     }
 

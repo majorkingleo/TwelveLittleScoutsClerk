@@ -50,7 +50,7 @@ public class Event extends BaseDialog implements NewSequenceValueInterface {
         tm.hide(events.hist.an_zeit);
         tm.hide(events.hist.ae_zeit);
         tm.hide(events.bp_idx);
-        tm.hide(events.idx);        
+        // tm.hide(events.idx);        
         
         tm.setValidator(events.hist.ae_zeit, new DateValidator());
         tm.setValidator(events.hist.an_zeit, new DateValidator());               

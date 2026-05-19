@@ -317,7 +317,14 @@ public void add(DBValue value, Integer version)   // explicitly versioned
 The strukt's own version is the maximum version of any of its columns.
 `getHashMap()` returns all columns; `getHashMapForVersion(v)` returns only columns
 introduced **at** version `v` (used during migration).
+Foreign key declarations are stored alongside columns:
 
+```java
+public void addForeignKey(ForeignKeyDefinition fk)              // version defaults to 1
+public void addForeignKey(ForeignKeyDefinition fk, int version) // explicitly versioned
+public ArrayList<ForeignKeyDefinition> getForeignKeys()         // all FKs
+public ArrayList<ForeignKeyDefinition> getForeignKeysForVersion(int version) // FKs at that version
+```
 **Typical subclass:**
 
 ```java
@@ -325,13 +332,17 @@ public class Customer extends DBStrukt {
     public DBString  name    = new DBString("name", 100);
     public DBString  email   = new DBString("email", 200);
     public DBInteger active  = new DBInteger("active");
+    public DBInteger group_idx = new DBInteger("group_idx");
 
     public Customer() {
         super("CUSTOMER");
         name.setAsPrimaryKey();
         add(name,   1);
         add(email,  1);
-        add(active, 2);   // added in schema version 2
+        add(active, 2);    // added in schema version 2
+        add(group_idx, 3); // added in schema version 3
+
+        addForeignKey(new ForeignKeyDefinition("group_idx", "CUSTOMER_GROUP", "idx"), 3);
     }
 
     @Override public DBStrukt getNewOne() { return new Customer(); }
@@ -389,14 +400,23 @@ Each dialect subclass overrides:
 `createSqlForNewRows(DBStrukt, Integer version)` generates `ALTER TABLE ADD` statements
 for all columns introduced **at** that version — used during migration.
 
+FK-related methods on `BaseCreateSql`:
+
+| Method | Description |
+|--------|-------------|
+| `createFKSql(DBStrukt)` | Returns `ALTER TABLE ADD CONSTRAINT` statements for all FKs on the strukt; empty string when none declared |
+| `dropFKSql(DBStrukt)` | Returns drop statements for all FKs; delegates per-FK to `dropFKStatement` |
+| `dropFKStatement(table, name)` | Single-FK drop; override per dialect (default: ANSI `DROP CONSTRAINT`) |
+| `fkActionSql(FKAction)` | `NO_ACTION` → `"NO ACTION"` etc. |
+
 | Dialect subclass | Notable differences |
 |---|---|
-| `CreateSqlMySql` | Detects MySQL version; uses `TEXT` for large `VARCHAR`; `InnoDB` engine |
-| `CreateSqlMariaDB` | Extends MySQL; `utf32_bin` collation |
-| `CreateSqlMSSql` | `[bracket]` quoting |
-| `CreateSqlOracle` | `"double-quote"` quoting; `NUMBER`/`VARCHAR2` types |
-| `CreateSqlSqlite` | Backtick quoting; `NOT NULL` omitted in `ALTER TABLE ADD` |
-| `CreateSqlDerby` | Derby-specific quoting and types |
+| `CreateSqlMySql` | Detects MySQL version; uses `TEXT` for large `VARCHAR`; `InnoDB` engine; `dropFKStatement` uses `DROP FOREIGN KEY` |
+| `CreateSqlMariaDB` | Extends MySQL; `utf32_bin` collation; inherits `DROP FOREIGN KEY` |
+| `CreateSqlMSSql` | `[bracket]` quoting; ANSI `DROP CONSTRAINT` |
+| `CreateSqlOracle` | `"double-quote"` quoting; `NUMBER`/`VARCHAR2` types; ANSI `DROP CONSTRAINT` |
+| `CreateSqlSqlite` | Backtick quoting; `NOT NULL` omitted in `ALTER TABLE ADD`; `dropFKStatement` returns `""` (SQLite cannot drop named constraints) |
+| `CreateSqlDerby` | Derby-specific quoting and types; ANSI `DROP CONSTRAINT` |
 
 ---
 
@@ -428,20 +448,26 @@ tableExists("TABLEVERSION")?
   No  → createTable(DBTableVersion)  → recurse
   Yes →
     tableExists(strukt.getName())?
-      No  → createTable(strukt) → setTableVersion(name, version)
+      No  → createTable(strukt)          → applyForeignKeys(strukt) → setTableVersion(name, version)
       Yes →
         getTableVersion(strukt.getName()) == strukt.getVersion()?
           Yes → nothing to do
-          No  → migrateTable(strukt, currentVersion) → setTableVersion(name, version)
+          No  → dropAllForeignKeys(strukt)
+                  → migrateTable(strukt, currentVersion)
+                      → applyForeignKeys(strukt)
+                  → setTableVersion(name, version)
 ```
 
 #### `migrateTable(DBStrukt strukt, Integer fromVersion)` — non-destructive migration
 
-1. Finds a free backup name (e.g. `CUSTOMER_01_01`, `CUSTOMER_01_02`, …).
-2. `backupTable(origin, backupName)` — `CREATE TABLE backup AS SELECT * FROM origin`.
-3. For each version step from `fromVersion` to `strukt.getVersion()`:
+1. **Drop all FK constraints** (`dropAllForeignKeys`) — required so `ALTER TABLE ADD COLUMN` is not blocked by referential checks.
+2. Finds a free backup name (e.g. `CUSTOMER_01_01`, `CUSTOMER_01_02`, …).
+3. `backupTable(origin, backupName)` — `CREATE TABLE backup AS SELECT * FROM origin`.
+4. For each version step from `fromVersion` to `strukt.getVersion()`:
    - `createSqlForNewRows(strukt, i+1)` → `ALTER TABLE ADD` for new columns at that step.
-4. Executes the combined SQL; updates `TABLEVERSION`.
+5. Executes the combined SQL.
+6. **Re-apply all FK constraints** (`applyForeignKeys`) — restores the complete constraint set.
+7. Updates `TABLEVERSION`.
 
 #### `check_table_versions()` — detects out-of-date tables without migrating
 
@@ -474,6 +500,119 @@ A single special table (`DBTableVersion` strukt) with columns `table` (PK) and `
 
 ---
 
+---
+
+## Foreign Keys
+
+### Classes
+
+**`FKAction`** (enum) — referential action for `ON DELETE` / `ON UPDATE`:
+
+| Value | SQL | Behaviour |
+|-------|-----|-----------|
+| `NO_ACTION` | `NO ACTION` | DBMS rejects the operation if it would break the constraint (default) |
+| `CASCADE` | `CASCADE` | Automatically delete / update dependent rows |
+| `SET_NULL` | `SET NULL` | Set the FK column to NULL (column must be nullable) |
+| `RESTRICT` | `RESTRICT` | Like `NO_ACTION` but checked immediately, not deferred |
+
+**`ForeignKeyDefinition`** (immutable value object):
+
+```java
+// Minimal — NO_ACTION for both; constraint name auto-generated as FK_<TABLE>_<COLUMN>
+new ForeignKeyDefinition("owner_col", "PARENT_TABLE", "parent_col")
+
+// With explicit actions
+new ForeignKeyDefinition("owner_col", "PARENT_TABLE", "parent_col",
+                         FKAction.CASCADE, FKAction.NO_ACTION)
+
+// With explicit constraint name
+new ForeignKeyDefinition("FK_MY_NAME", "owner_col", "PARENT_TABLE", "parent_col",
+                         FKAction.NO_ACTION, FKAction.NO_ACTION)
+```
+
+If the constraint name is `null`, `DBStrukt.addForeignKey` auto-generates one as
+`FK_<OWNINGTABLE>_<OWNERCOLUMN>` (uppercased).
+
+### Declaring FKs in a DBStrukt
+
+Place `addForeignKey(...)` calls in the constructor after `add(column, version)` calls.
+Version numbers must match: if a column is introduced at version 3, its FK should also
+be registered at version 3 so that `migrateTable` can drop/recreate correctly.
+
+```java
+public class DBOrder extends DBStrukt {
+    public DBInteger idx        = new DBInteger("idx");
+    public DBInteger customer_idx = new DBInteger("customer_idx");
+
+    public DBOrder() {
+        super("ORDERS");
+        add(idx);
+        add(customer_idx);
+        idx.setAsPrimaryKey();
+
+        // FK at version 1 (same version as the column)
+        addForeignKey(new ForeignKeyDefinition("customer_idx", "CUSTOMER", "idx"));
+        setVersion(1);
+    }
+}
+```
+
+### DDL lifecycle (DatabaseManager)
+
+`DatabaseManager` calls two private helpers that wrap `BaseCreateSql`:
+
+| Helper | When called | Behaviour on error |
+|--------|-------------|--------------------|
+| `applyForeignKeys(strukt)` | After `createTable` and after `migrateTable` | Logs a warning, returns `true` (non-fatal) |
+| `dropAllForeignKeys(strukt)` | Before `migrateTable` | Logs at DEBUG level, swallows exception (constraint may not exist yet) |
+
+Generated DDL example (MySQL/MariaDB):
+```sql
+ALTER TABLE `ORDERS` ADD CONSTRAINT `FK_ORDERS_CUSTOMER_IDX`
+  FOREIGN KEY (`customer_idx`) REFERENCES `CUSTOMER` (`idx`)
+  ON DELETE NO ACTION ON UPDATE NO ACTION;
+```
+
+### Dialect differences
+
+| DBMS | DROP syntax |
+|------|-------------|
+| MySQL / MariaDB | `ALTER TABLE … DROP FOREIGN KEY <name>` |
+| MSSQL / Oracle / Derby | `ALTER TABLE … DROP CONSTRAINT <name>` (ANSI) |
+| SQLite | No-op — SQLite cannot drop named constraints; FK enforcement requires `PRAGMA foreign_keys = ON` per connection |
+
+### TwelveLittleScoutsClerk FK map
+
+All FKs use `NO_ACTION` (reject violating DML; no automatic cascades).
+
+| Child table | FK column(s) | Parent table |
+|---|---|---|
+| `MEMBER` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `CONTACT` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `EVENT` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `BILLS` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `BOOKINGLINE` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `BOOKINGLINE` | `contact_idx` | `CONTACT.idx` |
+| `MAIL_JOBS` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `MAIL_JOBS` | `bill_idx` | `BILLS.idx` |
+| `EVENTMEMBERS` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `EVENTMEMBERS` | `event_idx` | `EVENT.idx` |
+| `EVENTMEMBERS` | `member_idx` | `MEMBER.idx` |
+| `EVENTMEMBERS` | `group_idx` | `GROUP.idx` |
+| `EVENTMEMBERS` | `bill_idx` (v4) | `BILLS.idx` |
+| `EVENTMEMBERS` | `registration_bill_idx` (v5) | `BILLS.idx` |
+| `MEMBERS2GROUPS` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `MEMBERS2GROUPS` | `member_idx` | `MEMBER.idx` |
+| `MEMBERS2GROUPS` | `group_idx` | `GROUP.idx` |
+| `MEMBERS2CONTACTS` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `MEMBERS2CONTACTS` | `member_idx` | `MEMBER.idx` |
+| `MEMBERS2CONTACTS` | `contact_idx` | `CONTACT.idx` |
+| `BOOKINGLINE2EVENTS` | `bp_idx` | `BILLING_PERIOD.idx` |
+| `BOOKINGLINE2EVENTS` | `bl_idx` | `BOOKINGLINE.idx` |
+| `BOOKINGLINE2EVENTS` | `event_idx` | `EVENT.idx` |
+| `BOOKINGLINE2EVENTS` | `member_idx` | `MEMBER.idx` |
+| `BOOKINGLINE2EVENTS` | `contact_idx` | `CONTACT.idx` |
+
 ### See Also
 
-- [Foreign Key Implementation Plan](./references/foreign-key-plan.md) — planned extension to add FK constraint support via `ALTER TABLE ADD CONSTRAINT`, versioned alongside table columns.
+- [Foreign Key Implementation Plan](./references/foreign-key-plan.md) — original design notes (now implemented).

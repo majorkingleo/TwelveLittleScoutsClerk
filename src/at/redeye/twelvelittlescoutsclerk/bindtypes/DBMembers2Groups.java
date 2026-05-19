@@ -8,6 +8,7 @@ import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 /**
  *
@@ -40,8 +41,12 @@ public class DBMembers2Groups extends DBStrukt
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
-        
-        setVersion(2);
+
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 3);
+        addForeignKey(new ForeignKeyDefinition("member_idx", "MEMBER", "idx"), 3);
+        addForeignKey(new ForeignKeyDefinition("group_idx", "GROUP", "idx"), 3);
+
+        setVersion(3);
     }
     
     @Override

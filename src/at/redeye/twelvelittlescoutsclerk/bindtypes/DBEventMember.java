@@ -4,13 +4,12 @@
  */
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
-import org.sqlite.core.DB;
-
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 public class DBEventMember extends DBStrukt {
     
@@ -58,8 +57,15 @@ public class DBEventMember extends DBStrukt {
         
         bp_idx.shouldHaveIndex();
         idx.setAsPrimaryKey();
-        
-        setVersion(5);
+
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 6);
+        addForeignKey(new ForeignKeyDefinition("event_idx", "EVENT", "idx"), 6);
+        addForeignKey(new ForeignKeyDefinition("member_idx", "MEMBER", "idx"), 6);
+        addForeignKey(new ForeignKeyDefinition("group_idx", "GROUP", "idx"), 6);
+        addForeignKey(new ForeignKeyDefinition("bill_idx", "BILLS", "idx"), 6);
+        addForeignKey(new ForeignKeyDefinition("registration_bill_idx", "BILLS", "idx"), 6);
+
+        setVersion(6);
     }
     
     @Override

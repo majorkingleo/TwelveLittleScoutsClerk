@@ -8,6 +8,7 @@ import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 /**
  *
@@ -44,11 +45,13 @@ public class DBContact extends DBStrukt
         add(bank_account_bic);
         
         idx.setAsPrimaryKey();
-        bp_idx.shouldHaveIndex();        
-        
+        bp_idx.shouldHaveIndex();
+
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 2);
+
         hist.setTitle(" ");
         
-        setVersion(1);
+        setVersion(2);
     }
     
     @Override

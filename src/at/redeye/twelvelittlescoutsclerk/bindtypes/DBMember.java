@@ -5,6 +5,7 @@
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.*;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 /**
  *
@@ -45,11 +46,13 @@ public class DBMember extends DBStrukt
         add(group);
         
         idx.setAsPrimaryKey();
-        bp_idx.shouldHaveIndex();        
-        
+        bp_idx.shouldHaveIndex();
+
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 2);
+
         hist.setTitle(" ");
         
-        setVersion(1);
+        setVersion(2);
     }
 
     @Override

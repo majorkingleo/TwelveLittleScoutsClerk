@@ -12,6 +12,7 @@ import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 public class DBBookingLine extends DBStrukt {
 
@@ -55,8 +56,13 @@ public class DBBookingLine extends DBStrukt {
         add( data_source );
         add( comment );
         
-        idx.setAsPrimaryKey();        
+        idx.setAsPrimaryKey();
         hist.setTitle(" ");
+
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 2);
+        addForeignKey(new ForeignKeyDefinition("contact_idx", "CONTACT", "idx"), 2);
+
+        setVersion(2);
     }
     
     @Override

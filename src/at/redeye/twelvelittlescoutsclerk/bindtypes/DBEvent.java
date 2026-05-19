@@ -10,6 +10,7 @@ import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 public class DBEvent extends DBStrukt {
     
@@ -45,7 +46,9 @@ public class DBEvent extends DBStrukt {
         
         idx.setAsPrimaryKey();
 
-        setVersion(6);
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 7);
+
+        setVersion(7);
     }
     
     @Override

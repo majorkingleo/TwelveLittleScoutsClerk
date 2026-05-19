@@ -10,6 +10,7 @@ import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 import java.util.Vector;
 
 public class DBMailJob extends DBStrukt {
@@ -118,7 +119,10 @@ public class DBMailJob extends DBStrukt {
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        setVersion(1);
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 2);
+        addForeignKey(new ForeignKeyDefinition("bill_idx", "BILLS", "idx"), 2);
+
+        setVersion(2);
     }
 
     @Override

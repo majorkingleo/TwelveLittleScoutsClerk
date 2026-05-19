@@ -9,6 +9,7 @@ import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.bindtypes.DBStrukt;
+import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 
 public class DBBookingLine2Events extends DBStrukt
@@ -42,8 +43,14 @@ public class DBBookingLine2Events extends DBStrukt
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
-        
-        setVersion(2);
+
+        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 3);
+        addForeignKey(new ForeignKeyDefinition("bl_idx", "BOOKINGLINE", "idx"), 3);
+        addForeignKey(new ForeignKeyDefinition("event_idx", "EVENT", "idx"), 3);
+        addForeignKey(new ForeignKeyDefinition("member_idx", "MEMBER", "idx"), 3);
+        addForeignKey(new ForeignKeyDefinition("contact_idx", "CONTACT", "idx"), 3);
+
+        setVersion(3);
     }
     
     @Override

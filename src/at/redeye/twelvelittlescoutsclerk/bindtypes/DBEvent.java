@@ -16,6 +16,9 @@ public class DBEvent extends DBStrukt {
     
     public static final String EVENT_IDX_SEQUENCE = "EVENT_IDX_SEQUENCE";
 
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBString       name = new DBString("name", "Name", 50 );
@@ -46,7 +49,7 @@ public class DBEvent extends DBStrukt {
         
         idx.setAsPrimaryKey();
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 7);
+        addForeignKey(FK_BILLING_PERIOD, 7);
 
         setVersion(7);
     }

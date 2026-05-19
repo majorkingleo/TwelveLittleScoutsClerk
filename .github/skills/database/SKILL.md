@@ -535,27 +535,137 @@ If the constraint name is `null`, `DBStrukt.addForeignKey` auto-generates one as
 
 ### Declaring FKs in a DBStrukt
 
-Place `addForeignKey(...)` calls in the constructor after `add(column, version)` calls.
-Version numbers must match: if a column is introduced at version 3, its FK should also
-be registered at version 3 so that `migrateTable` can drop/recreate correctly.
+**Declare `ForeignKeyDefinition` objects as `public static final` fields** on the strukt
+subclass — not as inline `new ForeignKeyDefinition(...)` inside the constructor.
+
+| Concern | inline `new` in constructor | `static final` field |
+|---------|-----------------------------|---------------------|
+| Allocation | One object per strukt instance | One object per class |
+| Auto-name generation | Repeated string concat per instance | Done once; `withName()` copy stored in `foreign_keys_` |
+| Use with `fetchChildren` | Must lookup via `getForeignKeys()` at runtime | Pass `MyTable.FK_NAME` directly — type-safe, zero lookup |
+| Readability | Anonymous | Self-documenting symbol |
+
+`ForeignKeyDefinition` is **immutable**. When `addForeignKey()` auto-generates a
+constraint name, it calls `fk.withName(autoName)` which returns a **new copy** — the
+static field is never mutated:
+
+```
+OrderLine.FK_ORDER         (name = null)                     ← static field, unchanged forever
+    ↓  addForeignKey() calls withName("FK_ORDER_LINE_ORDER_ID")
+stored copy                (name = "FK_ORDER_LINE_ORDER_ID") ← used for DDL only
+```
+
+The static field with `name = null` is still fully usable for `fetchChildren` and
+`fetchParent` because those methods only need `ownerColumn`, `referencedTable`, and
+`referencedColumn` — never the constraint name.
+
+**Pattern:**
 
 ```java
-public class DBOrder extends DBStrukt {
+public class DBOrderLine extends DBStrukt {
+
+    // FK declarations — static final, created once per class
+    public static final ForeignKeyDefinition FK_ORDER =
+        new ForeignKeyDefinition("order_idx", "ORDERS", "idx");
+    public static final ForeignKeyDefinition FK_PRODUCT =
+        new ForeignKeyDefinition("product_idx", "PRODUCTS", "idx",
+                                 FKAction.RESTRICT, FKAction.NO_ACTION);
+
+    // Column instances — per-instance as usual
     public DBInteger idx        = new DBInteger("idx");
-    public DBInteger customer_idx = new DBInteger("customer_idx");
+    public DBInteger order_idx  = new DBInteger("order_idx");
+    public DBInteger product_idx = new DBInteger("product_idx");
+    public DBInteger qty        = new DBInteger("qty");
 
-    public DBOrder() {
-        super("ORDERS");
-        add(idx);
-        add(customer_idx);
+    public DBOrderLine() {
+        super("ORDER_LINE");
         idx.setAsPrimaryKey();
-
-        // FK at version 1 (same version as the column)
-        addForeignKey(new ForeignKeyDefinition("customer_idx", "CUSTOMER", "idx"));
+        add(idx,         1);
+        add(order_idx,   1);
+        add(product_idx, 1);
+        add(qty,         1);
+        addForeignKey(FK_ORDER,   1);   // reference to static field
+        addForeignKey(FK_PRODUCT, 1);
         setVersion(1);
     }
+
+    @Override public DBStrukt getNewOne() { return new DBOrderLine(); }
 }
 ```
+
+### FK-based fetch methods (`Transaction`)
+
+Three convenience methods on `Transaction` use FK metadata to build WHERE clauses without
+the caller writing raw SQL strings.
+
+**`ForeignKeyNotFoundException`** (checked) — thrown when the requested FK relationship
+cannot be resolved from the strukt's declared FK list (wrong column name or table name).
+
+#### `fetchChildren` — given a parent row, find all children
+
+```java
+// High-level: parent strukt provides the filter value automatically
+public <T extends DBStrukt> List<T> fetchChildren(
+        T childStrukt, DBStrukt parentStrukt, String fkColumnName)
+    throws SQLException, ..., ForeignKeyNotFoundException
+```
+
+Searches `childStrukt.getForeignKeys()` for a FK where `ownerColumn == fkColumnName`
+and `referencedTable == parentStrukt.getName()` (both case-insensitive). Gets the parent's
+referenced-column value, builds a `WHERE` clause, delegates to `fetchTable2`.
+
+```java
+// Low-level: pass a static FK field and the filter value directly
+public <T extends DBStrukt> List<T> fetchChildren(
+        T childStrukt, ForeignKeyDefinition fk, Object fkValue)
+    throws SQLException, ...
+```
+
+Useful when the FK value comes from a UI field or raw result rather than a loaded strukt.
+
+#### `fetchParent` — given a child row, fetch the referenced parent
+
+```java
+public <P extends DBStrukt> P fetchParent(
+        DBStrukt childStrukt, String fkColumnName, P parentStrukt)
+    throws SQLException, ..., ForeignKeyNotFoundException
+```
+
+Reads the FK column's current value from `childStrukt`, builds a WHERE clause against the
+parent table's referenced column, delegates to `fetchTable2`. Returns `null` if not found.
+
+#### `buildWhereForValue` (private helper)
+
+Produces `WHERE <table>.<col> = <value>`. Numeric DB types are unquoted; all others are
+single-quoted. Both column name and value originate from FK declarations and loaded
+`DBValue` instances (internal trusted sources) — not from user input.
+
+#### Usage example
+
+```java
+// Load a parent order
+DBOrder order = new DBOrder();
+order.idx.loadFromString("42");
+trans.fetchTableWithPrimkey(order);
+
+// Fetch all order lines — no raw WHERE string needed
+List<DBOrderLine> lines = trans.fetchChildren(new DBOrderLine(), order, "order_idx");
+
+// Navigate back to the parent
+DBOrder parent = trans.fetchParent(lines.get(0), "order_idx", new DBOrder());
+
+// Low-level variant using the static FK field directly
+List<DBOrderLine> lines2 = trans.fetchChildren(new DBOrderLine(), DBOrderLine.FK_ORDER, 42);
+```
+
+#### Error behaviour
+
+| Situation | Behaviour |
+|-----------|----------|
+| No FK matching `(fkColumnName, parentTable)` | Throws `ForeignKeyNotFoundException` |
+| FK column value is `null` | `WHERE col = 'null'` — no rows returned (safe no-op) |
+| Multiple FKs from child to same parent via same column | First declaration wins; log warning |
+| Parent `getValue(referencedColumn)` returns `null` | `NullPointerException` — caller must load parent columns before calling |
 
 ### DDL lifecycle (DatabaseManager)
 

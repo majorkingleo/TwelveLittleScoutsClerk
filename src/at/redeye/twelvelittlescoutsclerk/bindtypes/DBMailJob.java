@@ -17,6 +17,11 @@ public class DBMailJob extends DBStrukt {
 
     public static final String MAIL_JOB_IDX_SEQUENCE = "MAIL_JOB_IDX_SEQ";
 
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+    public static final ForeignKeyDefinition FK_BILL =
+        new ForeignKeyDefinition("bill_idx", "BILLS", "idx");
+
     public enum State { PENDING, SENDING, SENT, FAILED }
 
     public static class StateHandler extends DBEnumAsInteger.EnumAsIntegerHandler {
@@ -119,8 +124,8 @@ public class DBMailJob extends DBStrukt {
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 2);
-        addForeignKey(new ForeignKeyDefinition("bill_idx", "BILLS", "idx"), 2);
+        addForeignKey(FK_BILLING_PERIOD, 2);
+        addForeignKey(FK_BILL, 2);
 
         setVersion(2);
     }

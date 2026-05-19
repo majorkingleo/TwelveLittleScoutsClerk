@@ -15,7 +15,18 @@ import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 public class DBBookingLine2Events extends DBStrukt
 {
     public static final String BOOKINGLINE2EVENTS_IDX_SEQUENCE = "B2E_IDX_SEQUENCE";
-    
+
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+    public static final ForeignKeyDefinition FK_BOOKING_LINE =
+        new ForeignKeyDefinition("bl_idx", "BOOKINGLINE", "idx");
+    public static final ForeignKeyDefinition FK_EVENT =
+        new ForeignKeyDefinition("event_idx", "EVENT", "idx");
+    public static final ForeignKeyDefinition FK_MEMBER =
+        new ForeignKeyDefinition("member_idx", "MEMBER", "idx");
+    public static final ForeignKeyDefinition FK_CONTACT =
+        new ForeignKeyDefinition("contact_idx", "CONTACT", "idx");
+
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      bl_idx = new DBInteger("bl_idx", "Booking line Idx");
     public DBInteger      event_idx = new DBInteger("event_idx", "Event Idx");
@@ -44,11 +55,11 @@ public class DBBookingLine2Events extends DBStrukt
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 3);
-        addForeignKey(new ForeignKeyDefinition("bl_idx", "BOOKINGLINE", "idx"), 3);
-        addForeignKey(new ForeignKeyDefinition("event_idx", "EVENT", "idx"), 3);
-        addForeignKey(new ForeignKeyDefinition("member_idx", "MEMBER", "idx"), 3);
-        addForeignKey(new ForeignKeyDefinition("contact_idx", "CONTACT", "idx"), 3);
+        addForeignKey(FK_BILLING_PERIOD, 3);
+        addForeignKey(FK_BOOKING_LINE, 3);
+        addForeignKey(FK_EVENT, 3);
+        addForeignKey(FK_MEMBER, 3);
+        addForeignKey(FK_CONTACT, 3);
 
         setVersion(3);
     }

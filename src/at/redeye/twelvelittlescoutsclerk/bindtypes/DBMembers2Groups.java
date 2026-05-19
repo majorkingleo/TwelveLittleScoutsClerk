@@ -17,7 +17,14 @@ import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 public class DBMembers2Groups extends DBStrukt
 {
     public static final String MEMBERS2GROUPS_IDX_SEQUENCE = "M2G_IDX_SEQUENCE";
-    
+
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+    public static final ForeignKeyDefinition FK_MEMBER =
+        new ForeignKeyDefinition("member_idx", "MEMBER", "idx");
+    public static final ForeignKeyDefinition FK_GROUP =
+        new ForeignKeyDefinition("group_idx", "GROUP", "idx");
+
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
     public DBInteger      group_idx = new DBInteger("group_idx", "Contact Idx");
@@ -42,9 +49,9 @@ public class DBMembers2Groups extends DBStrukt
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 3);
-        addForeignKey(new ForeignKeyDefinition("member_idx", "MEMBER", "idx"), 3);
-        addForeignKey(new ForeignKeyDefinition("group_idx", "GROUP", "idx"), 3);
+        addForeignKey(FK_BILLING_PERIOD, 3);
+        addForeignKey(FK_MEMBER, 3);
+        addForeignKey(FK_GROUP, 3);
 
         setVersion(3);
     }

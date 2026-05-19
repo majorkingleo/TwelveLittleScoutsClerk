@@ -19,6 +19,9 @@ public class DBBill extends DBStrukt {
     public static final String BILL_IDX_SEQUENCE = "BILL_IDX_SEQ";
     public static final String REGISTRATION_IDX_SEQUENCE = "REGISTRATION_IDX_SEQ";
 
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+
     public enum State { NORMAL, CANCELED }
     public enum Direction { OUTGOING, INCOMING }
 
@@ -256,7 +259,7 @@ public class DBBill extends DBStrukt {
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 5);
+        addForeignKey(FK_BILLING_PERIOD, 5);
 
         setVersion(5);
     }

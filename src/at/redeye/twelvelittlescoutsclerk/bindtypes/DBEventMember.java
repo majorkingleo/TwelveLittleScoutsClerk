@@ -15,6 +15,19 @@ public class DBEventMember extends DBStrukt {
     
     public static final String EVENTMEMBER_IDX_SEQUENCE = "EVENTMEMBER_IDX_SEQ";
 
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+    public static final ForeignKeyDefinition FK_EVENT =
+        new ForeignKeyDefinition("event_idx", "EVENT", "idx");
+    public static final ForeignKeyDefinition FK_MEMBER =
+        new ForeignKeyDefinition("member_idx", "MEMBER", "idx");
+    public static final ForeignKeyDefinition FK_GROUP =
+        new ForeignKeyDefinition("group_idx", "GROUP", "idx");
+    public static final ForeignKeyDefinition FK_BILL =
+        new ForeignKeyDefinition("bill_idx", "BILLS", "idx");
+    public static final ForeignKeyDefinition FK_REGISTRATION_BILL =
+        new ForeignKeyDefinition("registration_bill_idx", "BILLS", "idx");
+
     public DBInteger      idx = new DBInteger("idx", "Idx");
     public DBInteger      bp_idx = new DBInteger( "bp_idx" );
     public DBInteger      event_idx = new DBInteger( "event_idx" );
@@ -58,12 +71,12 @@ public class DBEventMember extends DBStrukt {
         bp_idx.shouldHaveIndex();
         idx.setAsPrimaryKey();
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 6);
-        addForeignKey(new ForeignKeyDefinition("event_idx", "EVENT", "idx"), 6);
-        addForeignKey(new ForeignKeyDefinition("member_idx", "MEMBER", "idx"), 6);
-        addForeignKey(new ForeignKeyDefinition("group_idx", "GROUP", "idx"), 6);
-        addForeignKey(new ForeignKeyDefinition("bill_idx", "BILLS", "idx"), 6);
-        addForeignKey(new ForeignKeyDefinition("registration_bill_idx", "BILLS", "idx"), 6);
+        addForeignKey(FK_BILLING_PERIOD, 6);
+        addForeignKey(FK_EVENT, 6);
+        addForeignKey(FK_MEMBER, 6);
+        addForeignKey(FK_GROUP, 6);
+        addForeignKey(FK_BILL, 6);
+        addForeignKey(FK_REGISTRATION_BILL, 6);
 
         setVersion(6);
     }

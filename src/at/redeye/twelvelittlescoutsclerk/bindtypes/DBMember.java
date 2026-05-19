@@ -14,7 +14,10 @@ import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 public class DBMember extends DBStrukt
 {
     public static final String MEMBERS_IDX_SEQUENCE = "MEMBERS_IDX_SEQUENCE";
-    
+
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+
     public DBInteger      idx = new DBInteger("idx", "Idx");   
     public DBString       member_registration_number = new DBString("member_registration_number", "Member Id", 50);
     public DBString       name = new DBString("name", "Name", 50 );
@@ -48,7 +51,7 @@ public class DBMember extends DBStrukt
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
 
-        addForeignKey(new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx"), 2);
+        addForeignKey(FK_BILLING_PERIOD, 2);
 
         hist.setTitle(" ");
         

@@ -176,6 +176,7 @@ when going through the executor's high-level API.
 | Method | Returns | Notes |
 |--------|---------|-------|
 | `fetchTableValue(String[] tables, String where)` | `List<HashMap<String,Object>>` | All registered columns; requires prior `registerTableBindings` on the `TypeRegistration` inside the executer — **not** directly accessible; use the overload below instead |
+| `fetchTableValue(String[] tables, String where, List<Object> params)` | `List<HashMap<String,Object>>` | Same as above but binds `?` placeholders in `where` via `PreparedStatement.setObject`; used internally by `Transaction.fetchTable2(strukt, Condition)` |
 | `fetchTableValue(String table, HashMap pkValues)` | `HashMap<String,Object>` | Single row by PK |
 | `insertTableValues(String table, HashMap values)` | `int` rows affected | Uses PreparedStatement |
 | `updateTableValues(String table, HashMap values, String where)` | `int` rows affected | where=null → PK-based |
@@ -266,7 +267,9 @@ FrameWork/base/
 │   ├── DBString.java         # concrete DBValue for VARCHAR
 │   ├── DBInteger.java        # concrete DBValue for INTEGER
 │   ├── DBDateTime.java       # concrete DBValue for DATETIME
-│   └── ...                   # one subclass per SQL type
+│   ├── ...                   # one subclass per SQL type
+│   ├── Condition.java        # fluent typed WHERE builder; renders SQL + collects bind values
+│   └── ConditionStep.java    # package-private builder step: holds pending column ref until op is chosen
 │
 ├── transaction/
 │   └── Transaction.java      # abstract bridge: opens Connection + StmtExecInterface,
@@ -368,6 +371,8 @@ Convenience methods on `Transaction` bridge `DBStrukt` ↔ `SqlDBInterface`:
 | Method | Description |
 |--------|-------------|
 | `fetchTable(DBStrukt, whereStmt)` | SELECT all registered columns; returns `Vector<DBStrukt>` |
+| `fetchTable2(DBStrukt, whereStmt)` | Same as `fetchTable` but returns `List<T>` (type-safe) |
+| `fetchTable2(T strukt, Condition condition)` | SELECT with typed, injection-safe WHERE clause built by `Condition`; values bound via `?` |
 | `fetchTableWithPrimkey(DBStrukt)` | SELECT single row by PK values already set on the strukt |
 | `insertValues(DBStrukt)` | INSERT using current field values |
 | `updateValues(DBStrukt)` | UPDATE by PK |
@@ -497,6 +502,103 @@ A single special table (`DBTableVersion` strukt) with columns `table` (PK) and `
      → create new tables / migrate existing ones
 6. App proceeds; DML via trans.fetchTable() / trans.insertValues() / trans.updateValues()
 ```
+
+---
+
+---
+
+## Typed WHERE Conditions (`Condition` API)
+
+### Motivation
+
+Raw WHERE strings (e.g. `"WHERE status = 'open'"`) have three problems:
+- Typos in column names are silent at compile time.
+- String-concatenated values are a SQL-injection risk.
+- Values are never bound via `PreparedStatement` parameters.
+
+The `Condition` API solves all three:
+
+| Goal | How |
+|------|-----|
+| Compile-time column name safety | Column refs are existing `static final DBValue` fields — typo → `cannot find symbol` |
+| No raw string concatenation | Values stored internally; rendered as `?` in SQL |
+| `PreparedStatement` binding | `fetchTable2(strukt, condition)` threads bind values through `setObject` |
+| Zero breaking changes | All existing `fetchTable2(strukt, String where)` calls still work |
+
+### Classes
+
+**`Condition`** (`at.redeye.FrameWork.base.bindtypes`) — immutable after construction.
+Holds an ordered list of `Term` records. Entry point is a static factory:
+
+```java
+Condition.where(MyTable.SOME_COL)  →  ConditionStep
+```
+
+After completing a term via an operator method, the returned `Condition` exposes `.and(col)` / `.or(col)` to chain the next step.
+
+Key methods:
+
+| Method | Description |
+|--------|-------------|
+| `static ConditionStep where(DBValue column)` | Entry point; starts a new condition chain |
+| `ConditionStep and(DBValue column)` | Appends a term joined by `AND` |
+| `ConditionStep or(DBValue column)` | Appends a term joined by `OR` |
+| `String renderWhere(StmtCreatorInterface creator, String tableName)` | Builds `WHERE t.col1 = ? AND t.col2 > ?`; `IS NULL`/`IS NOT NULL` are literal (no `?`) |
+| `List<Object> getBindValues()` | Values in term order; `IS NULL`/`IS NOT NULL` terms contribute no entry |
+
+**`ConditionStep`** (`at.redeye.FrameWork.base.bindtypes`, package-private) — transient;
+holds a pending column reference until an operator method completes the term.
+
+| Operator | SQL fragment | Bind value? |
+|----------|-------------|-------------|
+| `.eq(val)` | `col = ?` | yes |
+| `.ne(val)` | `col <> ?` | yes |
+| `.gt(val)` | `col > ?` | yes |
+| `.lt(val)` | `col < ?` | yes |
+| `.gte(val)` | `col >= ?` | yes |
+| `.lte(val)` | `col <= ?` | yes |
+| `.like(val)` | `col LIKE ?` | yes |
+| `.isNull()` | `col IS NULL` | no |
+| `.isNotNull()` | `col IS NOT NULL` | no |
+
+### Call-site examples
+
+```java
+// Single equality condition
+List<DBOrderLine> lines = fetchTable2(new DBOrderLine(),
+        Condition.where(DBOrderLine.ORDER_IDX).eq(42));
+
+// AND chain
+List<DBOrderLine> lines = fetchTable2(new DBOrderLine(),
+        Condition.where(DBOrderLine.ORDER_IDX).eq(orderId)
+                 .and(DBOrderLine.ITEM_CODE).like("A%"));
+
+// OR
+Condition cond = Condition.where(DBOrderLine.STATUS).eq("open")
+                          .or(DBOrderLine.STATUS).eq("pending");
+
+// IS NULL check
+Condition unassigned = Condition.where(DBOrderLine.ASSIGNED_IDX).isNull();
+```
+
+### How `fetchTable2(T strukt, Condition condition)` works
+
+```
+Condition.renderWhere(creator, strukt.getName())
+    → "WHERE `ORDER_LINE`.`order_idx` = ? AND `ORDER_LINE`.`item_code` LIKE ?"
+Condition.getBindValues()
+    → [42, "A%"]
+executer.fetchTableValue(new String[]{ strukt.getName() }, whereSql, params)
+    → PreparedStatement with setObject(1, 42), setObject(2, "A%")
+    → result assembled same as fetchTable2(T, String)
+```
+
+### Note on FK fetch methods
+
+`fetchChildren` and `fetchParent` (see below) were originally backed by a private
+`buildWhereForValue` helper that produced a quoted raw string. After Phase 4 of the
+Condition plan, those methods delegate to `fetchTable2(strukt, Condition)` internally,
+so all FK fetches also use `PreparedStatement` binding.
 
 ---
 
@@ -634,11 +736,13 @@ public <P extends DBStrukt> P fetchParent(
 Reads the FK column's current value from `childStrukt`, builds a WHERE clause against the
 parent table's referenced column, delegates to `fetchTable2`. Returns `null` if not found.
 
-#### `buildWhereForValue` (private helper)
+#### `buildWhereForValue` (internal — superseded)
 
-Produces `WHERE <table>.<col> = <value>`. Numeric DB types are unquoted; all others are
-single-quoted. Both column name and value originate from FK declarations and loaded
-`DBValue` instances (internal trusted sources) — not from user input.
+Originally produced `WHERE <table>.<col> = <value>` as a quoted raw string.
+After the `Condition` API was introduced (Phase 4 of the typed-condition plan), the FK
+fetch methods delegate to `fetchTable2(strukt, Condition)` instead, so values are bound
+via `PreparedStatement` parameters. `buildWhereForValue` is retained as a private helper
+but is no longer the primary implementation path.
 
 #### Usage example
 

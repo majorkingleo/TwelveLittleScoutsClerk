@@ -16,15 +16,10 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 public class DBGroup extends DBStrukt 
 {
     public static final String GROUP_IDX_SEQUENCE = "GROUP_IDX_SEQUENCE";
-
-    // Column references for Condition API
-    public static final DBInteger IDX  = new DBInteger("idx");
-    public static final DBString  NAME = new DBString("name", 1);
-    public static final DBHistory HIST = new DBHistory("hist");
-
-    public DBInteger  idx   = IDX.getCopy();
-    public DBString   name  = NAME.getCopy();
-    public DBHistory  hist  = (DBHistory)HIST.getCopy();
+    
+    public DBInteger      idx = new DBInteger("idx", "Idx");   
+    public DBString       name = new DBString("name", "Name", 50 );    
+    public DBHistory      hist = new DBHistory( "hist" );
     
     public DBGroup()
     {

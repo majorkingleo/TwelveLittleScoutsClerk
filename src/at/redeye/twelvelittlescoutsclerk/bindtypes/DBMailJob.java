@@ -22,20 +22,6 @@ public class DBMailJob extends DBStrukt {
     public static final ForeignKeyDefinition FK_BILL =
         new ForeignKeyDefinition("bill_idx", "BILLS", "idx");
 
-    // Column references for Condition API
-    public static final DBInteger       IDX             = new DBInteger("idx");
-    public static final DBInteger       BP_IDX          = new DBInteger("bp_idx");
-    public static final DBInteger       BILL_IDX    = new DBInteger("bill_idx");
-    public static final DBString        RECIPIENT_EMAIL = new DBString("recipient_email", 1);
-    public static final DBString        RECIPIENT_NAME  = new DBString("recipient_name", 1);
-    public static final DBString        SUBJECT         = new DBString("subject", 1);
-    public static final DBBlob          BODY            = new DBBlob("body");
-    public static final DBBlob          PDF_DATA        = new DBBlob("pdf_data");
-    public static final DBEnumAsInteger STATE           = new DBEnumAsInteger("state", new StateHandler());
-    public static final DBInteger       RETRY_COUNT     = new DBInteger("retry_count");
-    public static final DBString        ERROR_MESSAGE   = new DBString("error_message", 1);
-    public static final DBHistory       HIST            = new DBHistory("hist");
-
     public enum State { PENDING, SENDING, SENT, FAILED }
 
     public static class StateHandler extends DBEnumAsInteger.EnumAsIntegerHandler {
@@ -105,18 +91,18 @@ public class DBMailJob extends DBStrukt {
         }
     }
 
-    public DBInteger        idx              = IDX.getCopy();
-    public DBInteger        bp_idx           = BP_IDX.getCopy();
-    public DBInteger        bill_idx         = BILL_IDX.getCopy();
-    public DBString         recipient_email  = RECIPIENT_EMAIL.getCopy();
-    public DBString         recipient_name   = RECIPIENT_NAME.getCopy();
-    public DBString         subject          = SUBJECT.getCopy();
-    public DBBlob           body             = BODY.getCopy();
-    public DBBlob           pdf_data         = PDF_DATA.getCopy();
-    public DBEnumAsInteger  state            = (DBEnumAsInteger)STATE.getCopy();
-    public DBInteger        retry_count      = RETRY_COUNT.getCopy();
-    public DBString         error_message    = ERROR_MESSAGE.getCopy();
-    public DBHistory        hist             = (DBHistory)HIST.getCopy();
+    public DBInteger       idx             = new DBInteger("idx");
+    public DBInteger       bp_idx          = new DBInteger("bp_idx");
+    public DBInteger       bill_idx        = new DBInteger("bill_idx");
+    public DBString        recipient_email = new DBString("recipient_email", "E-Mail", 200);
+    public DBString        recipient_name  = new DBString("recipient_name", "Recipient", 200);
+    public DBString        subject         = new DBString("subject", "Subject", 500);
+    public DBBlob          body            = new DBBlob("body");
+    public DBBlob          pdf_data        = new DBBlob("pdf_data");
+    public DBEnumAsInteger state           = new DBEnumAsInteger("state", new StateHandler());
+    public DBInteger       retry_count     = new DBInteger("retry_count");
+    public DBString        error_message   = new DBString("error_message", "Error", 2000);
+    public DBHistory       hist            = new DBHistory("hist");
 
     public DBMailJob() {
         super("MAIL_JOBS");

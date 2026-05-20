@@ -24,18 +24,11 @@ public class DBMembers2Contacts extends DBStrukt
     public static final ForeignKeyDefinition FK_CONTACT =
         new ForeignKeyDefinition("contact_idx", "CONTACT", "idx");
 
-    // Column references for Condition API
-    public static final DBInteger IDX         = new DBInteger("idx");
-    public static final DBInteger MEMBER_IDX  = new DBInteger("member_idx");
-    public static final DBInteger CONTACT_IDX = new DBInteger("contact_idx");
-    public static final DBInteger BP_IDX      = new DBInteger("bp_idx");
-    public static final DBHistory HIST        = new DBHistory("hist");
-
-    public DBInteger  idx          = IDX.getCopy();
-    public DBInteger  member_idx   = MEMBER_IDX.getCopy();
-    public DBInteger  contact_idx  = CONTACT_IDX.getCopy();
-    public DBInteger  bp_idx       = BP_IDX.getCopy();
-    public DBHistory  hist         = (DBHistory)HIST.getCopy();
+    public DBInteger      idx = new DBInteger("idx", "Idx");
+    public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
+    public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
+    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
+    public DBHistory      hist = new DBHistory( "hist" );
     
     public DBMembers2Contacts()
     {

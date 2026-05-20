@@ -15,22 +15,13 @@ public class DBBillTemplate extends DBStrukt {
 
     public static final String BILL_TEMPLATE_IDX_SEQUENCE = "BILL_TEMP_IDX_SEQ";
 
-    // Column references for Condition API
-    public static final DBInteger IDX         = new DBInteger("idx");
-    public static final DBInteger BP_IDX      = new DBInteger("bp_idx");
-    public static final DBString  NAME        = new DBString("name", 1);
-    public static final DBString  DESCRIPTION = new DBString("description", 1);
-    public static final DBString  FILE_NAME   = new DBString("file_name", 1);
-    public static final DBBlob    ODT_DATA    = new DBBlob("odt_data");
-    public static final DBHistory HIST        = new DBHistory("hist");
-
-    public DBInteger  idx          = IDX.getCopy();
-    public DBInteger  bp_idx       = BP_IDX.getCopy();
-    public DBString   name         = NAME.getCopy();
-    public DBString   description  = DESCRIPTION.getCopy();
-    public DBString   file_name    = FILE_NAME.getCopy();
-    public DBBlob     odt_data     = ODT_DATA.getCopy();
-    public DBHistory  hist         = (DBHistory)HIST.getCopy();
+    public DBInteger idx         = new DBInteger("idx");
+    public DBInteger bp_idx      = new DBInteger("bp_idx");
+    public DBString  name        = new DBString("name", "Name", 255);
+    public DBString  description = new DBString("description", "Description", 500);
+    public DBString  file_name   = new DBString("file_name", "File Name", 255);
+    public DBBlob    odt_data    = new DBBlob("odt_data");
+    public DBHistory hist        = new DBHistory("hist");
 
     public DBBillTemplate() {
         super("BILL_TEMPLATES");

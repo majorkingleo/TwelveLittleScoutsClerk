@@ -19,16 +19,28 @@ public class DBEvent extends DBStrukt {
     public static final ForeignKeyDefinition FK_BILLING_PERIOD =
         new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBString       name = new DBString("name", "Name", 50 );
-    public DBHistory      hist = new DBHistory( "hist" );
-    public DBDouble       costs = new DBDouble( "costs", "Costs per Person" );
-    public DBDouble       paid = new DBDouble( "paid", "Paid" );
-    public DBDouble       planned_costs = new DBDouble( "planned_costs", "Planned Costs" );
-    public DBString       billing_template      = new DBString( "billing_template", "Billing Template", 512 );
-    public DBString       registration_template = new DBString( "registration_template", "Registration Template", 512 );
-    public DBDouble       registration_costs    = new DBDouble( "registration_costs", "Registration Costs" );
+    // Column references for Condition API
+    public static final DBInteger IDX                   = new DBInteger("idx");
+    public static final DBInteger BP_IDX                = new DBInteger("bp_idx");
+    public static final DBString  NAME                  = new DBString("name", 1);
+    public static final DBHistory HIST                  = new DBHistory("hist");
+    public static final DBDouble  COSTS                 = new DBDouble("costs");
+    public static final DBDouble  PAID                  = new DBDouble("paid");
+    public static final DBDouble  PLANNED_COSTS         = new DBDouble("planned_costs");
+    public static final DBString  BILLING_TEMPLATE      = new DBString("billing_template", 1);
+    public static final DBString  REGISTRATION_TEMPLATE = new DBString("registration_template", 1);
+    public static final DBDouble  REGISTRATION_COSTS    = new DBDouble("registration_costs");
+
+    public DBInteger  idx                    = IDX.getCopy();
+    public DBInteger  bp_idx                 = BP_IDX.getCopy();
+    public DBString   name                   = NAME.getCopy();
+    public DBHistory  hist                   = (DBHistory)HIST.getCopy();
+    public DBDouble   costs                  = COSTS.getCopy();
+    public DBDouble   paid                   = PAID.getCopy();
+    public DBDouble   planned_costs          = PLANNED_COSTS.getCopy();
+    public DBString   billing_template       = BILLING_TEMPLATE.getCopy();
+    public DBString   registration_template  = REGISTRATION_TEMPLATE.getCopy();
+    public DBDouble   registration_costs     = REGISTRATION_COSTS.getCopy();
     
     public DBEvent()
     {

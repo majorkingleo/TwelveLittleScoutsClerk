@@ -23,22 +23,40 @@ public class DBBookingLine extends DBStrukt {
     public static final ForeignKeyDefinition FK_CONTACT =
         new ForeignKeyDefinition("contact_idx", "CONTACT", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBHistory      hist = new DBHistory("hist");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx", "BP Idx" );
-    public DBString       line = new DBString("line", "Line", 500);
-    public DBString       reference = new DBString("reference", "Reference", 500);
-    public DBDouble       amount = new DBDouble("amount", "Amount");
-    public DBString       from_bank_account_iban = new DBString("from_bank_account_iban", "From Bank Account IBAN", 50);
-    public DBString       from_bank_account_bic = new DBString("from_bank_account_bic", "From Bank Account BIC", 50);    
-    public DBString       from_name = new DBString("from_name", "From Name", 255);
-    public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
-    public DBFlagInteger  assigned = new DBFlagInteger("assigned","Assigned");
-    public DBFlagInteger  splitpos = new DBFlagInteger("splitpos","SplitPos");
-    public DBInteger      parent_idx = new DBInteger("parent_idx", "Parent Idx");
-    public DBDateTime     date = new DBDateTime( "date", "Booking Date");
-    public DBString       data_source = new DBString("data_source", "Data Source", 50); // eg elba, cash
-    public DBString       comment = new DBString("comment", "Comment", 50);
+    // Column references for Condition API
+    public static final DBInteger     IDX                    = new DBInteger("idx");
+    public static final DBHistory     HIST                   = new DBHistory("hist");
+    public static final DBInteger     BP_IDX                 = new DBInteger("bp_idx");
+    public static final DBString      LINE                   = new DBString("line", 1);
+    public static final DBString      REFERENCE              = new DBString("reference", 1);
+    public static final DBDouble      AMOUNT                 = new DBDouble("amount");
+    public static final DBString      FROM_BANK_ACCOUNT_IBAN = new DBString("from_bank_account_iban", 1);
+    public static final DBString      FROM_BANK_ACCOUNT_BIC  = new DBString("from_bank_account_bic", 1);
+    public static final DBString      FROM_NAME              = new DBString("from_name", 1);
+    public static final DBInteger     CONTACT_IDX            = new DBInteger("contact_idx");
+    public static final DBFlagInteger ASSIGNED               = new DBFlagInteger("assigned");
+    public static final DBFlagInteger SPLITPOS               = new DBFlagInteger("splitpos");
+    public static final DBInteger     PARENT_IDX             = new DBInteger("parent_idx");
+    public static final DBDateTime    DATE                   = new DBDateTime("date");
+    public static final DBString      DATA_SOURCE            = new DBString("data_source", 1);
+    public static final DBString      COMMENT                = new DBString("comment", 1);
+
+    public DBInteger      idx                     = IDX.getCopy();
+    public DBHistory      hist                    = (DBHistory)HIST.getCopy();
+    public DBInteger      bp_idx                  = BP_IDX.getCopy();
+    public DBString       line                    = LINE.getCopy();
+    public DBString       reference               = REFERENCE.getCopy();
+    public DBDouble       amount                  = AMOUNT.getCopy();
+    public DBString       from_bank_account_iban  = FROM_BANK_ACCOUNT_IBAN.getCopy();
+    public DBString       from_bank_account_bic   = FROM_BANK_ACCOUNT_BIC.getCopy();
+    public DBString       from_name               = FROM_NAME.getCopy();
+    public DBInteger      contact_idx             = CONTACT_IDX.getCopy();
+    public DBFlagInteger  assigned                = new DBFlagInteger(ASSIGNED.getName(), "Assigned");
+    public DBFlagInteger  splitpos                = new DBFlagInteger(SPLITPOS.getName(), "SplitPos");
+    public DBInteger      parent_idx              = PARENT_IDX.getCopy();
+    public DBDateTime     date                    = DATE.getCopy();
+    public DBString       data_source             = DATA_SOURCE.getCopy();  // eg elba, cash
+    public DBString       comment                 = COMMENT.getCopy();
             
     public DBBookingLine()
     {

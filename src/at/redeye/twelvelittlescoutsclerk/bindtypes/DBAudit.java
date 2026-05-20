@@ -16,14 +16,23 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
 public class DBAudit extends DBStrukt
 {
     public static String AUDIT_SEQUENCE = "AUDIT_IDX_SEQ";
-    
-    public DBInteger idx = new DBInteger("idx", "Idx");
-    public DBInteger audit_idx = new DBInteger("audit_idx", "Idx");
-    public DBInteger bp_idx = new DBInteger( "bp_idx" );
-    public DBInteger member_idx = new DBInteger("member_idx", "Idx");
-    public DBString  message = new DBString( "message", "Text", 3000 );
-    public DBDateTime date = new DBDateTime( "date", "Date" );
-    public DBString  user = new DBString("user", "User", 50);
+
+    // Column references for Condition API
+    public static final DBInteger  IDX        = new DBInteger("idx");
+    public static final DBInteger  AUDIT_IDX  = new DBInteger("audit_idx");
+    public static final DBInteger  BP_IDX     = new DBInteger("bp_idx");
+    public static final DBInteger  MEMBER_IDX = new DBInteger("member_idx");
+    public static final DBString   MESSAGE    = new DBString("message", 1);
+    public static final DBDateTime DATE       = new DBDateTime("date");
+    public static final DBString   USER       = new DBString("user", 1);
+
+    public DBInteger   idx         = IDX.getCopy();
+    public DBInteger   audit_idx   = AUDIT_IDX.getCopy();
+    public DBInteger   bp_idx      = BP_IDX.getCopy();
+    public DBInteger   member_idx  = MEMBER_IDX.getCopy();
+    public DBString    message     = MESSAGE.getCopy();
+    public DBDateTime  date        = DATE.getCopy();
+    public DBString    user        = USER.getCopy();
 
     
     public DBAudit()

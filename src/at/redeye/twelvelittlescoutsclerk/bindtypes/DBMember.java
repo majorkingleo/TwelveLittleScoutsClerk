@@ -5,7 +5,6 @@
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.*;
-import at.redeye.FrameWork.base.bindtypes.ForeignKeyDefinition;
 
 /**
  *
@@ -18,18 +17,31 @@ public class DBMember extends DBStrukt
     public static final ForeignKeyDefinition FK_BILLING_PERIOD =
         new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");   
-    public DBString       member_registration_number = new DBString("member_registration_number", "Member Id", 50);
-    public DBString       name = new DBString("name", "Name", 50 );
-    public DBString       forname = new DBString("forname", "Forname", 50 );
-    public DBDateTime     entry_date = new DBDateTime("entry_date", "Entry Date");
-    public DBHistory      hist = new DBHistory( "hist" );
-    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBString       note = new DBString("note", "Note", 300);
-    public DBString       tel = new DBString("tel", "Phone Number", 50 );
-    public DBFlagInteger  inaktiv = new DBFlagInteger("inactiv","Inactiv");
-    public DBFlagInteger  de_registered = new DBFlagInteger("de_registered","De-Registered");
-    public DBString       group = new DBString("group", "Group", 50 );
+    public static final DBInteger      IDX = new DBInteger("idx", "Idx");   
+    public static final DBString       MEMBER_REGISTRATION_NUMBER = new DBString("member_registration_number", "Member Id", 50);
+    public static final DBString       NAME = new DBString("name", "Name", 50 );
+    public static final DBString       FORNAME = new DBString("forname", "Forname", 50 );
+    public static final DBDateTime     ENTRY_DATE = new DBDateTime("entry_date", "Entry Date");
+    public static final DBHistory      HIST = new DBHistory( "hist" );
+    public static final DBInteger      BP_IDX = new DBInteger( "bp_idx" );
+    public static final DBString       NOTE = new DBString("note", "Note", 300);
+    public static final DBString       TEL = new DBString("tel", "Phone Number", 50 );
+    public static final DBFlagInteger  INAKTIV = new DBFlagInteger("inactiv","Inactiv");
+    public static final DBFlagInteger  DE_REGISTERED = new DBFlagInteger("de_registered","De-Registered");
+    public static final DBString       GROUP = new DBString("group", "Group", 50 );
+
+    public DBInteger      idx = IDX.getCopy();   
+    public DBString       member_registration_number = MEMBER_REGISTRATION_NUMBER.getCopy();
+    public DBString       name = NAME.getCopy();
+    public DBString       forname = FORNAME.getCopy();
+    public DBDateTime     entry_date = ENTRY_DATE.getCopy();
+    public DBHistory      hist = (DBHistory) HIST.getCopy();
+    public DBInteger      bp_idx = BP_IDX.getCopy();
+    public DBString       note = NOTE.getCopy();
+    public DBString       tel = TEL.getCopy();
+    public DBFlagInteger  inaktiv = (DBFlagInteger) INAKTIV.getCopy();
+    public DBFlagInteger  de_registered = (DBFlagInteger) DE_REGISTERED.getCopy();
+    public DBString       group = GROUP.getCopy();
     
     public DBMember()
     {

@@ -28,22 +28,39 @@ public class DBEventMember extends DBStrukt {
     public static final ForeignKeyDefinition FK_REGISTRATION_BILL =
         new ForeignKeyDefinition("registration_bill_idx", "BILLS", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBInteger      event_idx = new DBInteger( "event_idx" );
-    public DBInteger      member_idx = new DBInteger( "member_idx" );
-    public DBInteger      group_idx = new DBInteger( "group_idx" );
-    public DBString       name = new DBString("name", "Name", 50 );          // copy of member
-    public DBString       forname = new DBString("forname", "Forname", 50 ); // copy of member
-    public DBString       group = new DBString("group", "Group", 50 );       // copy of group name
-    public DBHistory      hist = new DBHistory( "hist" );
-    public DBDouble       costs = new DBDouble( "costs" );                   // got a discount? So this value can vary
-    public DBDouble       paid = new DBDouble( "piad" );
-    public DBDouble       paid_cash = new DBDouble( "piad_cash", "Cash" );
-    public DBString       comment = new DBString("comment", "Comment", 255 );
-    public DBString       bill = new DBString("bill", "Bill", 255 );
-    public DBInteger      bill_idx = new DBInteger("bill_idx");                             // FK to BILLS.idx
-    public DBInteger      registration_bill_idx = new DBInteger("registration_bill_idx");   // FK to BILLS.idx (registration)
+    public static final DBInteger      IDX = new DBInteger("idx", "Idx");
+    public static final DBInteger      BP_IDX = new DBInteger( "bp_idx" );
+    public static final DBInteger      EVENT_IDX = new DBInteger( "event_idx" );
+    public static final DBInteger      MEMBER_IDX = new DBInteger( "member_idx" );
+    public static final DBInteger      GROUP_IDX = new DBInteger( "group_idx" );
+    public static final DBString       NAME = new DBString("name", "Name", 50 );          // copy of member
+    public static final DBString       FORNAME = new DBString("forname", "Forname", 50 ); // copy of member
+    public static final DBString       GROUP = new DBString("group", "Group", 50 );       // copy of group name
+    public static final DBHistory      HIST = new DBHistory( "hist" );
+    public static final DBDouble       COSTS = new DBDouble( "costs" );                   // got a discount? So this value can vary
+    public static final DBDouble       PAID = new DBDouble( "piad" );
+    public static final DBDouble       PAID_CASH = new DBDouble( "piad_cash", "Cash" );
+    public static final DBString       COMMENT = new DBString("comment", "Comment", 255 );
+    public static final DBString       BILL = new DBString("bill", "Bill", 255 );
+    public static final DBInteger      BILL_IDX = new DBInteger("bill_idx");                             // FK to BILLS.idx
+    public static final DBInteger      REGISTRATION_BILL_IDX = new DBInteger("registration_bill_idx");   // FK to BILLS.idx (registration)
+
+    public DBInteger      idx = IDX.getCopy();
+    public DBInteger      bp_idx = BP_IDX.getCopy();
+    public DBInteger      event_idx = EVENT_IDX.getCopy();
+    public DBInteger      member_idx = MEMBER_IDX.getCopy();
+    public DBInteger      group_idx = GROUP_IDX.getCopy();
+    public DBString       name = NAME.getCopy();          // copy of member
+    public DBString       forname = FORNAME.getCopy(); // copy of member
+    public DBString       group = GROUP.getCopy();       // copy of group name
+    public DBHistory      hist = (DBHistory) HIST.getCopy();
+    public DBDouble       costs = COSTS.getCopy();                   // got a discount? So this value can vary
+    public DBDouble       paid = PAID.getCopy();
+    public DBDouble       paid_cash = PAID_CASH.getCopy();
+    public DBString       comment = COMMENT.getCopy();
+    public DBString       bill = BILL.getCopy();
+    public DBInteger      bill_idx = BILL_IDX.getCopy();                             // FK to BILLS.idx
+    public DBInteger      registration_bill_idx = REGISTRATION_BILL_IDX.getCopy();   // FK to BILLS.idx (registration)
 
     public DBEventMember()
     {

@@ -21,16 +21,27 @@ public class DBContact extends DBStrukt
     public static final ForeignKeyDefinition FK_BILLING_PERIOD =
         new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBString       name = new DBString("name", "Name", 50 );
-    public DBString       forname = new DBString("forname", "Forname", 50 );    
-    public DBHistory      hist = new DBHistory( "hist" );    
-    public DBString       note = new DBString("note", "Note", 300);
-    public DBString       tel = new DBString("tel", "Phone Number", 50 );
-    public DBString       email = new DBString("email", "Email", 200 );
-    public DBString       bank_account_iban = new DBString("bank_account_iban", "Bank account IBAN", 50 );
-    public DBString       bank_account_bic = new DBString("bank_account_bic", "Bank account BIC", 50 );
+    public static final DBInteger      IDX = new DBInteger("idx", "Idx");
+    public static final DBInteger      BP_IDX = new DBInteger( "bp_idx" );
+    public static final DBString       NAME = new DBString("name", "Name", 50 );
+    public static final DBString       FORNAME = new DBString("forname", "Forname", 50 );    
+    public static final DBHistory      HIST = new DBHistory( "hist" );    
+    public static final DBString       NOTE = new DBString("note", "Note", 300);
+    public static final DBString       TEL = new DBString("tel", "Phone Number", 50 );
+    public static final DBString       EMAIL = new DBString("email", "Email", 200 );
+    public static final DBString       BANK_ACCOUNT_IBAN = new DBString("bank_account_iban", "Bank account IBAN", 50 );
+    public static final DBString       BANK_ACCOUNT_BIC = new DBString("bank_account_bic", "Bank account BIC", 50 );
+
+    public DBInteger      idx = IDX.getCopy();
+    public DBInteger      bp_idx = BP_IDX.getCopy();
+    public DBString       name = NAME.getCopy();
+    public DBString       forname = FORNAME.getCopy();    
+    public DBHistory      hist = (DBHistory) HIST.getCopy();    
+    public DBString       note = NOTE.getCopy();
+    public DBString       tel = TEL.getCopy();
+    public DBString       email = EMAIL.getCopy();
+    public DBString       bank_account_iban = BANK_ACCOUNT_IBAN.getCopy();
+    public DBString       bank_account_bic = BANK_ACCOUNT_BIC.getCopy();
     
     public DBContact()
     {

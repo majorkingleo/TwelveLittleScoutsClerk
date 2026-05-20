@@ -16,11 +16,17 @@ import at.redeye.FrameWork.base.bindtypes.DBStrukt;
  */
 public class DBBillingPeriod extends DBStrukt 
 {
-    public DBInteger idx = new DBInteger("idx");
-    public DBString  title = new DBString("title", "Billing Period", 50 );
-    public DBString  comment = new DBString("comment", "Comment", 1000 );
-    public DBHistory    hist = new DBHistory("hist");
-    public DBFlagInteger locked = new DBFlagInteger("locked");
+    public static final DBInteger       IDX = new DBInteger("idx");
+    public static final DBString        TITLE = new DBString("title", "Billing Period", 50 );
+    public static final DBString        COMMENT = new DBString("comment", "Comment", 1000 );
+    public static final DBHistory       HIST = new DBHistory("hist");
+    public static final DBFlagInteger   LOCKED = new DBFlagInteger("locked");
+
+    public DBInteger        idx = IDX.getCopy();
+    public DBString         title = TITLE.getCopy();
+    public DBString         comment = COMMENT.getCopy();
+    public DBHistory        hist = (DBHistory) HIST.getCopy();
+    public DBFlagInteger    locked = (DBFlagInteger) LOCKED.getCopy();
     
     
     public DBBillingPeriod()

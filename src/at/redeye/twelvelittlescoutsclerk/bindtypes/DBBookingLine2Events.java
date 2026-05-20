@@ -27,15 +27,26 @@ public class DBBookingLine2Events extends DBStrukt
     public static final ForeignKeyDefinition FK_CONTACT =
         new ForeignKeyDefinition("contact_idx", "CONTACT", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      bl_idx = new DBInteger("bl_idx", "Booking line Idx");
-    public DBInteger      event_idx = new DBInteger("event_idx", "Event Idx");
-    public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
-    public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBString       member_name = new DBString( "member_name", "Member Name", 50 );
-    public DBString       event_name = new DBString( "event_name", "Event Name", 50 );
-    public DBHistory      hist = new DBHistory( "hist" );
+
+    public static final DBInteger      IDX = new DBInteger("idx", "Idx");
+    public static final DBInteger      BL_IDX = new DBInteger("bl_idx", "Booking line Idx");
+    public static final DBInteger      EVENT_IDX = new DBInteger("event_idx", "Event Idx");
+    public static final DBInteger      MEMBER_IDX = new DBInteger("member_idx", "Member Idx");
+    public static final DBInteger      CONTACT_IDX = new DBInteger("contact_idx", "Contact Idx");
+    public static final DBInteger      BP_IDX = new DBInteger( "bp_idx" );
+    public static final DBString       MEMBER_NAME = new DBString( "member_name", "Member Name", 50 );
+    public static final DBString       EVENT_NAME = new DBString( "event_name", "Event Name", 50 );
+    public static final DBHistory      HIST = new DBHistory( "hist" );
+
+    public DBInteger      idx = IDX.getCopy();
+    public DBInteger      bl_idx = BL_IDX.getCopy();
+    public DBInteger      event_idx = EVENT_IDX.getCopy();
+    public DBInteger      member_idx = MEMBER_IDX.getCopy();
+    public DBInteger      contact_idx = CONTACT_IDX.getCopy();
+    public DBInteger      bp_idx = BP_IDX.getCopy();
+    public DBString       member_name = MEMBER_NAME.getCopy();
+    public DBString       event_name = EVENT_NAME.getCopy();
+    public DBHistory      hist = (DBHistory) HIST.getCopy();
     
     public DBBookingLine2Events()
     {

@@ -228,17 +228,29 @@ public class DBBill extends DBStrukt {
         }
     }
 
-    public DBInteger       idx                  = new DBInteger("idx");
-    public DBInteger       bp_idx               = new DBInteger("bp_idx");
-    public DBString        billingnr            = new DBString("billingnr", "Billing Nr", 50);
-    public DBString        file_name            = new DBString("file_name", "File Name", 255);
-    public DBBlob          odt_data             = new DBBlob("odt_data");
-    public DBBlob          pdf_data             = new DBBlob("pdf_data");
-    public DBEnumAsInteger state                = new DBEnumAsInteger("state", "State", new StateHandler());
-    public DBEnumAsInteger direction            = new DBEnumAsInteger("direction", "Direction", new DirectionHandler());
-    public DBEnumAsInteger bill_type            = new DBEnumAsInteger("bill_type", "Bill Type", new BillTypeHandler());
-    public DBInteger       registration_number  = new DBInteger("registration_number");  // seq from REGISTRATION_IDX_SEQ
-    public DBHistory       hist                 = new DBHistory("hist");
+    public static final DBInteger       IDX                  = new DBInteger("idx");
+    public static final DBInteger       BP_IDX               = new DBInteger("bp_idx");
+    public static final DBString        BILLINGNR            = new DBString("billingnr", "Billing Nr", 50);
+    public static final DBString        FILE_NAME            = new DBString("file_name", "File Name", 255);
+    public static final DBBlob          ODT_DATA             = new DBBlob("odt_data");
+    public static final DBBlob          PDF_DATA             = new DBBlob("pdf_data");
+    public static final DBEnumAsInteger STATE                = new DBEnumAsInteger("state", "State", new StateHandler());
+    public static final DBEnumAsInteger DIRECTION            = new DBEnumAsInteger("direction", "Direction", new DirectionHandler());
+    public static final DBEnumAsInteger BILL_TYPE            = new DBEnumAsInteger("bill_type", "Bill Type", new BillTypeHandler());
+    public static final DBInteger       REGISTRATION_NUMBER  = new DBInteger("registration_number");  // seq from REGISTRATION_IDX_SEQ
+    public static final DBHistory       HIST                 = new DBHistory("hist");
+
+    public DBInteger       idx                  = IDX.getCopy();
+    public DBInteger       bp_idx               = BP_IDX.getCopy();
+    public DBString        billingnr            = BILLINGNR.getCopy();
+    public DBString        file_name            = FILE_NAME.getCopy();
+    public DBBlob          odt_data             = ODT_DATA.getCopy();
+    public DBBlob          pdf_data             = PDF_DATA.getCopy();
+    public DBEnumAsInteger state                = (DBEnumAsInteger) STATE.getCopy();
+    public DBEnumAsInteger direction            = (DBEnumAsInteger) DIRECTION.getCopy();
+    public DBEnumAsInteger bill_type            = (DBEnumAsInteger) BILL_TYPE.getCopy();
+    public DBInteger       registration_number  = REGISTRATION_NUMBER.getCopy();
+    public DBHistory       hist                 = (DBHistory) HIST.getCopy();
 
     public DBBill() {
         super("BILLS");

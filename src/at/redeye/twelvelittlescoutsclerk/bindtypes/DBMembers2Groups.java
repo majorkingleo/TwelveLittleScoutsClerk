@@ -25,13 +25,22 @@ public class DBMembers2Groups extends DBStrukt
     public static final ForeignKeyDefinition FK_GROUP =
         new ForeignKeyDefinition("group_idx", "GROUP", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBInteger      member_idx = new DBInteger("member_idx", "Member Idx");
-    public DBInteger      group_idx = new DBInteger("group_idx", "Contact Idx");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx" );
-    public DBHistory      hist = new DBHistory( "hist" );
-    public DBString       group = new DBString("group", "Group", 50 );
-    public DBString       member_name = new DBString("member_name", "Member Name", 50 );
+    public static final DBInteger      IDX = new DBInteger("idx", "Idx");
+    public static final DBInteger      MEMBER_IDX = new DBInteger("member_idx", "Member Idx");
+    public static final DBInteger      GROUP_IDX = new DBInteger("group_idx", "Contact Idx");
+    public static final DBInteger      BP_IDX = new DBInteger( "bp_idx" );
+    public static final DBHistory      HIST = new DBHistory( "hist" );
+    public static final DBString       GROUP = new DBString("group", "Group", 50 );
+    public static final DBString       MEMBER_NAME = new DBString("member_name", "Member Name", 50 );
+    
+
+    public DBInteger      idx = IDX.getCopy();
+    public DBInteger      member_idx = MEMBER_IDX.getCopy();
+    public DBInteger      group_idx = GROUP_IDX.getCopy();
+    public DBInteger      bp_idx = BP_IDX.getCopy();
+    public DBHistory      hist = (DBHistory) HIST.getCopy();
+    public DBString       group = GROUP.getCopy();
+    public DBString       member_name = MEMBER_NAME.getCopy();
     
     public DBMembers2Groups()
     {

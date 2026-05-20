@@ -23,22 +23,40 @@ public class DBBookingLine extends DBStrukt {
     public static final ForeignKeyDefinition FK_CONTACT =
         new ForeignKeyDefinition("contact_idx", "CONTACT", "idx");
 
-    public DBInteger      idx = new DBInteger("idx", "Idx");
-    public DBHistory      hist = new DBHistory("hist");
-    public DBInteger      bp_idx = new DBInteger( "bp_idx", "BP Idx" );
-    public DBString       line = new DBString("line", "Line", 500);
-    public DBString       reference = new DBString("reference", "Reference", 500);
-    public DBDouble       amount = new DBDouble("amount", "Amount");
-    public DBString       from_bank_account_iban = new DBString("from_bank_account_iban", "From Bank Account IBAN", 50);
-    public DBString       from_bank_account_bic = new DBString("from_bank_account_bic", "From Bank Account BIC", 50);    
-    public DBString       from_name = new DBString("from_name", "From Name", 255);
-    public DBInteger      contact_idx = new DBInteger("contact_idx", "Contact Idx");
-    public DBFlagInteger  assigned = new DBFlagInteger("assigned","Assigned");
-    public DBFlagInteger  splitpos = new DBFlagInteger("splitpos","SplitPos");
-    public DBInteger      parent_idx = new DBInteger("parent_idx", "Parent Idx");
-    public DBDateTime     date = new DBDateTime( "date", "Booking Date");
-    public DBString       data_source = new DBString("data_source", "Data Source", 50); // eg elba, cash
-    public DBString       comment = new DBString("comment", "Comment", 50);
+
+    public static final DBInteger      IDX = new DBInteger("idx", "Idx");
+    public static final DBHistory      HIST = new DBHistory("hist");
+    public static final DBInteger      BP_IDX = new DBInteger( "bp_idx", "BP Idx" );
+    public static final DBString       LINE = new DBString("line", "Line", 500);
+    public static final DBString       REFERENCE = new DBString("reference", "Reference", 500);
+    public static final DBDouble       AMOUNT = new DBDouble("amount", "Amount");
+    public static final DBString       FROM_BANK_ACCOUNT_IBAN = new DBString("from_bank_account_iban", "From Bank Account IBAN", 50);
+    public static final DBString       FROM_BANK_ACCOUNT_BIC = new DBString("from_bank_account_bic", "From Bank Account BIC", 50);    
+    public static final DBString       FROM_NAME = new DBString("from_name", "From Name", 255);
+    public static final DBInteger      CONTACT_IDX = new DBInteger("contact_idx", "Contact Idx");
+    public static final DBFlagInteger  ASSIGNED = new DBFlagInteger("assigned","Assigned");
+    public static final DBFlagInteger  SPLITPOS = new DBFlagInteger("splitpos","SplitPos");
+    public static final DBInteger      PARENT_IDX = new DBInteger("parent_idx", "Parent Idx");
+    public static final DBDateTime     DATE = new DBDateTime( "date", "Booking Date");
+    public static final DBString       DATA_SOURCE = new DBString("data_source", "Data Source", 50); // eg elba, cash
+    public static final DBString       COMMENT = new DBString("comment", "Comment", 50);
+
+    public DBInteger      idx = IDX.getCopy();
+    public DBHistory      hist = (DBHistory) HIST.getCopy();
+    public DBInteger      bp_idx = BP_IDX.getCopy();
+    public DBString       line = LINE.getCopy();
+    public DBString       reference = REFERENCE.getCopy();
+    public DBDouble       amount = AMOUNT.getCopy();
+    public DBString       from_bank_account_iban = FROM_BANK_ACCOUNT_IBAN.getCopy();
+    public DBString       from_bank_account_bic = FROM_BANK_ACCOUNT_BIC.getCopy();    
+    public DBString       from_name = FROM_NAME.getCopy();
+    public DBInteger      contact_idx = CONTACT_IDX.getCopy();
+    public DBFlagInteger  assigned = (DBFlagInteger) ASSIGNED.getCopy();
+    public DBFlagInteger  splitpos = (DBFlagInteger) SPLITPOS.getCopy();
+    public DBInteger      parent_idx = PARENT_IDX.getCopy();
+    public DBDateTime     date = DATE.getCopy();
+    public DBString       data_source = DATA_SOURCE.getCopy(); // eg elba, cash
+    public DBString       comment = COMMENT.getCopy();
             
     public DBBookingLine()
     {

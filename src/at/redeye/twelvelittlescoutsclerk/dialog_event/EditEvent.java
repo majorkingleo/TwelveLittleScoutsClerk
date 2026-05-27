@@ -1036,97 +1036,97 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         new AutoMBox(this.getClass().getCanonicalName()) {
             @Override
             public void do_stuff() throws Exception {
-                if (!checkAnyAndSingleSelection(jTMembers)) {
-                    return;
-                }
 
-                int row = tm.getSelectedRow();
+                Set<Integer> rows = tm.getSelectedRows();
 
-                if (row < 0 || row >= values.size()) {
-                    return;
-                }
+                for( int row : rows ) {
 
-                DBEventMember event_member = values.get(row);
-                Transaction trans = getTransaction();
+                    if (row < 0 || row >= values.size()) {
+                        continue;
+                    }
 
-                // Look up matching bill template by name
-                String templateName = event.billing_template.getValue().trim();
-                DBBillTemplate tmpl = new DBBillTemplate();
-                java.util.List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
-                        "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
-                        + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
+                    DBEventMember event_member = values.get(row);
+                    Transaction trans = getTransaction();
 
-                if (templates.isEmpty()) {
-                    JOptionPane.showMessageDialog(null,
-                            String.format(MESSAGE_NO_BILLING_TEMPLATE, templateName));
-                    return;
-                }
+                    // Look up matching bill template by name
+                    String templateName = event.billing_template.getValue().trim();
+                    DBBillTemplate tmpl = new DBBillTemplate();
+                    java.util.List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
+                            "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
+                            + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
 
-                DBBillTemplate template = templates.get(0);
+                    if (templates.isEmpty()) {
+                        JOptionPane.showMessageDialog(null,
+                                String.format(MESSAGE_NO_BILLING_TEMPLATE, templateName));
+                        continue;
+                    }
 
-                if (template.odt_data.value == null || template.odt_data.value.length == 0) {
-                    JOptionPane.showMessageDialog(null,
-                            String.format(MESSAGE_TEMPLATE_HAS_NO_FILE, templateName));
-                    return;
-                }
+                    DBBillTemplate template = templates.get(0);
 
-                // Allocate bill idx first so it can go into the bill name
-                int newIdx = mainwin.getNewSequenceValue(DBBill.BILL_IDX_SEQUENCE);
+                    if (template.odt_data.value == null || template.odt_data.value.length == 0) {
+                        JOptionPane.showMessageDialog(null,
+                                String.format(MESSAGE_TEMPLATE_HAS_NO_FILE, templateName));
+                        continue;
+                    }
 
-                // Build bill name: YYYY-MM BillNr EventName MemberForname MemberName
-                String billMonth = java.time.YearMonth.now()
-                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
-                String billName = billMonth + " " + newIdx
-                        + " " + event.name.getValue()
-                        + " " + event_member.forname.getValue() + " " + event_member.name.getValue();
+                    // Allocate bill idx first so it can go into the bill name
+                    int newIdx = mainwin.getNewSequenceValue(DBBill.BILL_IDX_SEQUENCE);
 
-                // Cancel the existing bill (if any)
-                int oldBillIdx = event_member.bill_idx.getValue();
-                if (oldBillIdx > 0) {
-                    DBBill oldBill = new DBBill();
-                    oldBill.idx.loadFromCopy(oldBillIdx);
-                    trans.fetchTableWithPrimkey(oldBill);
-                    oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                    // Build bill name: YYYY-MM BillNr EventName MemberForname MemberName
+                    String billMonth = java.time.YearMonth.now()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
+                    String billName = billMonth + " " + newIdx
+                            + " " + event.name.getValue()
+                            + " " + event_member.forname.getValue() + " " + event_member.name.getValue();
+
+                    // Cancel the existing bill (if any)
+                    int oldBillIdx = event_member.bill_idx.getValue();
+                    if (oldBillIdx > 0) {
+                        DBBill oldBill = new DBBill();
+                        oldBill.idx.loadFromCopy(oldBillIdx);
+                        trans.fetchTableWithPrimkey(oldBill);
+                        oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                                trans, oldBill, oldBill.hist, root.getUserName());
+                    }
+
+                    // Generate bill ODT from template blob
+                    // Pass registration amount so ${registration_payment} is filled in the template
+                    double registrationPayment = 0.0;
+                    if (event_member.registration_bill_idx.getValue() > 0) {
+                        registrationPayment = event_member.costs.getValue();
+                    }
+                    java.io.File odtFile = BillingHelper.generateBillFromTemplate(
+                            root, trans, template, event, event_member, false, String.valueOf(newIdx), registrationPayment);
+
+                    // Convert ODT to PDF
+                    java.io.File pdfFile = BillingHelper.convertToPdf(
+                            odtFile, odtFile.getParentFile());
+
+                    // Read both files to store in DB
+                    byte[] odtBytes = java.nio.file.Files.readAllBytes(odtFile.toPath());
+                    byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
+
+                    // Create and insert new DBBill record
+                    DBBill bill = new DBBill();
+                    bill.idx.loadFromCopy(newIdx);
+                    bill.bp_idx.loadFromCopy(mainwin.getBPIdx());
+                    bill.billingnr.loadFromString(String.valueOf(newIdx));
+                    bill.file_name.loadFromString(billName);
+                    bill.odt_data.value = odtBytes;
+                    bill.pdf_data.value = pdfBytes;
+                    bill.direction.handler.setValue(DBBill.Direction.OUTGOING.ordinal());
+                    // state defaults to NORMAL (0)
                     DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
-                            trans, oldBill, oldBill.hist, root.getUserName());
+                            trans, bill, bill.hist, root.getUserName());
+
+                    // Update event_member: store bill name and reference to bill record
+                    event_member.bill.loadFromString(billName);
+                    event_member.bill_idx.loadFromCopy(newIdx);
+                    trans.updateValues(event_member);
+
+                    trans.commit();
                 }
-
-                // Generate bill ODT from template blob
-                // Pass registration amount so ${registration_payment} is filled in the template
-                double registrationPayment = 0.0;
-                if (event_member.registration_bill_idx.getValue() > 0) {
-                    registrationPayment = event_member.costs.getValue();
-                }
-                java.io.File odtFile = BillingHelper.generateBillFromTemplate(
-                        root, trans, template, event, event_member, false, String.valueOf(newIdx), registrationPayment);
-
-                // Convert ODT to PDF
-                java.io.File pdfFile = BillingHelper.convertToPdf(
-                        odtFile, odtFile.getParentFile());
-
-                // Read both files to store in DB
-                byte[] odtBytes = java.nio.file.Files.readAllBytes(odtFile.toPath());
-                byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
-
-                // Create and insert new DBBill record
-                DBBill bill = new DBBill();
-                bill.idx.loadFromCopy(newIdx);
-                bill.bp_idx.loadFromCopy(mainwin.getBPIdx());
-                bill.billingnr.loadFromString(String.valueOf(newIdx));
-                bill.file_name.loadFromString(billName);
-                bill.odt_data.value = odtBytes;
-                bill.pdf_data.value = pdfBytes;
-                bill.direction.handler.setValue(DBBill.Direction.OUTGOING.ordinal());
-                // state defaults to NORMAL (0)
-                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
-                        trans, bill, bill.hist, root.getUserName());
-
-                // Update event_member: store bill name and reference to bill record
-                event_member.bill.loadFromString(billName);
-                event_member.bill_idx.loadFromCopy(newIdx);
-                trans.updateValues(event_member);
-
-                trans.commit();
 
                 JOptionPane.showMessageDialog(null, MESSAGE_BILL_CREATED);
             }
@@ -1238,42 +1238,47 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         new AutoMBox(this.getClass().getCanonicalName()) {
             @Override
             public void do_stuff() throws Exception {
-                if (!checkAnyAndSingleSelection(jTMembers)) {
+ 
+                Set<Integer> rows = tm.getSelectedRows();
+
+                if (rows.isEmpty()) {
                     return;
                 }
 
-                int row = tm.getSelectedRow();
-                if (row < 0 || row >= values.size()) {
-                    return;
+                for( int row : rows ) {       
+                    
+                    if( row < 0 || row >= values.size() ) {
+                        continue;
+                    }
+
+                    DBEventMember event_member = values.get(row);
+
+                    int billIdx = event_member.bill_idx.getValue();
+                    if (billIdx <= 0) {
+                        JOptionPane.showMessageDialog(null, MESSAGE_NO_BILL_FOR_MEMBER);
+                        return;
+                    }
+
+                    Transaction trans = getTransaction();
+
+                    DBBill bill = new DBBill();
+                    bill.idx.loadFromCopy(billIdx);
+                    trans.fetchTableWithPrimkey(bill);
+
+                    String templateName = event.billing_template.getValue().trim();
+                    DBBillTemplate tmpl = new DBBillTemplate();
+                    java.util.List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
+                            "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
+                            + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
+                    DBBillTemplate template = templates.isEmpty() ? new DBBillTemplate() : templates.get(0);
+
+                    DBMember member = new DBMember();
+                    member.idx.loadFromCopy(event_member.member_idx.getValue());
+                    trans.fetchTableWithPrimkey(member);
+
+                    new MailJobHelper(root, me).createMailJobs(trans, mainwin, bill, template, event, event_member, member);
+                    trans.commit();
                 }
-
-                DBEventMember event_member = values.get(row);
-
-                int billIdx = event_member.bill_idx.getValue();
-                if (billIdx <= 0) {
-                    JOptionPane.showMessageDialog(null, MESSAGE_NO_BILL_FOR_MEMBER);
-                    return;
-                }
-
-                Transaction trans = getTransaction();
-
-                DBBill bill = new DBBill();
-                bill.idx.loadFromCopy(billIdx);
-                trans.fetchTableWithPrimkey(bill);
-
-                String templateName = event.billing_template.getValue().trim();
-                DBBillTemplate tmpl = new DBBillTemplate();
-                java.util.List<DBBillTemplate> templates = trans.fetchTable2(tmpl,
-                        "where " + trans.markColumn(tmpl, tmpl.bp_idx) + " = " + mainwin.getBPIdx()
-                        + " and " + trans.markColumn(tmpl, tmpl.name) + " = '" + templateName + "'");
-                DBBillTemplate template = templates.isEmpty() ? new DBBillTemplate() : templates.get(0);
-
-                DBMember member = new DBMember();
-                member.idx.loadFromCopy(event_member.member_idx.getValue());
-                trans.fetchTableWithPrimkey(member);
-
-                new MailJobHelper(root, me).createMailJobs(trans, mainwin, bill, template, event, event_member, member);
-                trans.commit();
 
                 JOptionPane.showMessageDialog(null, MESSAGE_MAIL_JOBS_CREATED);
             }

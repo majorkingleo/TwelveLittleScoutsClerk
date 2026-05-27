@@ -20,6 +20,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig UserName = new DBConfig("UserName","");
     public static DBConfig Password = new DBConfig("Password","");    
     public static DBConfig Organisation = new DBConfig("Organisation","Pfadfindergruppe XY","Name of the organisation");
+    public static DBConfig OrganisationName4BankTransfer = new DBConfig("OrganisationName4BankTransfer","Pfadfindergruppe XY","Name of the organisation for bank transfers");
     public static DBConfig OrganisationAddressStreet = new DBConfig("OrganisationAddressStreet","Musterstraße 1","Address of the organisation");
     public static DBConfig OrganisationAddressPostalCode = new DBConfig("OrganisationAddressPostalCode","12345","Address of the organisation");
     public static DBConfig OrganisationAddressCity = new DBConfig("OrganisationAddressCity","Musterstadt","Address of the organisation");
@@ -48,6 +49,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         add(OrganisationAddressPostalCode);
         add(OrganisationAddressCity);
         add(OrganisaiontIBAN);
+        add(OrganisationName4BankTransfer);
         add(MailBodyTemplateName);
         add(MailBodyRegistrationTemplateName);
         add(MailSmtpHost);

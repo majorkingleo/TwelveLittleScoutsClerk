@@ -38,7 +38,7 @@ public class Bills extends BaseDialog {
         tm.hide(bill.hist.ae_zeit);
         tm.hide(bill.bp_idx);
         tm.hide(bill.odt_data);
-        tm.hide(bill.pdf_data);
+        tm.hide(bill.pdf_data);        
 
         tm.prepareTable();
 

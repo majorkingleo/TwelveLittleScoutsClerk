@@ -175,7 +175,8 @@ public class BillingHelper {
             amount = registrationPayment;
         }
 
-        String remittance = event.name.getValue() + " - " + member.forname.getValue() + " " + member.name.getValue();
+        // : instead of - to get stats how often the QR code is used for payment
+        String remittance = event.name.getValue() + " : " + member.forname.getValue() + " " + member.name.getValue();
         injectEpcQrCode(root, doc, amount, remittance);
 
         // 7. Save to a temp ODT file
@@ -291,6 +292,7 @@ public class BillingHelper {
 
         // Organisation (from global config)
         map.put("${org.name}",                root.getSetup().getConfig(AppConfigDefinitions.Organisation));
+        map.put("${org.name4bank_transfer}",  root.getSetup().getConfig(AppConfigDefinitions.OrganisationName4BankTransfer));
         map.put("${org.address_street}",      root.getSetup().getConfig(AppConfigDefinitions.OrganisationAddressStreet));
         map.put("${org.address_postal_code}", root.getSetup().getConfig(AppConfigDefinitions.OrganisationAddressPostalCode));
         map.put("${org.address_city}",        root.getSetup().getConfig(AppConfigDefinitions.OrganisationAddressCity));

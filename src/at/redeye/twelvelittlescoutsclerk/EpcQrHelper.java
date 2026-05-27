@@ -139,7 +139,7 @@ public class EpcQrHelper {
     public static byte[] generateBillQrPng( Root root, double amountEur, String remittance, int sizePixels)
             throws WriterException, IOException {
 
-        String name = root.getSetup().getConfig(AppConfigDefinitions.Organisation);
+        String name = root.getSetup().getConfig(AppConfigDefinitions.OrganisationName4BankTransfer);
         String iban = root.getSetup().getConfig(AppConfigDefinitions.OrganisaiontIBAN);
         String payload = buildEpcPayload(name, iban, "", amountEur, remittance, "");
         return generateQrPng(payload, sizePixels);

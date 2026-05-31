@@ -2,4 +2,5 @@
 /dist/
 /data/
 /target/
+/jdks/
 __pycache__

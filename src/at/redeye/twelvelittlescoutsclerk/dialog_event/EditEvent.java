@@ -67,6 +67,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private String MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE;
     private String MESSAGE_REGISTRATION_CREATED;
     private String MESSAGE_REGISTRATION_MAIL_JOBS_CREATED;
+    // AI modification start (Claude Sonnet 4.6)
+    private String MESSAGE_NEW_BILL_CANCEL_REASON;
+    // AI modification end
 
     DBEvent event;
     DBEvent event_old;
@@ -187,6 +190,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE = MlM("Registration template has no file: %s");
         MESSAGE_REGISTRATION_CREATED             = MlM("Registration created and saved.");
         MESSAGE_REGISTRATION_MAIL_JOBS_CREATED    = MlM("Registration mail job(s) created and queued.");
+        // AI modification start (Claude Sonnet 4.6)
+        MESSAGE_NEW_BILL_CANCEL_REASON            = MlM("new Bill");
+        // AI modification end
 
         // to invokde translations texts
         new MailJobHelper(root, this);        
@@ -853,6 +859,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             oldBill.idx.loadFromCopy(em.bill_idx.getValue());
                             trans.fetchTableWithPrimkey(oldBill);
                             oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                            // AI modification start (Claude Sonnet 4.6)
+                            oldBill.cancel_reason.loadFromString(MESSAGE_NEW_BILL_CANCEL_REASON);
+                            // AI modification end
                             DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                                     trans, oldBill, oldBill.hist, root.getUserName());
                         }
@@ -1086,6 +1095,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         oldBill.idx.loadFromCopy(oldBillIdx);
                         trans.fetchTableWithPrimkey(oldBill);
                         oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                        // AI modification start (Claude Sonnet 4.6)
+                        oldBill.cancel_reason.loadFromString(MESSAGE_NEW_BILL_CANCEL_REASON);
+                        // AI modification end
                         DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                                 trans, oldBill, oldBill.hist, root.getUserName());
                     }
@@ -1189,6 +1201,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     oldBill.idx.loadFromCopy(oldRegIdx);
                     trans.fetchTableWithPrimkey(oldBill);
                     oldBill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                    // AI modification start (Claude Sonnet 4.6)
+                    oldBill.cancel_reason.loadFromString(MESSAGE_NEW_BILL_CANCEL_REASON);
+                    // AI modification end
                     DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                             trans, oldBill, oldBill.hist, root.getUserName());
                 }

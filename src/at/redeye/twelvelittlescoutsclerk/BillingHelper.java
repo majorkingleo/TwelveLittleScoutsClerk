@@ -278,6 +278,12 @@ public class BillingHelper {
         map.put("${event_member.costs}",      eventMember.costs.getValue().toString());
         map.put("${event_member.paid}",       eventMember.paid.getValue().toString());
         map.put("${event_member.paid_cash}",  eventMember.paid_cash.getValue().toString());
+        // AI modification start (Claude Sonnet 4.6)
+        map.put("${event_member.costs_open}",
+                Double.toString(eventMember.costs.getValue()
+                        - eventMember.paid.getValue()
+                        + eventMember.paid_cash.getValue()));
+        // AI modification end
         map.put("${event_member.comment}",    eventMember.comment.getValue());
 
         // Billing period

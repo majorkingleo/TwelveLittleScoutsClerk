@@ -12,6 +12,7 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.LocalHelpWin;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillTemplate;
@@ -64,6 +65,10 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
             jBDel.setEnabled(false);
             jBNew.setEnabled(false);
         }
+
+        // AI modification start (Claude Sonnet 4.6)
+        registerHelpWin(() -> invokeDialogUnique(new LocalHelpWin(root, "BillingTemplate")));
+        // AI modification end
     }
 
     private void feed_table() {
@@ -103,6 +108,9 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         jBNew = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
         jBEdit = new javax.swing.JButton();
+        // AI modification start (Claude Sonnet 4.6)
+        jBHelp = new javax.swing.JButton();
+        // AI modification end
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -167,6 +175,16 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
             }
         });
 
+        // AI modification start (Claude Sonnet 4.6)
+        jBHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/help.png"))); // NOI18N
+        jBHelp.setText("Help");
+        jBHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBHelpActionPerformed(evt);
+            }
+        });
+        // AI modification end
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -181,6 +199,10 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBDel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
+                // AI modification start (Claude Sonnet 4.6)
+                .addComponent(jBHelp)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                // AI modification end
                 .addComponent(jBClose)
                 .addContainerGap())
         );
@@ -193,7 +215,10 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
                     .addComponent(jBNew)
                     .addComponent(jBClose)
                     .addComponent(jBDel)
-                    .addComponent(jBEdit))
+                    .addComponent(jBEdit)
+                    // AI modification start (Claude Sonnet 4.6)
+                    .addComponent(jBHelp))
+                    // AI modification end
                 .addContainerGap())
         );
 
@@ -369,10 +394,19 @@ public class BillingTemplate extends BaseDialog implements NewSequenceValueInter
         }
     }//GEN-LAST:event_jTContentMouseClicked
 
+    // AI modification start (Claude Sonnet 4.6)
+    private void jBHelpActionPerformed(java.awt.event.ActionEvent evt) {
+        invokeDialogUnique(new LocalHelpWin(root, "BillingTemplate"));
+    }
+    // AI modification end
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBDel;
     private javax.swing.JButton jBEdit;
+    // AI modification start (Claude Sonnet 4.6)
+    private javax.swing.JButton jBHelp;
+    // AI modification end
     private javax.swing.JButton jBNew;
     private javax.swing.JButton jBSave;
     private javax.swing.JLabel jLInfo;

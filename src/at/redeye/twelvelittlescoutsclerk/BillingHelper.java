@@ -169,7 +169,7 @@ public class BillingHelper {
         replaceInNode(doc.getStylesDom(), replacements);
 
         // 6b. Inject EPC QR code image
-        double amount = eventMember.costs.getValue();
+        double amount = eventMember.costs.getValue() - (eventMember.paid.getValue() - eventMember.paid_cash.getValue());
 
         if( registrationPayment > 0.0 ) {
             amount = registrationPayment;

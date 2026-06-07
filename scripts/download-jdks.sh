@@ -15,6 +15,33 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JDK_DIR="$SCRIPT_DIR/../jdks"
 JDK_VERSION="21"
 
+# ---modification start---
+# Modified by AI (GPT-5.3-Codex / GitHub Copilot): ensure existing cached JDK major
+# version matches JDK_VERSION, otherwise force a re-download.
+jdk_major_from_release() {
+    local release_file="$1"
+    if [[ ! -f "$release_file" ]]; then
+        echo ""
+        return
+    fi
+    sed -n 's/^JAVA_VERSION="\([0-9][0-9]*\).*/\1/p' "$release_file" | head -1
+}
+
+ensure_expected_jdk_version_or_clean() {
+    local dir="$1"
+    local platform="$2"
+    local current_major
+
+    if [[ -d "$dir/jmods" ]]; then
+        current_major="$(jdk_major_from_release "$dir/release")"
+        if [[ "$current_major" != "$JDK_VERSION" ]]; then
+            echo "[$platform] Existing JDK major is '$current_major' but expected '$JDK_VERSION' -> re-downloading."
+            rm -rf "$dir"
+        fi
+    fi
+}
+# ---modification end---
+
 # Adoptium Temurin REST API — resolves to the latest GA release for the given parameters
 ADOPTIUM_BASE="https://api.adoptium.net/v3/binary/latest/${JDK_VERSION}/ga"
 
@@ -24,6 +51,8 @@ mkdir -p "$JDK_DIR"
 # Linux x64
 # ---------------------------------------------------------------------------
 LINUX_DIR="$JDK_DIR/linux"
+
+ensure_expected_jdk_version_or_clean "$LINUX_DIR" "linux"
 
 if [[ -d "$LINUX_DIR/jmods" ]]; then
     echo "[linux]  Already present at $LINUX_DIR — skipping download."
@@ -41,6 +70,8 @@ fi
 # Windows x64
 # ---------------------------------------------------------------------------
 WIN_DIR="$JDK_DIR/windows"
+
+ensure_expected_jdk_version_or_clean "$WIN_DIR" "windows"
 
 if [[ -d "$WIN_DIR/jmods" ]]; then
     echo "[windows] Already present at $WIN_DIR — skipping download."

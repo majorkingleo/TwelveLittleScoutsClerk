@@ -71,8 +71,13 @@ if [[ ! -f "$TARGET_DIR/$APP_JAR" ]]; then
     exit 1
 fi
 
-if ! command -v jlink &>/dev/null; then
-    echo "ERROR: jlink not found on PATH. Ensure a JDK 21 (not just JRE) is installed." >&2
+# Use the bundled Linux JDK jlink to guarantee the same major version as downloaded jmods.
+# On Linux we cannot execute windows/bin/jlink, so this binary is used for both targets.
+JLINK_BIN="$JDK_DIR/linux/bin/jlink"
+
+if [[ ! -x "$JLINK_BIN" ]]; then
+    echo "ERROR: $JLINK_BIN not found/executable." >&2
+    echo "       Run:  bash scripts/download-jdks.sh" >&2
     exit 1
 fi
 
@@ -110,7 +115,7 @@ build_appimage() {
 
     # --- Step 2: Create minimal custom JRE via jlink ---
     echo "[jlink]  Creating custom JRE from $JDK_PATH/jmods ..."
-    jlink \
+    "$JLINK_BIN" \
         --module-path "$JDK_PATH/jmods" \
         --add-modules "$MODULES" \
         --output "$JRE_DIR" \

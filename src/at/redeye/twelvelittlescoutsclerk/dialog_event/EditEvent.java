@@ -67,6 +67,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private String MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE;
     private String MESSAGE_REGISTRATION_CREATED;
     private String MESSAGE_REGISTRATION_MAIL_JOBS_CREATED;
+    private String MESSAGE_NO_MEMBER_SELECTED;
     // AI modification start (Claude Sonnet 4.6)
     private String MESSAGE_NEW_BILL_CANCEL_REASON;
     // AI modification end
@@ -186,12 +187,13 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         MESSAGE_NO_BOOKING_LINE      = MlM("No booking line is assigned to the selected event member.");
         MESSAGE_NO_BILL_FOR_MEMBER   = MlM("No bill has been created for this member yet.");
         MESSAGE_TOTAL_PAID           = MlM("Total paid: %1$.2f, total costs: %2$.2f");
-        MESSAGE_NO_REGISTRATION_TEMPLATE         = MlM("No registration template found with name: %s");
-        MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE = MlM("Registration template has no file: %s");
-        MESSAGE_REGISTRATION_CREATED             = MlM("Registration created and saved.");
-        MESSAGE_REGISTRATION_MAIL_JOBS_CREATED    = MlM("Registration mail job(s) created and queued.");
+        MESSAGE_NO_REGISTRATION_TEMPLATE            = MlM("No registration template found with name: %s");
+        MESSAGE_REGISTRATION_TEMPLATE_HAS_NO_FILE   = MlM("Registration template has no file: %s");
+        MESSAGE_REGISTRATION_CREATED                = MlM("Registration created and saved.");
+        MESSAGE_REGISTRATION_MAIL_JOBS_CREATED      = MlM("Registration mail job(s) created and queued.");
+        MESSAGE_NO_MEMBER_SELECTED                  = MlM("No member selected.");
         // AI modification start (Claude Sonnet 4.6)
-        MESSAGE_NEW_BILL_CANCEL_REASON            = MlM("new Bill");
+        MESSAGE_NEW_BILL_CANCEL_REASON              = MlM("new Bill");
         // AI modification end
 
         // to invokde translations texts
@@ -1041,6 +1043,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             public void do_stuff() throws Exception {
 
                 Set<Integer> rows = tm.getSelectedRows();
+
+                if( rows == null || rows.isEmpty() ) {
+                    JOptionPane.showMessageDialog(EditEvent.this, MESSAGE_NO_MEMBER_SELECTED);
+                    return;
+                }
 
                 for( int row : rows ) {
 

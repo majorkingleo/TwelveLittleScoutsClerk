@@ -11,6 +11,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.RowSorter;
 
 /**
  *
@@ -102,8 +103,20 @@ public class TableFilterHelper {
     public void setFilter(JTable table) 
     {
         this.table = table;
-        sorter = new TableRowSorter<>(table.getModel());
-        table.setRowSorter(sorter);
+        // AI modification start (GitHub Copilot / GPT-5.3-Codex)
+        RowSorter<? extends TableModel> existingSorter = table.getRowSorter();
+
+        if( existingSorter instanceof TableRowSorter &&
+            ((TableRowSorter<?>)existingSorter).getModel() == table.getModel() )
+        {
+            sorter = (TableRowSorter<TableModel>) existingSorter;
+        }
+        else
+        {
+            sorter = new TableRowSorter<>(table.getModel());
+            table.setRowSorter(sorter);
+        }
+        // AI modification end
         //addCloseListener();
     }    
     

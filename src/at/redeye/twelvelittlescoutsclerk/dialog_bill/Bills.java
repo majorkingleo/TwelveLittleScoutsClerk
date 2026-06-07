@@ -54,7 +54,7 @@ public class Bills extends BaseDialog {
 
         tm.autoResize();
 
-        tableFilter1.setFilter(jTContent);
+        tableFilter1.setFilter(jTContent);        
 
         // AI modification start (Claude Sonnet 4.6)
         initMessages();

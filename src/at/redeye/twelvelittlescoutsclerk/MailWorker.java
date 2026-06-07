@@ -101,6 +101,9 @@ public class MailWorker implements Runnable {
     private void markFailed(DBMailJob job, String errorMsg) {
         try {
             job.state.handler.setValue(DBMailJob.State.FAILED.ordinal());
+            // AI modification start (GitHub Copilot / GPT-5.3-Codex)
+            job.setAcknowledged(false);
+            // AI modification end
             job.error_message.loadFromString(truncate(errorMsg, 2000));
             trans.updateValues(job);
             trans.commit();

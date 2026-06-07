@@ -875,7 +875,10 @@ public class MainWin extends BaseDialog implements MainWinInterface {
                     + DBMailJob.State.SENDING.ordinal() + ")").size();
             long failed = trans.fetchTable2(proto,
                     "where " + trans.markColumn(proto.state) + " = "
-                    + DBMailJob.State.FAILED.ordinal()).size();
+                    + DBMailJob.State.FAILED.ordinal()
+                    + " and ("
+                    + trans.markColumn(proto.acknowledged) + " is null or "
+                    + trans.markColumn(proto.acknowledged) + " = 0)").size();
             if (pending == 0 && failed == 0) {
                 jLMailStatus.setText(MESSAGE_MAIL_STATUS_IDLE);
             } else {

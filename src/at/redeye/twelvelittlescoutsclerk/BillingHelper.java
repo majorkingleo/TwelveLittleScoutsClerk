@@ -19,17 +19,261 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import com.sun.star.beans.PropertyValue;
+import com.sun.star.bridge.UnoUrlResolver;
+import com.sun.star.bridge.XUnoUrlResolver;
+import com.sun.star.comp.helper.Bootstrap;
+import com.sun.star.connection.NoConnectException;
+import com.sun.star.frame.XComponentLoader;
+import com.sun.star.frame.XStorable;
+import com.sun.star.lang.XComponent;
+import com.sun.star.lang.XMultiComponentFactory;
+import com.sun.star.uno.UnoRuntime;
+import com.sun.star.uno.XComponentContext;
 import org.odftoolkit.odfdom.doc.OdfTextDocument;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.apache.log4j.Logger;
 
 public class BillingHelper {
+
+    private static final Logger logger = Logger.getLogger(BillingHelper.class.getName());
+    private static final Object libreOfficeLock = new Object();
+    private static final ExecutorService libreOfficeStarter = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "LibreOfficeListenerStarter");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private static volatile LibreOfficeListener libreOfficeListener;
+    private static volatile String libreOfficeExecutable;
+
+    // AI modification start (GitHub Copilot / GPT-5.3-Codex)
+    private static final class LibreOfficeListener {
+        private final Process process;
+        private final int port;
+        private final File profileDir;
+
+        private LibreOfficeListener(Process process, int port, File profileDir) {
+            this.process = process;
+            this.port = port;
+            this.profileDir = profileDir;
+        }
+
+        private boolean isAlive() {
+            return process != null && process.isAlive();
+        }
+    }
+    // AI modification end
+
+    public static void warmUpLibreOfficeListener()
+    {
+        libreOfficeStarter.submit(() -> {
+            try {
+                ensureLibreOfficeListener();
+            } catch (Exception ex) {
+                logger.warn("LibreOffice listener warm-up failed", ex);
+            }
+        });
+    }
+
+    private static LibreOfficeListener ensureLibreOfficeListener() throws IOException
+    {
+        synchronized( libreOfficeLock ) {
+            if( libreOfficeListener != null && libreOfficeListener.isAlive() ) {
+                return libreOfficeListener;
+            }
+
+            long startupStartNanos = System.nanoTime();
+            String officeCommand = resolveLibreOfficeExecutable();
+
+            int port = findFreeTcpPort();
+            File profileDir = java.nio.file.Files.createTempDirectory("libreoffice-profile-").toFile();
+
+            ProcessBuilder pb = new ProcessBuilder(
+                    officeCommand,
+                    "--headless",
+                    "--norestore",
+                    "--nofirststartwizard",
+                    "--nologo",
+                    "--nodefault",
+                    "--invisible",
+                    "--nolockcheck",
+                    "--accept=socket,host=127.0.0.1,port=" + port + ";urp;StarOffice.ServiceManager",
+                    "-env:UserInstallation=" + profileDir.toURI().toString());
+
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            drainProcessOutputAsync(process, "LibreOffice listener " + port);
+
+            libreOfficeListener = new LibreOfficeListener(process, port, profileDir);
+            logger.info("Started LibreOffice listener on port " + port
+                    + " in " + formatDurationMs(startupStartNanos));
+            return libreOfficeListener;
+        }
+    }
+
+    // AI modification start (GitHub Copilot / GPT-5.3-Codex)
+    private static String resolveLibreOfficeExecutable() {
+        if (libreOfficeExecutable != null) {
+            return libreOfficeExecutable;
+        }
+
+        synchronized (libreOfficeLock) {
+            if (libreOfficeExecutable != null) {
+                return libreOfficeExecutable;
+            }
+
+            if (!isWindows()) {
+                libreOfficeExecutable = "libreoffice";
+                return libreOfficeExecutable;
+            }
+
+            String executableFromRegistry = findLibreOfficeExecutableFromRegistry();
+            if (executableFromRegistry != null) {
+                libreOfficeExecutable = executableFromRegistry;
+                logger.info("Using LibreOffice executable from registry: " + libreOfficeExecutable);
+            } else {
+                libreOfficeExecutable = "soffice.exe";
+                logger.warn("Could not resolve LibreOffice path from Windows registry, falling back to soffice.exe from PATH");
+            }
+
+            return libreOfficeExecutable;
+        }
+    }
+
+    private static boolean isWindows() {
+        String osName = System.getProperty("os.name", "");
+        return osName.toLowerCase(java.util.Locale.ROOT).contains("win");
+    }
+
+    private static String findLibreOfficeExecutableFromRegistry() {
+        String[] candidateKeys = new String[] {
+            "HKLM\\SOFTWARE\\LibreOffice",
+            "HKLM\\SOFTWARE\\WOW6432Node\\LibreOffice",
+            "HKCU\\SOFTWARE\\LibreOffice"
+        };
+
+        for (String key : candidateKeys) {
+            String executable = queryLibreOfficeExecutableFromRegistryKey(key);
+            if (executable != null) {
+                return executable;
+            }
+        }
+
+        return null;
+    }
+
+    private static String queryLibreOfficeExecutableFromRegistryKey(String key) {
+        ProcessBuilder pb = new ProcessBuilder("reg", "query", key, "/s", "/v", "Path");
+        pb.redirectErrorStream(true);
+
+        try {
+            Process process = pb.start();
+            String output;
+            try (InputStream input = process.getInputStream()) {
+                output = new String(input.readAllBytes(), Charset.defaultCharset());
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0 || output.isBlank()) {
+                return null;
+            }
+
+            String[] lines = output.split("\\R");
+            for (String line : lines) {
+                int regSzIdx = line.indexOf("REG_SZ");
+                if (regSzIdx < 0) {
+                    continue;
+                }
+
+                String rawPath = line.substring(regSzIdx + "REG_SZ".length()).trim();
+                String executable = normalizeLibreOfficeExecutablePath(rawPath);
+                if (executable != null) {
+                    return executable;
+                }
+            }
+        } catch (IOException ex) {
+            logger.debug("Windows registry query for LibreOffice failed for key " + key, ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            logger.debug("Interrupted during Windows registry query for LibreOffice key " + key, ex);
+        }
+
+        return null;
+    }
+
+    private static String normalizeLibreOfficeExecutablePath(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return null;
+        }
+
+        String cleaned = rawPath.trim();
+        if (cleaned.startsWith("\"") && cleaned.endsWith("\"") && cleaned.length() > 1) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1);
+        }
+
+        File candidate = new File(cleaned);
+
+        if (candidate.isFile() && cleaned.toLowerCase(java.util.Locale.ROOT).endsWith(".exe")) {
+            return candidate.getAbsolutePath();
+        }
+
+        if (candidate.isDirectory()) {
+            File sofficeInProgram = new File(candidate, "program" + File.separator + "soffice.exe");
+            if (sofficeInProgram.isFile()) {
+                return sofficeInProgram.getAbsolutePath();
+            }
+
+            File sofficeInDir = new File(candidate, "soffice.exe");
+            if (sofficeInDir.isFile()) {
+                return sofficeInDir.getAbsolutePath();
+            }
+        }
+
+        return null;
+    }
+    // AI modification end
+
+    private static String formatDurationMs(long startNanos)
+    {
+        return String.format(java.util.Locale.ROOT, "%.3f ms",
+                (System.nanoTime() - startNanos) / 1_000_000.0);
+    }
+
+    private static int findFreeTcpPort() throws IOException
+    {
+        try (ServerSocket socket = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            return socket.getLocalPort();
+        }
+    }
+
+    private static void drainProcessOutputAsync(Process process, String logPrefix)
+    {
+        Thread drainer = new Thread(() -> {
+            try (InputStream is = process.getInputStream()) {
+                byte[] buffer = new byte[4096];
+                while (is.read(buffer) >= 0) {
+                    // discard output, process is only warmed up in the background
+                }
+            } catch (IOException ex) {
+                logger.debug(logPrefix + " output drain ended", ex);
+            }
+        }, logPrefix + "-stdout-drain");
+        drainer.setDaemon(true);
+        drainer.start();
+    }
 
     /**
      * Generates a bill ODT (and optionally a PDF) from the ODT template
@@ -157,6 +401,10 @@ public class BillingHelper {
 
         // 3. Build replacement map
         Map<String, String> replacements = buildReplacementMap(root, member, contact, event, eventMember, billingPeriod, billingNumber, registrationPayment, registrationNumber);
+
+        // Start LibreOffice listener in the background early so the first PDF
+        // conversion can reuse a warm instance instead of paying startup cost.
+        warmUpLibreOfficeListener();
 
         // 4+5. Load ODT template from blob bytes
         OdfTextDocument doc = OdfTextDocument.loadDocument(
@@ -507,8 +755,143 @@ public class BillingHelper {
     }
 
     public static File convertToPdf(File odtFile, File outDir) throws IOException, InterruptedException {
+        long convertStartNanos = System.nanoTime();
+        LibreOfficeListener listener = null;
+
+        try {
+            listener = ensureLibreOfficeListener();
+
+            File converted = convertToPdfViaListener(odtFile, outDir, listener);
+            if (converted != null) {
+                logger.info("convertToPdf via listener completed in "
+                        + formatDurationMs(convertStartNanos)
+                        + " for " + odtFile.getName());
+                return converted;
+            }
+        } catch (Exception ex) {
+            logger.warn("LibreOffice listener conversion unavailable, falling back to one-shot conversion", ex);
+        }
+
+        File fallbackResult = convertToPdfFallback(odtFile, outDir);
+        logger.info("convertToPdf via fallback completed in "
+                + formatDurationMs(convertStartNanos)
+                + " for " + odtFile.getName());
+        return fallbackResult;
+    }
+
+    // AI modification start (GitHub Copilot / GPT-5.3-Codex)
+    private static File convertToPdfViaListener(File odtFile, File outDir, LibreOfficeListener listener) throws IOException, InterruptedException {
+        if (listener == null || !listener.isAlive()) {
+            return null;
+        }
+
+        XComponent document = null;
+
+        try {
+            XComponentContext desktopContext = connectToListener(listener.port);
+            XMultiComponentFactory serviceManager = desktopContext.getServiceManager();
+            Object desktopObject = serviceManager.createInstanceWithContext("com.sun.star.frame.Desktop", desktopContext);
+            XComponentLoader loader = UnoRuntime.queryInterface(XComponentLoader.class, desktopObject);
+
+            if (loader == null) {
+                throw new IOException("Unable to create LibreOffice desktop loader");
+            }
+
+            PropertyValue hidden = new PropertyValue();
+            hidden.Name = "Hidden";
+            hidden.Value = Boolean.TRUE;
+
+            document = loader.loadComponentFromURL(
+                    toUnoFileUrl(odtFile),
+                    "_blank",
+                    0,
+                    new PropertyValue[] { hidden });
+
+            if (document == null) {
+                throw new IOException("LibreOffice listener did not load the ODT document");
+            }
+
+            XStorable storable = UnoRuntime.queryInterface(XStorable.class, document);
+            if (storable == null) {
+                throw new IOException("LibreOffice listener document is not storable");
+            }
+
+            PropertyValue filterName = new PropertyValue();
+            filterName.Name = "FilterName";
+            filterName.Value = "writer_pdf_Export";
+
+            File pdfFile = new File(outDir, odtFile.getName().replaceFirst("\\.odt$", ".pdf"));
+            storable.storeToURL(toUnoFileUrl(pdfFile), new PropertyValue[] { filterName });
+
+            if (!pdfFile.exists()) {
+                throw new IOException("LibreOffice listener conversion did not produce output file: " + pdfFile.getAbsolutePath());
+            }
+
+            logger.info("Converted PDF through LibreOffice listener on port " + listener.port);
+            return pdfFile;
+        } catch (IOException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IOException("LibreOffice listener conversion failed", ex);
+        } finally {
+            if (document != null) {
+                closeComponent(document);
+            }
+        }
+    }
+
+    private static XComponentContext connectToListener(int port) throws IOException {
+        String connectionUrl = "uno:socket,host=127.0.0.1,port=" + port + ";urp;StarOffice.ComponentContext";
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(10);
+
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                XComponentContext localContext = Bootstrap.createInitialComponentContext(null);
+                XMultiComponentFactory localServiceManager = localContext.getServiceManager();
+                Object resolverObject = localServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext);
+                XUnoUrlResolver resolver = UnoRuntime.queryInterface(XUnoUrlResolver.class, resolverObject);
+                if (resolver == null) {
+                    throw new IOException("Unable to create LibreOffice URL resolver");
+                }
+
+                Object remoteObject = resolver.resolve(connectionUrl);
+                XComponentContext remoteContext = UnoRuntime.queryInterface(XComponentContext.class, remoteObject);
+                if (remoteContext != null) {
+                    return remoteContext;
+                }
+            } catch (NoConnectException ex) {
+                // listener is not ready yet; retry until deadline
+            } catch (Exception ex) {
+                throw new IOException("Failed to connect to LibreOffice listener", ex);
+            }
+
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while waiting for LibreOffice listener", ex);
+            }
+        }
+
+        throw new IOException("Could not connect to LibreOffice listener on port " + port);
+    }
+
+    private static String toUnoFileUrl(File file) throws IOException {
+        return file.getCanonicalFile().toURI().toASCIIString();
+    }
+
+    private static void closeComponent(XComponent component) {
+        try {
+            component.dispose();
+        } catch (RuntimeException ex) {
+            logger.debug("Failed to dispose LibreOffice document", ex);
+        }
+    }
+
+    private static File convertToPdfFallback(File odtFile, File outDir) throws IOException, InterruptedException {
+        String officeCommand = resolveLibreOfficeExecutable();
         ProcessBuilder pb = new ProcessBuilder(
-                "libreoffice", "--headless", "--norestore", "--nofirststartwizard", "--convert-to", "pdf",
+            officeCommand, "--headless", "--norestore", "--nofirststartwizard", "--convert-to", "pdf",
                 "--outdir", outDir.getAbsolutePath(),
                 odtFile.getAbsolutePath());
         pb.redirectErrorStream(true);
@@ -527,4 +910,5 @@ public class BillingHelper {
         String pdfName = odtFile.getName().replaceFirst("\\.odt$", ".pdf");
         return new File(outDir, pdfName);
     }
+    // AI modification end
 }

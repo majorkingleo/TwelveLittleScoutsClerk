@@ -104,6 +104,36 @@
         <!-- ===== Central dependencies ===== -->
 
         <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice</artifactId>
+            <version>1.0-local</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>jurt</artifactId>
+            <version>1.0-local</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>ridl</artifactId>
+            <version>1.0-local</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>unoil</artifactId>
+            <version>1.0-local</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>unoloader</artifactId>
+            <version>1.0-local</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.16.1</version>

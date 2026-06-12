@@ -15,9 +15,13 @@ import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  *
@@ -60,7 +64,56 @@ public class AccountClasses extends BaseDialog implements NewSequenceValueInterf
             jBDel.setEnabled(false);
             jBNew.setEnabled(false);
         }
+
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        jTContent.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting() || mainwin.isAzLocked()) {
+                    return;
+                }
+                updateDeleteButton();
+            }
+        });
+        // AI-generated end
     }
+
+    // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+    private void updateDeleteButton() {
+        int i = tm.getSelectedRow();
+        if (i < 0 || i >= values.size()) {
+            jBDel.setEnabled(true);
+            return;
+        }
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+                jBDel.setEnabled(!hasReferences(values.get(i)));
+            }
+        };
+    }
+
+    private boolean hasReferences(DBAccountClasses entry)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException {
+        Transaction trans = getTransaction();
+        int idx = entry.idx.getValue();
+
+        DBBookingLine bl = new DBBookingLine();
+        List<DBBookingLine> bls = trans.fetchTable2(bl,
+                "where " + trans.markColumn(bl, bl.account_class_idx) + " = " + idx
+                + " limit 1");
+        if (!bls.isEmpty()) {
+            return true;
+        }
+
+        DBEvent ev = new DBEvent();
+        List<DBEvent> evs = trans.fetchTable2(ev,
+                "where " + trans.markColumn(ev, ev.account_class_idx) + " = " + idx
+                + " limit 1");
+        return !evs.isEmpty();
+    }
+    // AI-generated end
 
     private void feed_table() {
         feed_table(true);

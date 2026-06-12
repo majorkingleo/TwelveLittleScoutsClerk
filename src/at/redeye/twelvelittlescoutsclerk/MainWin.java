@@ -189,6 +189,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         // AI modification end
         jMenuItemBills = new javax.swing.JMenuItem();
         jMenuItemMailJobs = new javax.swing.JMenuItem();
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jMenuItemOperational = new javax.swing.JMenuItem();
+        // AI modification end
         jLMailStatus = new javax.swing.JLabel();
         jMenu6 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
@@ -374,6 +377,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu5.add(jMenuItemMailJobs);
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jMenuItemOperational.setText("Operational");
+        jMenuItemOperational.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemOperationalActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItemOperational);
+        // AI modification end
 
         jMenuBar1.add(jMenu5);
 
@@ -808,6 +821,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         invokeDialogUnique(new MailJobs(this));
     }//GEN-LAST:event_jMenuItemMailJobsActionPerformed
 
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private void jMenuItemOperationalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemOperationalActionPerformed
+        if( checkAz() )
+            invokeDialogUnique(new at.redeye.twelvelittlescoutsclerk.dialog_operational.Operational(this));
+    }//GEN-LAST:event_jMenuItemOperationalActionPerformed
+    // AI modification end
+
     private void jMenuItemBillsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBillsActionPerformed
 
         if( checkAz() )
@@ -888,6 +908,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMenuItemEvents;
     private javax.swing.JMenuItem jMenuItemMailJobs;
     private javax.swing.JMenuItem jMenuItemMembers;
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private javax.swing.JMenuItem jMenuItemOperational;
+    // AI modification end
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JTextArea jTComment;

@@ -1365,6 +1365,15 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 }
 
                var_to_gui();
+
+               // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+               // If an event was auto-selected and it has an account class set, apply it
+               EventDescr auto_event_descr = (EventDescr) jCEvent.getSelectedItem();
+               if( auto_event_descr != null && auto_event_descr.event.account_class_idx.getValue() > 0 ) {
+                   fillJCAccountClassEdit( auto_event_descr.event.account_class_idx.getValue() );
+               }
+               // AI-generated end
+
                highlightJTLine();
             }
         };                        

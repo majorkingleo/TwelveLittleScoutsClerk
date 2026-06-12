@@ -46,7 +46,6 @@ public class AccountClasses extends BaseDialog implements NewSequenceValueInterf
         tm.hide(accClass.hist.ae_user);
         tm.hide(accClass.hist.an_user);
         tm.hide(accClass.bp_idx);
-        tm.hide(accClass.idx);
 
         tm.prepareTable();
 
@@ -384,7 +383,7 @@ public class AccountClasses extends BaseDialog implements NewSequenceValueInterf
 
         DBAccountClasses entry = new DBAccountClasses();
         entry.bp_idx.loadFromCopy(mainwin.getBPIdx());
-        entry.idx.loadFromCopy(mainwin.getNewSequenceValue(DBAccountClasses.ACCCLASS_IDX_SEQUENCE));
+        entry.idx.loadFromCopy(mainwin.getNewSequenceValue(DBAccountClasses.ACCLASS_IDX_SEQUENCE));
 
         CreateAccountClasses createDialog = new CreateAccountClasses(mainwin, this, entry);
 

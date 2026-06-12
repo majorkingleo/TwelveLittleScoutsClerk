@@ -153,6 +153,9 @@ public class CreateAccountClasses extends BaseDialogDialog {
     }//GEN-LAST:event_jBCloseActionPerformed
 
     private boolean check() {
+
+        gui_to_var();
+
         if (entity.name.toString().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter a name.", "Error", JOptionPane.ERROR_MESSAGE);
             jTName.requestFocus();

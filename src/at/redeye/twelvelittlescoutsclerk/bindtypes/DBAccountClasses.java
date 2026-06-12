@@ -89,7 +89,7 @@ public class DBAccountClasses extends DBStrukt
         }
     }
 
-    public static final String ACCCLASS_IDX_SEQUENCE = "ACCCLASS_IDX_SEQUENCE";
+    public static final String ACCLASS_IDX_SEQUENCE = "ACCLASS_IDX_SEQU";
     
     public static final ForeignKeyDefinition FK_BILLING_PERIOD =
         new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");

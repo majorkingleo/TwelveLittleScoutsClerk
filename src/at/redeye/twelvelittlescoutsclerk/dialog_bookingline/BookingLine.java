@@ -527,6 +527,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jBSplit = new javax.swing.JButton();
         jLabel12 = new javax.swing.JLabel();
         jTAlreadyPaidInCash = new javax.swing.JTextField();
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        jLabel13 = new javax.swing.JLabel();
+        jCAccountClassEdit = new javax.swing.JComboBox<>();
+        // AI-generated end
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
@@ -719,6 +723,11 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
         jTAlreadyPaidInCash.setEditable(false);
 
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        jLabel13.setText("Account class:");
+        // jCAccountClassEdit is populated dynamically; no action listener needed
+        // AI-generated end
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -765,7 +774,12 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                                                 .addComponent(jCContact, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(jCMember, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                    .addComponent(jCEvent, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jCEvent, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel13)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jCAccountClassEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(jTDate)
                                     .addGroup(jPanel2Layout.createSequentialGroup()
                                         .addComponent(jTDataSource, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -824,7 +838,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jCEvent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9))
+                    .addComponent(jLabel9)
+                    .addComponent(jLabel13)
+                    .addComponent(jCAccountClassEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1177,7 +1193,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     fillJCContact( -1 );
                     fillJCMember(-1);
                     fillJCEvent(-1);
-                }               
+                }
+                // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+                fillJCAccountClassEdit(current_value.account_class_idx.getValue());
+                // AI-generated end
             }
         };
         
@@ -1271,8 +1290,43 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             jCEvent.insertItemAt(null,0);            
             jCEvent.setSelectedIndex(0);
         }
-    }        
-    
+    }
+
+    // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+    /**
+     * Populates jCAccountClassEdit with "(none)" + all account classes for the
+     * current billing period. Pre-selects the entry whose idx matches
+     * {@code selected_account_class_idx}, or "(none)" when 0 / not found.
+     */
+    private void fillJCAccountClassEdit( int selected_account_class_idx )
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        jCAccountClassEdit.removeAllItems();
+        jCAccountClassEdit.addItem(new AccountClassDescr("(none)", 0, null));
+
+        Transaction trans = getTransaction();
+        DBAccountClasses acClass = new DBAccountClasses();
+
+        List<DBAccountClasses> classes = trans.fetchTable2(acClass,
+                "where " + trans.markColumn(acClass, acClass.bp_idx) + " = " + mainwin.getBPIdx()
+                + " order by " + trans.markColumn(acClass, acClass.name));
+
+        int selectIdx = 0; // default: "(none)"
+        for( int i = 0; i < classes.size(); i++ ) {
+            DBAccountClasses ac = classes.get(i);
+            jCAccountClassEdit.addItem(
+                    new AccountClassDescr(ac.name.toString(), ac.idx.getValue(), ac));
+            if( ac.idx.getValue() == selected_account_class_idx
+                    && selected_account_class_idx != 0 ) {
+                selectIdx = i + 1; // +1 because "(none)" is at index 0
+            }
+        }
+
+        jCAccountClassEdit.setSelectedIndex(selectIdx);
+    }
+    // AI-generated end
+
     private void jTContentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTContentMouseClicked
         
         /*
@@ -1327,6 +1381,17 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
         
         values.get(row).loadFromCopy(current_value);
+        
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        AccountClassDescr ac_descr = (AccountClassDescr) jCAccountClassEdit.getSelectedItem();
+        if( ac_descr != null && ac_descr.accountClass != null ) {
+            values.get(row).account_class_idx.loadFromCopy(ac_descr.accountClass.idx.getValue());
+            values.get(row).account_class.loadFromString(ac_descr.accountClass.name.toString());
+        } else {
+            values.get(row).account_class_idx.loadFromCopy(0);
+            values.get(row).account_class.loadFromString("");
+        }
+        // AI-generated end
         
         {
             var l2e = bl2es.get(current_value.idx.getValue());
@@ -1817,6 +1882,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JLabel jLAccountClass;
     private javax.swing.JComboBox<AccountClassDescr> jCAccountClassFilter;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JComboBox<AccountClassDescr> jCAccountClassEdit;
     // AI-generated end
     // End of variables declaration//GEN-END:variables
 

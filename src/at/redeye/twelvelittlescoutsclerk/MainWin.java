@@ -195,6 +195,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         jLMailStatus = new javax.swing.JLabel();
         jMenu6 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jMenuItemCashFlow = new javax.swing.JMenuItem();
+        // AI modification end
         jMenu4 = new javax.swing.JMenu();
         jMenuDesign = new javax.swing.JMenu();
         jMSettings = new javax.swing.JMenuItem();
@@ -399,6 +402,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu6.add(jMenuItem7);
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jMenuItemCashFlow.setText("Cash Flow");
+        jMenuItemCashFlow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemCashFlowActionPerformed(evt);
+            }
+        });
+        jMenu6.add(jMenuItemCashFlow);
+        // AI modification end
 
         jMenuBar1.add(jMenu6);
 
@@ -709,6 +722,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         
     }//GEN-LAST:event_jMResetDBActionPerformed
 
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private void jMenuItemCashFlowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCashFlowActionPerformed
+        if( checkAz() )
+            invokeDialogUnique(new at.redeye.twelvelittlescoutsclerk.reports.cashflow.ReportCashFlow(this));
+    }//GEN-LAST:event_jMenuItemCashFlowActionPerformed
+    // AI modification end
+
     private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
         invokeDialogUnique(new ReportAudit(this));
     }//GEN-LAST:event_jMenuItem7ActionPerformed
@@ -910,6 +930,7 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     private javax.swing.JMenuItem jMenuItemMembers;
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JMenuItem jMenuItemOperational;
+    private javax.swing.JMenuItem jMenuItemCashFlow;
     // AI modification end
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;

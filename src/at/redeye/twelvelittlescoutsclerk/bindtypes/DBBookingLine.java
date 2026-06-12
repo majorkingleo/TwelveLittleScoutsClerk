@@ -40,6 +40,8 @@ public class DBBookingLine extends DBStrukt {
     public static final DBDateTime     DATE = new DBDateTime( "date", "Booking Date");
     public static final DBString       DATA_SOURCE = new DBString("data_source", "Data Source", 50); // eg elba, cash
     public static final DBString       COMMENT = new DBString("comment", "Comment", 50);
+    public static final DBInteger      ACCOUNT_CLASS_IDX = new DBInteger("account_class_idx", "Account Class Idx");
+    public static final DBString       ACCOUNT_CLASS = new DBString("account_class", "Account Class", 50);
 
     public DBInteger      idx = IDX.getCopy();
     public DBHistory      hist = (DBHistory) HIST.getCopy();
@@ -57,6 +59,8 @@ public class DBBookingLine extends DBStrukt {
     public DBDateTime     date = DATE.getCopy();
     public DBString       data_source = DATA_SOURCE.getCopy(); // eg elba, cash
     public DBString       comment = COMMENT.getCopy();
+    public DBInteger      account_class_idx = ACCOUNT_CLASS_IDX.getCopy();
+    public DBString       account_class = ACCOUNT_CLASS.getCopy();
             
     public DBBookingLine()
     {
@@ -76,6 +80,8 @@ public class DBBookingLine extends DBStrukt {
         add( assigned );        
         add( splitpos );
         add( parent_idx );
+        add( account_class_idx, 3 );
+        add( account_class, 3 );
         add( data_source );
         add( comment );
         
@@ -85,7 +91,7 @@ public class DBBookingLine extends DBStrukt {
         addForeignKey(FK_BILLING_PERIOD, 2);
         addForeignKey(FK_CONTACT, 2);
 
-        setVersion(2);
+        setVersion(3);
     }
     
     @Override

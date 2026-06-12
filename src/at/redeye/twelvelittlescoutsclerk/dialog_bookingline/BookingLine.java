@@ -29,6 +29,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_contact.EditContact;
 import at.redeye.twelvelittlescoutsclerk.dialog_split.Split;
@@ -43,7 +44,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -110,6 +110,30 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             return event.name.toString() + " " + event.costs.toString() + "€";
         }
     }    
+
+    // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+    /** Wraps a DBAccountClasses entry (or a special sentinel) for use in jCAccountClassFilter. */
+    static class AccountClassDescr
+    {
+        /** -1 = show only unassigned, 0 = show any (no filter), >0 = specific account class idx */
+        public final int filterIdx;
+        private final String label;
+        public final DBAccountClasses accountClass; // null for sentinel items
+
+        public AccountClassDescr( String label, int filterIdx, DBAccountClasses accountClass )
+        {
+            this.label = label;
+            this.filterIdx = filterIdx;
+            this.accountClass = accountClass;
+        }
+
+        @Override
+        public String toString()
+        {
+            return label;
+        }
+    }
+    // AI-generated end
         
     
     MainWin mainwin;
@@ -194,6 +218,15 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         filters.add(jCTill);
         filters.add(jDateFrom);
         filters.add(jDateTill);
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        filters.add(jCAccountClassFilter);
+        new AutoMBox(getTitle(), false) {
+            @Override
+            public void do_stuff() throws Exception {
+                populateAccountClassFilter();
+            }
+        };
+        // AI-generated end
         
         for( int i = 0; i < filters.size(); i++ )
         {
@@ -209,6 +242,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             } else if( comp instanceof JDatePicker ) {
                 JDatePicker date = (JDatePicker)comp;
                 date.setDate(root.getSetup().getLocalConfig(check_filter,""));
+            // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+            } else if( comp instanceof javax.swing.JComboBox ) {
+                @SuppressWarnings("unchecked")
+                javax.swing.JComboBox<AccountClassDescr> combo = (javax.swing.JComboBox<AccountClassDescr>)comp;
+                String savedIdx = root.getSetup().getLocalConfig(check_filter, "0");
+                restoreAccountClassFilter(combo, savedIdx);
+            // AI-generated end
             }
         }    
         
@@ -236,6 +276,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             } else if( comp instanceof JDatePicker ) {
                 JDatePicker date = (JDatePicker)comp;
                 root.getSetup().setLocalConfig(check_filter,date.getDate());
+            // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+            } else if( comp instanceof javax.swing.JComboBox ) {
+                @SuppressWarnings("unchecked")
+                javax.swing.JComboBox<AccountClassDescr> combo = (javax.swing.JComboBox<AccountClassDescr>)comp;
+                AccountClassDescr selected = (AccountClassDescr) combo.getSelectedItem();
+                String savedIdx = (selected != null) ? String.valueOf(selected.filterIdx) : "0";
+                root.getSetup().setLocalConfig(check_filter, savedIdx);
+            // AI-generated end
             }
         }
 
@@ -318,6 +366,19 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                         jCTill.isSelected() ? filter_date_till : null,
                         bookingline.date) );
                 
+                // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+                AccountClassDescr acFilter = (AccountClassDescr) jCAccountClassFilter.getSelectedItem();
+                if( acFilter != null ) {
+                    if( acFilter.filterIdx == -1 ) {
+                        // unassigned: account_class_idx = 0
+                        sql.append(" and ").append(trans.markColumn(bookingline.account_class_idx)).append(" = 0 ");
+                    } else if( acFilter.filterIdx > 0 ) {
+                        // specific account class
+                        sql.append(" and ").append(trans.markColumn(bookingline.account_class_idx)).append(" = ").append(acFilter.filterIdx).append(" ");
+                    }
+                    // filterIdx == 0 means "any" => no filter added
+                }
+                // AI-generated end
                 
                 sql.append(" order by ").append(trans.markColumn(bookingline.date));
                                 
@@ -478,6 +539,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jDateTill = new at.redeye.Plugins.JDatePicker.JDatePicker();
         jCFrom = new javax.swing.JCheckBox();
         jCTill = new javax.swing.JCheckBox();
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        jLAccountClass = new javax.swing.JLabel();
+        jCAccountClassFilter = new javax.swing.JComboBox<>();
+        // AI-generated end
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -865,6 +930,16 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             }
         });
 
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        jLAccountClass.setText("Account class:");
+
+        jCAccountClassFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCAccountClassFilterActionPerformed(evt);
+            }
+        });
+        // AI-generated end
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -891,6 +966,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 .addComponent(jCTill)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jDateTill, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLAccountClass)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCAccountClassFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -912,8 +991,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jDateTill, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jCTill))))
+                                .addComponent(jDateTill, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jCAccountClassFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jCTill)
+                            .addComponent(jLAccountClass))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1621,6 +1702,64 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             jDateTill.setDate(jDateFrom.getSelectedDate());
         }
     }
+
+    // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+    /**
+     * Fetches all account classes for the current billing period and populates
+     * jCAccountClassFilter.  First item is "unassigned" (filterIdx=-1),
+     * second is "any" (filterIdx=0), then one entry per DBAccountClasses row.
+     */
+    private void populateAccountClassFilter()
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException
+    {
+        jCAccountClassFilter.removeAllItems();
+        jCAccountClassFilter.addItem(new AccountClassDescr("unassigned", -1, null));
+        jCAccountClassFilter.addItem(new AccountClassDescr("any", 0, null));
+
+        Transaction trans = getTransaction();
+        DBAccountClasses acClass = new DBAccountClasses();
+
+        List<DBAccountClasses> classes = trans.fetchTable2(acClass,
+                "where " + trans.markColumn(acClass, acClass.bp_idx) + " = " + mainwin.getBPIdx()
+                + " order by " + trans.markColumn(acClass, acClass.name));
+
+        for( DBAccountClasses ac : classes ) {
+            jCAccountClassFilter.addItem(
+                    new AccountClassDescr(ac.name.toString(), ac.idx.getValue(), ac));
+        }
+
+        // default: "any"
+        jCAccountClassFilter.setSelectedIndex(1);
+    }
+
+    /**
+     * Restores the jCAccountClassFilter selection from the persisted filterIdx string.
+     * Falls back to "any" when no match is found.
+     */
+    private void restoreAccountClassFilter(
+            javax.swing.JComboBox<AccountClassDescr> combo, String savedIdx)
+    {
+        try {
+            int idx = Integer.parseInt(savedIdx);
+            for( int i = 0; i < combo.getItemCount(); i++ ) {
+                AccountClassDescr item = combo.getItemAt(i);
+                if( item != null && item.filterIdx == idx ) {
+                    combo.setSelectedIndex(i);
+                    return;
+                }
+            }
+        } catch( NumberFormatException ignored ) {}
+        // fall back to "any" (index 1)
+        if( combo.getItemCount() > 1 ) {
+            combo.setSelectedIndex(1);
+        }
+    }
+
+    private void jCAccountClassFilterActionPerformed(java.awt.event.ActionEvent evt) {
+        feed_table(true);
+    }
+    // AI-generated end
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBApplyBookingLine;
@@ -1675,6 +1814,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JTextField jTReference;
     private javax.swing.JTextField jtAlreadyPaid;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter1;
+    // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+    private javax.swing.JLabel jLAccountClass;
+    private javax.swing.JComboBox<AccountClassDescr> jCAccountClassFilter;
+    // AI-generated end
     // End of variables declaration//GEN-END:variables
 
     private void newEntry() throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException {

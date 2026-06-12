@@ -6,9 +6,11 @@
 package at.redeye.twelvelittlescoutsclerk.reports.cashflow;
 
 import at.redeye.FrameWork.base.AutoLogger;
+import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.FrameWork.base.reports.BaseReportRenderer;
 import at.redeye.FrameWork.base.reports.ReportRenderer;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.twelvelittlescoutsclerk.DateFilter;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
@@ -25,11 +27,15 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
     private final Transaction trans;
     private final DBBillingPeriod bp;
     private final double currentBankCash;
+    private final DBDateTime dateFrom;
+    private final DBDateTime dateTill;
 
-    public ReportCashFlowRenderer(Transaction trans, DBBillingPeriod bp, double currentBankCash) {
+    public ReportCashFlowRenderer(Transaction trans, DBBillingPeriod bp, double currentBankCash, DBDateTime dateFrom, DBDateTime dateTill) {
         this.trans = trans;
         this.bp = bp;
         this.currentBankCash = currentBankCash;
+        this.dateFrom = dateFrom != null ? dateFrom : new DBDateTime("dummy");
+        this.dateTill = dateTill != null ? dateTill : new DBDateTime("dummy");
     }
 
     @Override
@@ -83,9 +89,11 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
 
         // --- load all booking lines for this billing period (no splits) ---
         DBBookingLine blProto = new DBBookingLine();
+        String dateFilter = DateFilter.getVonBisFilter(trans, dateFrom, dateTill, blProto.date);
         List<DBBookingLine> lines = trans.fetchTable2(blProto,
                 "where " + trans.markColumn(blProto, blProto.bp_idx) + " = " + bp.idx
                 + " and " + trans.markColumn(blProto, blProto.splitpos) + " = 0"
+                + dateFilter
                 + " order by " + trans.markColumn(blProto, blProto.date));
 
         // --- accumulate sums per account class idx ---
@@ -124,6 +132,16 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         text.append("<p><b>Current bank account cash: </b>")
             .append(String.format("%.2f", currentBankCash))
             .append("</p>");
+
+        // date range info
+        if (dateFrom != null && dateFrom.getValue() != null && dateFrom.getValue().getTime() > 0
+                && dateTill != null && dateTill.getValue() != null && dateTill.getValue().getTime() > 0) {
+            text.append("<p><b>Date range: </b>")
+                .append(dateFrom.toString())
+                .append(" to ")
+                .append(dateTill.toString())
+                .append("</p>");
+        }
 
         html_newline();
 

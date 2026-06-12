@@ -7,6 +7,8 @@ package at.redeye.twelvelittlescoutsclerk.reports.cashflow;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.bindtypes.DBDateTime;
+import at.redeye.Plugins.JDatePicker.JDatePicker;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
 
@@ -14,12 +16,18 @@ import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
 public class ReportCashFlow extends BaseDialog {
 
     private static final String CONFIG_BANK_CASH = ReportCashFlow.class.getName() + ".bankCash";
+    private static final String CONFIG_DATE_FROM = ReportCashFlow.class.getName() + ".dateFrom";
+    private static final String CONFIG_DATE_TILL = ReportCashFlow.class.getName() + ".dateTill";
 
     private final MainWin mainwin;
+    private final DBDateTime dateFrom;
+    private final DBDateTime dateTill;
 
     public ReportCashFlow(MainWin mainwin) {
         super(mainwin.getRoot(), "Cash Flow");
         this.mainwin = mainwin;
+        dateFrom = new DBDateTime("dateFrom");
+        dateTill = new DBDateTime("dateTill");
         initComponents();
 
         FixNimbusBackgroundColor.fixNimbusBackgroundColor(jReport);
@@ -27,11 +35,37 @@ public class ReportCashFlow extends BaseDialog {
         // restore last-used bank cash value
         String saved = root.getSetup().getLocalConfig(CONFIG_BANK_CASH, "0.0");
         jTBankCash.setText(saved);
+
+        // restore last-used date range
+        String savedFrom = root.getSetup().getLocalConfig(CONFIG_DATE_FROM, "");
+        String savedTill = root.getSetup().getLocalConfig(CONFIG_DATE_TILL, "");
+        try {
+            if (!savedFrom.trim().isEmpty()) {
+                dateFrom.loadFromString(savedFrom);
+            }
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
+        try {
+            if (!savedTill.trim().isEmpty()) {
+                dateTill.loadFromString(savedTill);
+            }
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
+
+        // bind date fields to UI components
+        bindVar(jDateFrom, dateFrom);
+        bindVar(jDateTill, dateTill);
+        var_to_gui();
     }
 
     @Override
     public void close() {
+        gui_to_var();
         root.getSetup().setLocalConfig(CONFIG_BANK_CASH, jTBankCash.getText().trim());
+        root.getSetup().setLocalConfig(CONFIG_DATE_FROM, dateFrom.toString());
+        root.getSetup().setLocalConfig(CONFIG_DATE_TILL, dateTill.toString());
         super.close();
     }
 
@@ -48,9 +82,10 @@ public class ReportCashFlow extends BaseDialog {
             @Override
             public void do_stuff() throws Exception {
                 setWaitCursor();
+                gui_to_var();
                 double bankCash = parseBankCash();
                 ReportCashFlowRenderer renderer =
-                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash);
+                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill);
                 renderer.collectData();
                 jReport.setText(renderer.render());
                 jReport.setCaretPosition(0);
@@ -67,6 +102,10 @@ public class ReportCashFlow extends BaseDialog {
         jPanelControls = new javax.swing.JPanel();
         jLabelBankCash = new javax.swing.JLabel();
         jTBankCash = new javax.swing.JTextField();
+        jLabelDateFrom = new javax.swing.JLabel();
+        jDateFrom = new JDatePicker(root);
+        jLabelDateTill = new javax.swing.JLabel();
+        jDateTill = new JDatePicker(root);
         jBGenerate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jReport = new javax.swing.JTextPane();
@@ -80,6 +119,10 @@ public class ReportCashFlow extends BaseDialog {
         jLabelBankCash.setText("Current bank account cash (€):");
 
         jTBankCash.setColumns(12);
+
+        jLabelDateFrom.setText("From:");
+
+        jLabelDateTill.setText("Till:");
 
         jBGenerate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/reload.png"))); // NOI18N
         jBGenerate.setText("Generate Cash Flow");
@@ -95,9 +138,19 @@ public class ReportCashFlow extends BaseDialog {
             jPanelControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelControlsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabelBankCash)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTBankCash, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanelControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelControlsLayout.createSequentialGroup()
+                        .addComponent(jLabelBankCash)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTBankCash, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanelControlsLayout.createSequentialGroup()
+                        .addComponent(jLabelDateFrom)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jDateFrom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabelDateTill)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jDateTill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jBGenerate)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -110,6 +163,12 @@ public class ReportCashFlow extends BaseDialog {
                     .addComponent(jLabelBankCash)
                     .addComponent(jTBankCash, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBGenerate))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelDateFrom)
+                    .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelDateTill)
+                    .addComponent(jDateTill, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -213,9 +272,13 @@ public class ReportCashFlow extends BaseDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
+    private at.redeye.Plugins.JDatePicker.JDatePicker jDateFrom;
+    private at.redeye.Plugins.JDatePicker.JDatePicker jDateTill;
     private javax.swing.JButton jBGenerate;
     private javax.swing.JButton jBPrint;
     private javax.swing.JLabel jLabelBankCash;
+    private javax.swing.JLabel jLabelDateFrom;
+    private javax.swing.JLabel jLabelDateTill;
     private javax.swing.JPanel jPanelButtons;
     private javax.swing.JPanel jPanelCashFlow;
     private javax.swing.JPanel jPanelControls;

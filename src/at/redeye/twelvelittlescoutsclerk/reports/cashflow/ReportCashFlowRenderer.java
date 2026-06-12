@@ -106,6 +106,8 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         }
 
         double grandTotal = 0.0;
+        double plannedCostsTotal = 0.0;
+        double costsTotal = 0.0;
 
         for (DBBookingLine bl : lines) {
             Integer eventIdx = blToEvent.get(bl.idx.getValue());
@@ -122,6 +124,20 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
             sumByClass.merge(acIdx, amount, Double::sum);
             grandTotal += amount;
         }
+
+        // --- calculate planned costs and costs for events with counts_to_available_cash_amount ---
+        for (DBEvent ev : events) {
+            if (ev.counts_to_available_cash_amount.getValue() == 1) {
+                double evPlanned = ev.planned_costs.getValue();
+                double evCosts = ev.costs.getValue();
+                plannedCostsTotal += evPlanned;
+                costsTotal += evCosts;
+                logger.info("Event '{}' counts to available cash: planned_costs={}, costs={}", 
+                    ev.name.getValue(), evPlanned, evCosts);
+            }
+        }
+        logger.info("Total planned costs for counting events: {}", plannedCostsTotal);
+        logger.info("Total costs for counting events: {}", costsTotal);
 
         // --- render HTML ---
         clear();
@@ -165,6 +181,17 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         double available = currentBankCash + grandTotal;
         text.append("<tr style='font-weight:bold;background-color:#d0f0d0'><td>Available cash (bank + total)</td>")
             .append("<td align='right'>").append(String.format("%.2f", available)).append("</td></tr>");
+
+        // --- add planned costs information for events with counts_to_available_cash_amount ---
+        double plannedCostsMinusCosts = plannedCostsTotal - costsTotal;
+        if (plannedCostsTotal > 0 || costsTotal > 0) {
+            text.append("<tr><td>Planned costs - Costs (for counting events)</td>");
+            text.append("<td align='right'>").append(String.format("%.2f", plannedCostsMinusCosts)).append("</td></tr>");
+            
+            double estimatedIncome = available + plannedCostsMinusCosts;
+            text.append("<tr style='font-weight:bold;background-color:#f0f0d0'><td>Estimated income (available + planned - costs)</td>");
+            text.append("<td align='right'>").append(String.format("%.2f", estimatedIncome)).append("</td></tr>");
+        }
 
         text.append("</table>");
         html_stop();

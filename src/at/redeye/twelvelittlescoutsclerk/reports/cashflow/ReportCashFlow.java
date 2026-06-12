@@ -57,6 +57,11 @@ public class ReportCashFlow extends BaseDialog {
         // bind date fields to UI components
         bindVar(jDateFrom, dateFrom);
         bindVar(jDateTill, dateTill);
+        
+        // make date pickers text-editable like in Operational dialog
+        jDateFrom.setTextEditable(true);
+        jDateTill.setTextEditable(true);
+        
         var_to_gui();
     }
 

@@ -110,6 +110,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         bindVar(jTName, event.name);
         bindVar(jTCosts, event.costs);
         bindVar(jTRegistrationCosts, event.registration_costs);
+        // AI modification start (GPT-5.4)
+        bindVar(jCCountsToAvailableCashAmount, event.counts_to_available_cash_amount);
+        // AI modification end
         // populated and bound below after template list is loaded
                
         populateBillingTemplateCombo();
@@ -517,6 +520,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jLabel6 = new javax.swing.JLabel();
         jTRegistrationTemplate = new javax.swing.JComboBox();
         jTRegistrationCosts = new javax.swing.JTextField();
+        // AI modification start (GPT-5.4)
+        jLabel7 = new javax.swing.JLabel();
+        jCCountsToAvailableCashAmount = new javax.swing.JCheckBox();
+        // AI modification end
         jBSendBillMail = new javax.swing.JButton();
         jBSendRegistrationMail = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -775,6 +782,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         jLabel6.setText("Registration Costs");
 
+        // AI modification start (GPT-5.4)
+        jLabel7.setText("Available Cash Amount");
+
+        jCCountsToAvailableCashAmount.setText("Count this event");
+        // AI modification end
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -790,14 +803,16 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jLabel3)
                             .addComponent(jLabel4)
                             .addComponent(jLabel5)
-                            .addComponent(jLabel6))
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel7))
                         .addGap(62, 62, 62)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jTBillingTemplate)
                             .addComponent(jTRegistrationTemplate)
                             .addComponent(jTRegistrationCosts)
                             .addComponent(jTCosts)
-                            .addComponent(jTName))))
+                            .addComponent(jTName)
+                            .addComponent(jCCountsToAvailableCashAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -823,6 +838,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(jTRegistrationCosts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(jCCountsToAvailableCashAmount))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1357,12 +1376,18 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;
     private javax.swing.JCheckBox jCCacheOpen;
+    // AI modification start (GPT-5.4)
+    private javax.swing.JCheckBox jCCountsToAvailableCashAmount;
+    // AI modification end
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    // AI modification start (GPT-5.4)
+    private javax.swing.JLabel jLabel7;
+    // AI modification end
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

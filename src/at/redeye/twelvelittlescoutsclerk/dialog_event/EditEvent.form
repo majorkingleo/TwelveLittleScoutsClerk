@@ -45,6 +45,7 @@
                           <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -53,6 +54,7 @@
                           <Component id="jTRegistrationCosts" max="32767" attributes="0"/>
                           <Component id="jTCosts" max="32767" attributes="0"/>
                           <Component id="jTName" max="32767" attributes="0"/>
+                            <Component id="jCCountsToAvailableCashAmount" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -89,6 +91,11 @@
                   <Component id="jTRegistrationCosts" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+                <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCCountsToAvailableCashAmount" alignment="3" min="-2" max="-2" attributes="0"/>
+                </Group>
+                <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel2" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
@@ -445,6 +452,16 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTRegistrationCosts">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel7">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Available Cash Amount"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCCountsToAvailableCashAmount">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Count this event"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

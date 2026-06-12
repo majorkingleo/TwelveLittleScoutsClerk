@@ -6,6 +6,7 @@
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.DBDouble;
+import at.redeye.FrameWork.base.bindtypes.DBFlagInteger;
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
 import at.redeye.FrameWork.base.bindtypes.DBString;
@@ -29,6 +30,10 @@ public class DBEvent extends DBStrukt {
     public static final DBString       BILLING_TEMPLATE      = new DBString( "billing_template", "Billing Template", 512 );
     public static final DBString       REGISTRATION_TEMPLATE = new DBString( "registration_template", "Registration Template", 512 );
     public static final DBDouble       REGISTRATION_COSTS    = new DBDouble( "registration_costs", "Registration Costs" );
+        // AI modification start (GPT-5.4)
+        public static final DBFlagInteger  COUNTS_TO_AVAILABLE_CASH_AMOUNT = new DBFlagInteger(
+            "counts_to_available_cash_amount", "Counts to Available Cash Amount" );
+        // AI modification end
 
     public DBInteger      idx = IDX.getCopy();
     public DBInteger      bp_idx = BP_IDX.getCopy();
@@ -40,6 +45,9 @@ public class DBEvent extends DBStrukt {
     public DBString       billing_template      = BILLING_TEMPLATE.getCopy();
     public DBString       registration_template = REGISTRATION_TEMPLATE.getCopy();
     public DBDouble       registration_costs    = REGISTRATION_COSTS.getCopy();
+    // AI modification start (GPT-5.4)
+    public DBFlagInteger  counts_to_available_cash_amount = COUNTS_TO_AVAILABLE_CASH_AMOUNT.getCopy();
+    // AI modification end
     
     public DBEvent()
     {
@@ -55,6 +63,9 @@ public class DBEvent extends DBStrukt {
         add(billing_template, 4);
         add(registration_template, 5);
         add(registration_costs, 6);
+        // AI modification start (GPT-5.4)
+        add(counts_to_available_cash_amount, 8);
+        // AI modification end
         
         hist.setTitle(" ");
         
@@ -62,7 +73,7 @@ public class DBEvent extends DBStrukt {
 
         addForeignKey(FK_BILLING_PERIOD, 7);
 
-        setVersion(7);
+        setVersion(8);
     }
     
     @Override

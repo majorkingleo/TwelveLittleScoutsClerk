@@ -20,7 +20,7 @@ import java.util.Vector;
  */
 public class DBAccountClasses extends DBStrukt 
 {
-    public enum Category { INCOME, EXPENSE }
+    public enum Category { INCOME, EXPENSE, LIABILITY }
 
     public static class CategoryHandler extends DBEnumAsInteger.EnumAsIntegerHandler {
 

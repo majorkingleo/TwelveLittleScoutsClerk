@@ -54,7 +54,7 @@ public class CreateAccountClasses extends BaseDialogDialog {
 
         jLabelCategory.setText("Category:");
 
-        jCBCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "INCOME", "EXPENSE" }));
+        jCBCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "INCOME", "EXPENSE", "LIABILITY" }));
 
         jBSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/button_ok.gif"))); // NOI18N
         jBSave.setText("Save");

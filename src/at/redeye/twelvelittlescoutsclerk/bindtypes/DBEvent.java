@@ -30,6 +30,9 @@ public class DBEvent extends DBStrukt {
     public static final DBString       BILLING_TEMPLATE      = new DBString( "billing_template", "Billing Template", 512 );
     public static final DBString       REGISTRATION_TEMPLATE = new DBString( "registration_template", "Registration Template", 512 );
     public static final DBDouble       REGISTRATION_COSTS    = new DBDouble( "registration_costs", "Registration Costs" );
+    public static final DBInteger      ACCOUNT_CLASS_IDX = new DBInteger("account_class_idx", "Account Class Idx");
+    public static final DBString       ACCOUNT_CLASS = new DBString("account_class", "Account Class", 50);
+
         // AI modification start (GPT-5.4)
         public static final DBFlagInteger  COUNTS_TO_AVAILABLE_CASH_AMOUNT = new DBFlagInteger(
             "counts_to_available_cash_amount", "Counts to Available Cash Amount" );
@@ -48,7 +51,10 @@ public class DBEvent extends DBStrukt {
     // AI modification start (GPT-5.4)
     public DBFlagInteger  counts_to_available_cash_amount = COUNTS_TO_AVAILABLE_CASH_AMOUNT.getCopy();
     // AI modification end
-    
+    public DBInteger      account_class_idx = ACCOUNT_CLASS_IDX.getCopy();
+    public DBString       account_class = ACCOUNT_CLASS.getCopy();
+
+
     public DBEvent()
     {
         super("EVENT");
@@ -66,6 +72,8 @@ public class DBEvent extends DBStrukt {
         // AI modification start (GPT-5.4)
         add(counts_to_available_cash_amount, 8);
         // AI modification end
+        add( account_class_idx, 9 );
+        add( account_class, 9 );
         
         hist.setTitle(" ");
         
@@ -73,7 +81,7 @@ public class DBEvent extends DBStrukt {
 
         addForeignKey(FK_BILLING_PERIOD, 7);
 
-        setVersion(8);
+        setVersion(9);
     }
     
     @Override

@@ -107,7 +107,7 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
 
         double grandTotal = 0.0;
         double plannedCostsTotal = 0.0;
-        double costsTotal = 0.0;
+        double paidTotal = 0.0;
 
         for (DBBookingLine bl : lines) {
             Integer eventIdx = blToEvent.get(bl.idx.getValue());
@@ -129,15 +129,14 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         for (DBEvent ev : events) {
             if (ev.counts_to_available_cash_amount.getValue() == 1) {
                 double evPlanned = ev.planned_costs.getValue();
-                double evCosts = ev.costs.getValue();
+                double evPaid = ev.paid.getValue();
                 plannedCostsTotal += evPlanned;
-                costsTotal += evCosts;
-                logger.info("Event '{}' counts to available cash: planned_costs={}, costs={}", 
-                    ev.name.getValue(), evPlanned, evCosts);
+                paidTotal += evPaid;
+                logger.info("Event '" + ev.name.getValue() + "' counts to available cash: planned_costs=" + evPlanned + ", costs=" + evPaid);
             }
         }
-        logger.info("Total planned costs for counting events: {}", plannedCostsTotal);
-        logger.info("Total costs for counting events: {}", costsTotal);
+        logger.info("Total planned costs for counting events: " + plannedCostsTotal);
+        logger.info("Total costs for counting events: " + paidTotal);
 
         // --- render HTML ---
         clear();
@@ -183,8 +182,8 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
             .append("<td align='right'>").append(String.format("%.2f", available)).append("</td></tr>");
 
         // --- add planned costs information for events with counts_to_available_cash_amount ---
-        double plannedCostsMinusCosts = plannedCostsTotal - costsTotal;
-        if (plannedCostsTotal > 0 || costsTotal > 0) {
+        double plannedCostsMinusCosts = plannedCostsTotal - paidTotal;
+        if (plannedCostsTotal > 0 || paidTotal > 0) {
             text.append("<tr><td>Planned costs - Costs (for counting events)</td>");
             text.append("<td align='right'>").append(String.format("%.2f", plannedCostsMinusCosts)).append("</td></tr>");
             

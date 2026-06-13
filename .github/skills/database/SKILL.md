@@ -817,3 +817,69 @@ bindtypeManager.autocreate();
 - [Foreign Key Implementation Plan](../references/foreign-key-plan.md) - FK design notes
 - [FrameWork DBManager Documentation](../../FrameWork/docs/DBManager.md) - Schema lifecycle
 - [Condition API Documentation](../../FrameWork/docs/ConditionAPI.md) - Typed WHERE clauses
+
+---
+
+## NULL Value Handling in Prepared Statements (Fixed)
+
+**Issue:** The FrameWork originally had a bug that prevented NULL values from being inserted into the database.
+
+### The Bug (Before Fix)
+In `AbstractStmtExecuter.handleStatement()`:
+```java
+if (data == null) {
+    throw new SQLException(
+        "Select is impossible:\nNo whereStmt given and PrimaryKey data is missing!");
+}
+```
+
+And in `setPreparedStatementTypes()`:
+```java
+if( data == null ) {
+    ps.setNull(index, index);  // ❌ WRONG: using index as SQL type code
+}
+```
+
+### The Fix (Implemented)
+1. **Removed the NULL check** in `handleStatement()` - allows NULL values to pass through
+2. **Added column name parameter** to `setPreparedStatementTypes()` 
+3. **Added type lookup** via `getColumnType()` and `getSqlTypeFromDBDataType()`
+4. **Fixed setNull call** to use proper JDBC Types constants:
+   ```java
+   if( data == null ) {
+       DBDataType colType = getColumnType(columnName);
+       int sqlType = getSqlTypeFromDBDataType(colType);
+       ps.setNull(index, sqlType);  // ✅ Correct
+   }
+   ```
+
+### Type Mapping
+| DBDataType | JDBC Types |
+|------------|------------|
+| DB_TYPE_STRING | Types.VARCHAR |
+| DB_TYPE_INTEGER | Types.INTEGER |
+| DB_TYPE_LONG | Types.BIGINT |
+| DB_TYPE_FLOAT | Types.FLOAT |
+| DB_TYPE_DOUBLE | Types.DOUBLE |
+| DB_TYPE_SHORT | Types.SMALLINT |
+| DB_TYPE_BOOLEAN | Types.BOOLEAN |
+| DB_TYPE_BIT | Types.BIT |
+| DB_TYPE_DATE | Types.DATE |
+| DB_TYPE_TIME | Types.TIME |
+| DB_TYPE_DATETIME | Types.TIMESTAMP |
+| DB_TYPE_BLOB | Types.BLOB |
+
+### Result
+✅ **Nullable foreign keys now work correctly** - you can insert NULL values into FK columns like `member_idx` in `BOOKINGLINE2EVENTS`.
+
+### Usage Example
+```java
+// Outgoing booking line (no member)
+DBBookingLine2Events bl2e = new DBBookingLine2Events();
+bl2e.bl_idx.loadFromCopy(bookingLineId);
+bl2e.event_idx.loadFromCopy(eventId);
+bl2e.member_idx.loadFromCopy(null);  // ✅ Now works!
+bl2e.contact_idx.loadFromCopy(null);  // ✅ Now works!
+trans.insertValues(bl2e);
+```
+

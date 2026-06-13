@@ -1,832 +1,819 @@
 ---
-name: sqldbinterface
+name: twelvelittlescoutsclerk-db
 description: >
-  Domain knowledge for at.redeye.SqlDBInterface — the SQL abstraction layer in the FrameWork project.
-  Use when adding new DBMS support, writing new queries, registering table bindings, debugging
-  database connectivity, or understanding how SELECT/INSERT/UPDATE flow through the layer.
+  Domain knowledge for the TwelveLittleScoutsClerk application database schema.
+  Use when working with DBStrukt classes, foreign key relationships, database queries,
+  or understanding the multi-tenant billing period structure.
 ---
 
-# SqlDBInterface — How It Works
+# TwelveLittleScoutsClerk Database Schema
 
-## Purpose
+## Overview
 
-`at.redeye.SqlDBInterface` is a thin, framework-internal SQL abstraction layer. It:
+The **TwelveLittleScoutsClerk** application is a scout group management system for financial
+and membership tracking. The database uses a **multi-tenant architecture** where all data
+is partitioned by `BILLING_PERIOD` — a central container that groups all related records
+(tables, members, events, bills, etc.) into isolated datasets.
 
-- Hides DBMS-specific JDBC URL construction and driver registration behind a single connect/disconnect interface.
-- Provides dialect-aware SQL statement building (identifier quoting differs per DBMS).
-- Executes SELECT/INSERT/UPDATE using `PreparedStatement` for type safety.
-- Maps database columns to strongly-typed Java values via a **table binding** registry.
+**Key Design Principle:** Every application table (except `AUDIT`) contains a `bp_idx` 
+foreign key referencing `BILLING_PERIOD.idx`. This creates virtual database isolation
+without requiring separate database instances.
 
-It is **not** an ORM. Callers still write or supply WHERE clauses; the layer only handles
-column-type marshalling and identifier quoting.
+---
+
+## Architecture Layers
+
+```
+TwelveLittleScoutsClerk Application
+├── FrameWork (at.redeye.FrameWork)
+│   ├── SqlDBInterface/           # Low-level SQL abstraction (see sqldbinterface skill)
+│   └── base/
+│       ├── bindtypes/           # DBStrukt, DBValue, Condition API
+│       ├── dbmanager/           # Schema lifecycle (DatabaseManager)
+│       └── transaction/         # Transaction bridge
+└── TwelveLittleScoutsClerk (at.redeye.twelvelittlescoutsclerk)
+    ├── bindtypes/               # Application DBStrukt classes ← THIS DOCUMENT
+    └── dialog_*/                # UI components
+```
+
+**Framework Dependencies:**
+- Uses `at.redeye.SqlDBInterface` for JDBC connectivity and SQL building
+- Uses `at.redeye.FrameWork.base.dbmanager` for schema creation and migration
+- Uses `at.redeye.FrameWork.base.bindtypes` for typed column definitions
 
 ---
 
 ## Package Map
 
 ```
-SqlDBInterface/
-├── SqlDBConnection/          # JDBC connection lifecycle
-│   ├── DbConnectionInterface.java        # connect / disconnect
-│   └── impl/
-│       ├── ConnectionDefinition.java     # host, port, user, pwd, instance, DBMS type
-│       ├── SupportedDBMSTypes.java       # enum: DB_MYSQL, DB_MARIADB, DB_MSSQL, DB_ORACLE,
-│       │                                 #        DB_SQLITE, DB_JAVADB
-│       ├── AbstractDBConnector.java      # builds JDBC URL, registers driver, calls DriverManager
-│       ├── DBConnector.java              # concrete (empty) subclass — instantiate this
-│       ├── MissingConnectionParamException.java
-│       └── UnSupportedDatabaseException.java
-│
-├── SqlDBIO/                  # Statement building & execution
-│   ├── StmtCreatorInterface.java         # builds SQL strings (SELECT / INSERT / UPDATE)
-│   ├── StmtExecInterface.java            # executes SQL, returns typed Java objects
-│   ├── TypeRegistrationInterface.java    # table-binding registry
-│   └── impl/
-│       ├── DBDataType.java               # enum of supported column types
-│       ├── ColumnAttribute.java          # datatype + isPrimaryKey + width
-│       ├── TypeRegistration.java         # implements TypeRegistrationInterface
-│       ├── creator/
-│       │   ├── AbstractStmtCreator.java  # shared SELECT / INSERT / UPDATE builder logic
-│       │   ├── StmtCreatorFactory.java   # picks dialect subclass by SupportedDBMSTypes
-│       │   ├── DefaultStmtCreator.java   # no-op quoting (fallback)
-│       │   ├── StmtCreatorMYSQL.java     # backtick quoting; tables UPPER, columns lower
-│       │   ├── StmtCreatorMSSQL.java     # [bracket] quoting
-│       │   ├── StmtCreatorSQLITE.java    # backtick quoting; UPDATE uses column-only form
-│       │   ├── StmtCreatorDerby.java     # Derby/JavaDB quoting
-│       │   └── StmtCreatorOracle.java    # Oracle quoting
-│       └── executor/
-│           ├── AbstractStmtExecuter.java # PreparedStatement execution + type unmarshalling
-│           └── DefaultStmtExecuter.java  # concrete (empty) subclass — instantiate this
-│
-└── jdbc_driver/              # Vendored README/notes per driver (not framework source)
-    ├── javadb/ mariadb/ mssql/ mysql/ oracle/ sqllite/
+TwelveLittleScoutsClerk/bindtypes/
+├── DBBillingPeriod.java      # Central tenant container (version 1)
+├── DBMember.java             # Scout members (version 2)
+├── DBContact.java            # Contact persons (version 2)
+├── DBGroup.java              # Scout groups (version 1)
+├── DBEvent.java              # Events/activities (version 9)
+├── DBBill.java               # Generated bills/invoices (version 6)
+├── DBBookingLine.java        # Financial transactions (version 3)
+├── DBEventMember.java        # Event participants (version 6)
+├── DBMailJob.java            # Email dispatch jobs (version 3)
+├── DBMembers2Groups.java     # M2M: members ↔ groups (version 3)
+├── DBMembers2Contacts.java   # M2M: members ↔ contacts (version 2)
+├── DBBookingLine2Events.java # M2M: booking lines ↔ events (version 3)
+├── DBAccountClasses.java     # Accounting categories (version 1)
+├── DBBillTemplate.java       # Bill templates (version 2)
+└── DBAudit.java              # Audit log (version 1, no bp_idx)
 ```
 
 ---
 
-## Layer 1 — Connection (`SqlDBConnection`)
+## Table Reference
 
-### `ConnectionDefinition`
+### Core Tables
 
-Plain value object. Required fields vary by DBMS:
+#### BILLING_PERIOD
 
-| DBMS | hostname | port (default) | username | password | instance |
-|------|----------|----------------|----------|----------|----------|
-| MySQL / MariaDB | ✓ | 3306 | ✓ required | optional | ✓ (DB name) |
-| MSSQL | ✓ | 1433 | ✓ required | ✓ required | ✓ (DB name) |
-| Oracle | ✓ | 1521 | ✓ required | ✓ required | ✓ (SID/service) |
-| SQLite | — | — | — | — | ✓ (file path) |
-| JavaDB/Derby | ✓ | 1527 | ✓ | ✓ | ✓ |
+The **root container** for all application data. Every other table references this.
 
-### `AbstractDBConnector.connectToDatabase()`
+| Column | Type | PK | Index | Description |
+|--------|------|----|-------|-------------|
+| `idx` | INTEGER | ✓ | | Primary key |
+| `title` | VARCHAR(50) | | | Display name |
+| `comment` | VARCHAR(1000) | | | Description |
+| `hist` | DBHistory | | | Change history tracking |
+| `locked` | DBFlagInteger | | | Read-only flag |
 
-Switch on `SupportedDBMSTypes`:
-1. Validates required fields, throws `MissingConnectionParamException` if absent.
-2. Registers the appropriate JDBC driver via `DriverManager.registerDriver(new <Driver>())`.
-3. Assembles the JDBC URL string.
-4. Returns `DriverManager.getConnection(url, user, pwd)`.
+**Version:** 1
+**Sequence:** None (manual indexing)
 
-`disconnectDatabase(conn)` simply calls `conn.close()`.
-
-### Typical usage
+**DBStrukt Class:** `DBBillingPeriod`
 
 ```java
-ConnectionDefinition def = new ConnectionDefinition(
-    "localhost", 3306, "user", "secret", "mydb", SupportedDBMSTypes.DB_MARIADB);
-DbConnectionInterface connector = new DBConnector(def);
-Connection conn = connector.connectToDatabase();
-// ... use conn ...
-connector.disconnectDatabase(conn);
+// Usage example
+DBBillingPeriod bp = new DBBillingPeriod();
+bp.title.setValue("Scout Year 2024");
+trans.insertValues(bp);
 ```
 
 ---
 
-## Layer 2 — Type Registry (`TypeRegistration`)
+#### MEMBER
 
-Before any table-aware query can run, columns must be registered so the executor knows
-their Java type and whether they are primary keys.
+Scout member information.
 
-### Option A — Bind file (CSV)
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 2 | Billing period |
+| `member_registration_number` | VARCHAR(50) | | | | 1 | Member ID |
+| `name` | VARCHAR(50) | | | | 1 | Last name |
+| `forname` | VARCHAR(50) | | | | 1 | First name |
+| `entry_date` | DATETIME | | | | 1 | Join date |
+| `hist` | DBHistory | | | | 1 | Change history |
+| `note` | VARCHAR(300) | | | | 1 | Notes |
+| `tel` | VARCHAR(50) | | | | 1 | Phone number |
+| `inaktiv` | DBFlagInteger | | | | 1 | Inactive flag |
+| `de_registered` | DBFlagInteger | | | | 1 | Deregistered flag |
+| `group` | VARCHAR(50) | | | | 1 | Group name (denormalized) |
+
+**Version:** 2
+**Sequence:** `MEMBERS_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v2)
+
+**DBStrukt Class:** `DBMember`
+
+---
+
+#### CONTACT
+
+Contact person information (parents, guardians, etc.).
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 2 | Billing period |
+| `name` | VARCHAR(50) | | | | 1 | Last name |
+| `forname` | VARCHAR(50) | | | | 1 | First name |
+| `hist` | DBHistory | | | | 1 | Change history |
+| `note` | VARCHAR(300) | | | | 1 | Notes |
+| `tel` | VARCHAR(50) | | | | 1 | Phone |
+| `email` | VARCHAR(200) | | | | 1 | Email address |
+| `bank_account_iban` | VARCHAR(50) | | | | 1 | IBAN |
+| `bank_account_bic` | VARCHAR(50) | | | | 1 | BIC/SWIFT |
+
+**Version:** 2
+**Sequence:** `CONTACT_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v2)
+
+**DBStrukt Class:** `DBContact`
+
+---
+
+#### GROUP
+
+Scout group definition.
+
+| Column | Type | PK | Index | Version | Description |
+|--------|------|----|-------|---------|-------------|
+| `idx` | INTEGER | ✓ | | 1 | Primary key |
+| `name` | VARCHAR(50) | | | 1 | Group name |
+| `hist` | DBHistory | | | 1 | Change history |
+
+**Version:** 1
+**Sequence:** `GROUP_IDX_SEQUENCE`
+
+**DBStrukt Class:** `DBGroup`
+
+---
+
+#### EVENT
+
+Events and activities.
+
+| Column | Type | PK | FK | Version | Description |
+|--------|------|----|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | 1 | Primary key |
+| `bp_idx` | INTEGER | | BILLING_PERIOD.idx | 7 | Billing period |
+| `name` | VARCHAR(50) | | | 1 | Event name |
+| `hist` | DBHistory | | | 1 | Change history |
+| `costs` | DOUBLE | | | 1 | Cost per person |
+| `paid` | DOUBLE | | | 2 | Amount paid |
+| `planned_costs` | DOUBLE | | | 3 | Budgeted costs |
+| `billing_template` | VARCHAR(512) | | | 4 | ODT template path |
+| `registration_template` | VARCHAR(512) | | | 5 | Registration template |
+| `registration_costs` | DOUBLE | | | 6 | Registration fee |
+| `counts_to_available_cash_amount` | DBFlagInteger | | | 8 | Include in cash flow |
+| `account_class_idx` | INTEGER | | | 9 | Accounting class FK |
+| `account_class` | VARCHAR(50) | | | 9 | Accounting class name (denormalized) |
+
+**Version:** 9
+**Sequence:** `EVENT_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v7)
+
+**DBStrukt Class:** `DBEvent`
+
+---
+
+### Financial Tables
+
+#### BILLS
+
+Generated invoices and registration bills.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 5 | Billing period |
+| `billingnr` | VARCHAR(50) | | | | 1 | Invoice number |
+| `file_name` | VARCHAR(255) | | | | 1 | Output file name |
+| `odt_data` | BLOB | | | | 1 | ODT template data |
+| `pdf_data` | BLOB | | | | 1 | Generated PDF |
+| `state` | DBEnumAsInteger | | | | 1 | NORMAL/CANCELED |
+| `cancel_reason` | VARCHAR(255) | | | 6 | Cancellation reason |
+| `direction` | DBEnumAsInteger | | | 2 | OUTGOING/INCOMING |
+| `bill_type` | DBEnumAsInteger | | | 3 | INVOICE/REGISTRATION |
+| `registration_number` | INTEGER | | | 4 | Registration sequence |
+| `hist` | DBHistory | | | | 1 | Change history |
+
+**Enums:**
+- `State`: NORMAL, CANCELED
+- `Direction`: OUTGOING, INCOMING
+- `BillType`: INVOICE, REGISTRATION
+
+**Version:** 6
+**Sequences:** `BILL_IDX_SEQ`, `REGISTRATION_IDX_SEQ`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v5)
+
+**DBStrukt Class:** `DBBill`
+
+**Helper Methods:**
+```java
+boolean isCanceled()    // Returns true if state == CANCELED
+boolean isRegistration() // Returns true if bill_type == REGISTRATION
+```
+
+---
+
+#### BOOKINGLINE
+
+Financial transaction records (bank statements, cash entries).
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `date` | DATETIME | | | | 1 | Transaction date |
+| `hist` | DBHistory | | | | 1 | Change history |
+| `bp_idx` | INTEGER | | | BILLING_PERIOD.idx | 2 | Billing period |
+| `line` | VARCHAR(500) | | | | 1 | Description line 1 |
+| `reference` | VARCHAR(500) | | | | 1 | Reference text |
+| `amount` | DOUBLE | | | | 1 | Transaction amount |
+| `from_bank_account_iban` | VARCHAR(50) | | | | 1 | Source IBAN |
+| `from_bank_account_bic` | VARCHAR(50) | | | | 1 | Source BIC |
+| `from_name` | VARCHAR(255) | | | | 1 | Payer/payee name |
+| `contact_idx` | INTEGER | | | CONTACT.idx | 2 | Linked contact |
+| `assigned` | DBFlagInteger | | | | 1 | Assignment flag |
+| `splitpos` | DBFlagInteger | | | | 1 | Split position flag |
+| `parent_idx` | INTEGER | | | | 1 | Parent transaction (for splits) |
+| `data_source` | VARCHAR(50) | | | | 1 | Source system (e.g., "elba", "cash") |
+| `comment` | VARCHAR(50) | | | | 1 | Additional notes |
+| `account_class_idx` | INTEGER | | | 3 | Accounting class FK |
+| `account_class` | VARCHAR(50) | | | 3 | Accounting class name (denormalized) |
+
+**Version:** 3
+**Sequence:** `BL_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v2)
+- `FK_CONTACT` → CONTACT.idx (added in v2)
+
+**DBStrukt Class:** `DBBookingLine`
+
+---
+
+#### ACCOUNT_CLASSES
+
+Accounting category classification.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | | BILLING_PERIOD.idx | 1 | Billing period |
+| `category` | DBEnumAsInteger | | | | 1 | INCOME/EXPENSE/LIABILITY |
+| `name` | VARCHAR(50) | | | | 1 | Category name |
+| `hist` | DBHistory | | | | 1 | Change history |
+
+**Enum Category:** INCOME, EXPENSE, LIABILITY
+
+**Version:** 1
+**Sequence:** `ACCLASS_IDX_SEQU`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v1)
+
+**DBStrukt Class:** `DBAccountClasses`
+
+---
+
+#### BILL_TEMPLATES
+
+Template documents for bill generation.
+
+| Column | Type | PK | Index | Version | Description |
+|--------|------|----|-------|---------|-------------|
+| `idx` | INTEGER | ✓ | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | 1 | Billing period |
+| `name` | VARCHAR(255) | | | 1 | Template name |
+| `description` | VARCHAR(500) | | | 2 | Description |
+| `file_name` | VARCHAR(255) | | | 2 | File path |
+| `odt_data` | BLOB | | | 1 | Template data (ODT format) |
+| `hist` | DBHistory | | | 1 | Change history |
+
+**Version:** 2
+**Sequence:** `BILL_TEMP_IDX_SEQ`
+
+**DBStrukt Class:** `DBBillTemplate`
+
+---
+
+### Junction/Relationship Tables
+
+#### MEMBERS2GROUPS
+
+Many-to-many relationship: members to groups.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `member_idx` | INTEGER | | | MEMBER.idx | 3 | Member |
+| `group_idx` | INTEGER | | | GROUP.idx | 3 | Group |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 3 | Billing period |
+| `hist` | DBHistory | | | | 1 | Change history |
+| `group` | VARCHAR(50) | | | | 2 | Group name (denormalized) |
+| `member_name` | VARCHAR(50) | | | | 2 | Member name (denormalized) |
+
+**Version:** 3
+**Sequence:** `M2G_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v3)
+- `FK_MEMBER` → MEMBER.idx (added in v3)
+- `FK_GROUP` → GROUP.idx (added in v3)
+
+**DBStrukt Class:** `DBMembers2Groups`
+
+---
+
+#### MEMBERS2CONTACTS
+
+Many-to-many relationship: members to contacts.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `member_idx` | INTEGER | | | MEMBER.idx | 2 | Member |
+| `contact_idx` | INTEGER | | | CONTACT.idx | 2 | Contact |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 2 | Billing period |
+| `hist` | DBHistory | | | | 1 | Change history |
+
+**Version:** 2
+**Sequence:** `M2C_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v2)
+- `FK_MEMBER` → MEMBER.idx (added in v2)
+- `FK_CONTACT` → CONTACT.idx (added in v2)
+
+**DBStrukt Class:** `DBMembers2Contacts`
+
+---
+
+#### EVENTMEMBERS
+
+Event participants with financial tracking.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 6 | Billing period |
+| `event_idx` | INTEGER | | | EVENT.idx | 6 | Event |
+| `member_idx` | INTEGER | | | MEMBER.idx | 6 | Member |
+| `group_idx` | INTEGER | | | GROUP.idx | 6 | Group |
+| `name` | VARCHAR(50) | | | | 1 | Member name (denormalized) |
+| `forname` | VARCHAR(50) | | | | 1 | Member first name (denormalized) |
+| `group` | VARCHAR(50) | | | | 1 | Group name (denormalized) |
+| `hist` | DBHistory | | | | 1 | Change history |
+| `costs` | DOUBLE | | | | 1 | Individual cost (may vary from event cost) |
+| `paid` | DOUBLE | | | | 1 | Amount paid |
+| `paid_cash` | DOUBLE | | | 2 | Cash payment amount |
+| `comment` | VARCHAR(255) | | | | 1 | Notes |
+| `bill` | VARCHAR(255) | | | 3 | Bill reference |
+| `bill_idx` | INTEGER | | | 4 | FK to BILLS.idx (regular bill) |
+| `registration_bill_idx` | INTEGER | | | 5 | FK to BILLS.idx (registration bill) |
+
+**Version:** 6
+**Sequence:** `EVENTMEMBER_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v6)
+- `FK_EVENT` → EVENT.idx (added in v6)
+- `FK_MEMBER` → MEMBER.idx (added in v6)
+- `FK_GROUP` → GROUP.idx (added in v6)
+- `FK_BILL` → BILLS.idx (added in v6)
+- `FK_REGISTRATION_BILL` → BILLS.idx (added in v6)
+
+**DBStrukt Class:** `DBEventMember`
+
+---
+
+#### BOOKINGLINE2EVENTS
+
+Links financial transactions to events and participants.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bl_idx` | INTEGER | | | BOOKINGLINE.idx | 3 | Booking line |
+| `event_idx` | INTEGER | | | EVENT.idx | 3 | Event |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 3 | Billing period |
+| `member_idx` | INTEGER | | | MEMBER.idx | 3 | Member |
+| `contact_idx` | INTEGER | | | CONTACT.idx | 3 | Contact |
+| `member_name` | VARCHAR(50) | | | | 2 | Member name (denormalized) |
+| `event_name` | VARCHAR(50) | | | | 2 | Event name (denormalized) |
+| `hist` | DBHistory | | | | 1 | Change history |
+
+**Version:** 3
+**Sequence:** `B2E_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v3)
+- `FK_BOOKING_LINE` → BOOKINGLINE.idx (added in v3)
+- `FK_EVENT` → EVENT.idx (added in v3)
+- `FK_MEMBER` → MEMBER.idx (added in v3)
+- `FK_CONTACT` → CONTACT.idx (added in v3)
+
+**DBStrukt Class:** `DBBookingLine2Events`
+
+---
+
+### System Tables
+
+#### MAIL_JOBS
+
+Email dispatch job queue.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 2 | Billing period |
+| `bill_idx` | INTEGER | | | BILLS.idx | 2 | Related bill |
+| `recipient_email` | VARCHAR(200) | | | | 1 | Destination email |
+| `recipient_name` | VARCHAR(200) | | | | 1 | Recipient display name |
+| `subject` | VARCHAR(500) | | | | 1 | Email subject |
+| `body` | BLOB | | | | 1 | Email body (HTML) |
+| `pdf_data` | BLOB | | | | 1 | PDF attachment |
+| `state` | DBEnumAsInteger | | | | 1 | PENDING/SENDING/SENT/FAILED |
+| `acknowledged` | DBFlagInteger | | | 3 | User acknowledged |
+| `retry_count` | INTEGER | | | | 1 | Retry attempts |
+| `error_message` | VARCHAR(2000) | | | | 1 | Last error |
+| `hist` | DBHistory | | | | 1 | Change history |
+
+**Enum State:** PENDING, SENDING, SENT, FAILED
+
+**Version:** 3
+**Sequence:** `MAIL_JOB_IDX_SEQ`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v2)
+- `FK_BILL` → BILLS.idx (added in v2)
+
+**DBStrukt Class:** `DBMailJob`
+
+**Helper Methods:**
+```java
+boolean isPending()    // Returns true if state == PENDING
+boolean isFailed()     // Returns true if state == FAILED
+boolean isAcknowledged() // Returns true if acknowledged flag is set
+void setAcknowledged(boolean val) // Sets acknowledged flag
+```
+
+---
+
+#### AUDIT
+
+System audit log (the **only table without bp_idx**).
+
+| Column | Type | PK | Index | Description |
+|--------|------|----|-------|-------------|
+| `idx` | INTEGER | ✓ | | Primary key |
+| `audit_idx` | INTEGER | | ✓ | Audit entry sequence |
+| `bp_idx` | INTEGER | | ✓ | Billing period (for filtering, not a true FK) |
+| `member_idx` | INTEGER | | ✓ | Related member |
+| `message` | VARCHAR(3000) | | | Audit message |
+| `date` | DATETIME | | ✓ | Timestamp |
+| `user` | VARCHAR(50) | | | User who performed action |
+
+**Version:** 1
+**Sequence:** `AUDIT_IDX_SEQ`
+
+**DBStrukt Class:** `DBAudit`
+
+---
+
+## Foreign Key Relationships Map
+
+All foreign keys use `NO_ACTION` (reject violating DML; no automatic cascades).
+
+### Hierarchy from BILLING_PERIOD
 
 ```
-TABLENAME          ← line 1: table name (uppercased automatically)
-colname,type,pk    ← subsequent lines
-id,int,true
-name,string,false
-valid,bool,false
+BILLING_PERIOD (bp_idx)
+├── MEMBER
+├── CONTACT
+├── GROUP
+├── EVENT
+├── BILLS
+├── BOOKINGLINE
+├── EVENTMEMBERS
+├── MAIL_JOBS
+├── MEMBERS2GROUPS
+├── MEMBERS2CONTACTS
+├── BOOKINGLINE2EVENTS
+└── ACCOUNT_CLASSES
 ```
+
+### Complete FK Reference Table
+
+| Child Table | FK Column | Parent Table | Version Added |
+|-------------|-----------|--------------|----------------|
+| MEMBER | bp_idx | BILLING_PERIOD | 2 |
+| CONTACT | bp_idx | BILLING_PERIOD | 2 |
+| EVENT | bp_idx | BILLING_PERIOD | 7 |
+| BILLS | bp_idx | BILLING_PERIOD | 5 |
+| BOOKINGLINE | bp_idx | BILLING_PERIOD | 2 |
+| BOOKINGLINE | contact_idx | CONTACT | 2 |
+| MAIL_JOBS | bp_idx | BILLING_PERIOD | 2 |
+| MAIL_JOBS | bill_idx | BILLS | 2 |
+| EVENTMEMBERS | bp_idx | BILLING_PERIOD | 6 |
+| EVENTMEMBERS | event_idx | EVENT | 6 |
+| EVENTMEMBERS | member_idx | MEMBER | 6 |
+| EVENTMEMBERS | group_idx | GROUP | 6 |
+| EVENTMEMBERS | bill_idx | BILLS | 6 |
+| EVENTMEMBERS | registration_bill_idx | BILLS | 6 |
+| MEMBERS2GROUPS | bp_idx | BILLING_PERIOD | 3 |
+| MEMBERS2GROUPS | member_idx | MEMBER | 3 |
+| MEMBERS2GROUPS | group_idx | GROUP | 3 |
+| MEMBERS2CONTACTS | bp_idx | BILLING_PERIOD | 2 |
+| MEMBERS2CONTACTS | member_idx | MEMBER | 2 |
+| MEMBERS2CONTACTS | contact_idx | CONTACT | 2 |
+| BOOKINGLINE2EVENTS | bp_idx | BILLING_PERIOD | 3 |
+| BOOKINGLINE2EVENTS | bl_idx | BOOKINGLINE | 3 |
+| BOOKINGLINE2EVENTS | event_idx | EVENT | 3 |
+| BOOKINGLINE2EVENTS | member_idx | MEMBER | 3 |
+| BOOKINGLINE2EVENTS | contact_idx | CONTACT | 3 |
+| ACCOUNT_CLASSES | bp_idx | BILLING_PERIOD | 1 |
+
+
+### FK Declaration Pattern in DBStrukt Classes
+
+Foreign keys are declared as `public static final` fields (not inline in constructor):
 
 ```java
-TypeRegistrationInterface reg = new TypeRegistration(SupportedDBMSTypes.DB_MYSQL);
-reg.registerTableBindings("myapp/tables/mytable.bind");
-```
+public class DBEventMember extends DBStrukt {
+    // FK declarations - static final, created once per class
+    public static final ForeignKeyDefinition FK_BILLING_PERIOD =
+        new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
+    public static final ForeignKeyDefinition FK_EVENT =
+        new ForeignKeyDefinition("event_idx", "EVENT", "idx");
+    public static final ForeignKeyDefinition FK_MEMBER =
+        new ForeignKeyDefinition("member_idx", "MEMBER", "idx");
+    public static final ForeignKeyDefinition FK_GROUP =
+        new ForeignKeyDefinition("group_idx", "GROUP", "idx");
+    public static final ForeignKeyDefinition FK_BILL =
+        new ForeignKeyDefinition("bill_idx", "BILLS", "idx");
+    public static final ForeignKeyDefinition FK_REGISTRATION_BILL =
+        new ForeignKeyDefinition("registration_bill_idx", "BILLS", "idx");
 
-### Option B — Programmatic
-
-```java
-HashMap<String, ColumnAttribute> cols = new HashMap<>();
-cols.put("MYTABLE.id",   new ColumnAttribute(true,  DBDataType.DB_TYPE_INTEGER));
-cols.put("MYTABLE.name", new ColumnAttribute(false, DBDataType.DB_TYPE_STRING));
-HashMap<String, HashMap<String, ColumnAttribute>> tables = new HashMap<>();
-tables.put("MYTABLE", cols);
-reg.registerTableBindings(tables);
-```
-
-### `DBDataType` enum
-
-`DB_TYPE_STRING`, `DB_TYPE_INTEGER`, `DB_TYPE_LONG`, `DB_TYPE_SHORT`,
-`DB_TYPE_FLOAT`, `DB_TYPE_DOUBLE`, `DB_TYPE_BOOLEAN`, `DB_TYPE_BIT`,
-`DB_TYPE_DATE`, `DB_TYPE_TIME`, `DB_TYPE_DATETIME`, `DB_TYPE_BLOB`
-
-`TypeRegistration.setTypeMatchTable()` maps string tokens from bind files
-(e.g., `"varchar"` → `DB_TYPE_STRING`, `"datetime"` → `DB_TYPE_DATETIME`) for each DBMS.
-
----
-
-## Layer 3 — Statement Creator (`StmtCreator*`)
-
-`StmtCreatorFactory.getStmtCreator(dbmstype)` returns the right dialect subclass.
-Each subclass only overrides two methods:
-
-- `markTableName(String)` — wraps a table name in dialect-appropriate quotes.
-- `markColumnName(String)` — wraps a column name in dialect-appropriate quotes.
-
-SQLite also overrides `markTableAndColumnNameForUpdate` to omit the table prefix in SET clauses.
-
-`AbstractStmtCreator` contains the shared SQL-building logic:
-
-| Method | Purpose |
-|--------|---------|
-| `buildStmtForTable(String[], whereStmt, columnMap)` | Multi-table SELECT with explicit column map |
-| `buildStmtForTable(String, pkValues)` | Single-table SELECT by primary key (uses `?` placeholders) |
-| `buildInsertStmtForTable(String, values)` | INSERT with `?` placeholders for all supplied values |
-| `buildUpdateStmtForTable(String, values, whereStmt)` | UPDATE; uses PK columns if whereStmt is null |
-| `getCols2Handle()` | Returns ordered list of columns bound to `?` (for the executor) |
-
----
-
-## Layer 4 — Statement Executor (`AbstractStmtExecuter`)
-
-Constructed with an open `Connection` and the `SupportedDBMSTypes`. It internally creates
-a `TypeRegistration` and a `StmtCreatorFactory` — callers do **not** pass those separately
-when going through the executor's high-level API.
-
-### High-level API (table-binding–aware)
-
-| Method | Returns | Notes |
-|--------|---------|-------|
-| `fetchTableValue(String[] tables, String where)` | `List<HashMap<String,Object>>` | All registered columns; requires prior `registerTableBindings` on the `TypeRegistration` inside the executer — **not** directly accessible; use the overload below instead |
-| `fetchTableValue(String[] tables, String where, List<Object> params)` | `List<HashMap<String,Object>>` | Same as above but binds `?` placeholders in `where` via `PreparedStatement.setObject`; used internally by `Transaction.fetchTable2(strukt, Condition)` |
-| `fetchTableValue(String table, HashMap pkValues)` | `HashMap<String,Object>` | Single row by PK |
-| `insertTableValues(String table, HashMap values)` | `int` rows affected | Uses PreparedStatement |
-| `updateTableValues(String table, HashMap values, String where)` | `int` rows affected | where=null → PK-based |
-
-### Low-level API (caller supplies full SQL)
-
-| Method | Returns |
-|--------|---------|
-| `fetchColumnValue(String stmt, List<DBDataType> types)` | `List<List<?>>` ordered by column position |
-| `insertValues(String stmt)` | `int` |
-| `updateValues(String stmt)` | `int` |
-
-### Type unmarshalling (`processTypeValue`)
-
-`ResultSet` values are cast to the registered `DBDataType`:
-- DATE / TIME / DATETIME → `java.util.Date` (via `Timestamp`)
-- BLOB → `byte[]`
-- STRING → trimmed, never null (empty string if DB null)
-
-### PreparedStatement binding (`setPreparedStatementTypes`)
-
-Binds `?` parameters by Java type inspection (`instanceof` chain):
-`String`, `Date`, `Float`, `Double`, `Integer`, `Long`, `Short`, `Boolean`, `Byte`, `byte[]`.
-Unknown types throw `SQLException`.
-
----
-
-## End-to-End Flow
-
-```
-1. Build ConnectionDefinition (host/port/user/pwd/db, DBMS type)
-2. new DBConnector(def).connectToDatabase()  →  java.sql.Connection
-3. new DefaultStmtExecuter(conn, dbmstype)   →  StmtExecInterface
-
-   Inside DefaultStmtExecuter constructor:
-     new TypeRegistration(dbmstype)           →  TypeRegistrationInterface
-     new StmtCreatorFactory(reg).getStmtCreator(dbmstype) → dialect StmtCreator
-
-4. Register table bindings (if using table-aware fetch/update):
-     reg.registerTableBindings("path/to/table.bind")
-     -- OR --
-     executer.getStmtCreator().registration.registerTableBindings(map)
-
-5. Query:
-     executer.fetchTableValue(new String[]{"ORDERS"}, "where status='NEW'")
-       → stmtCreator.buildStmtForTable(...)   builds SELECT
-       → conn.prepareStatement(sql)
-       → rs.next() → processTypeValue()       unmarshals each column
-       → List<HashMap<String,Object>>
-
-6. connector.disconnectDatabase(conn)
-```
-
----
-
-## Adding a New DBMS
-
-1. Add a constant to `SupportedDBMSTypes`.
-2. Add a `case` in `AbstractDBConnector.connectToDatabase()` for URL construction and driver registration.
-3. Create `StmtCreatorXxx extends AbstractStmtCreator` implementing `markTableName` / `markColumnName`.
-4. Register it in `StmtCreatorFactory.getStmtCreator()`.
-5. If the new DBMS uses non-standard type names, extend `TypeRegistration.setTypeMatchTable()`.
-
----
-
-## Known Constraints / Gotchas
-
-- `TypeRegistration.registeredTables_` is **static** — shared across all `TypeRegistration` instances in the same JVM. Re-instantiating `TypeRegistration` resets the registry.
-- `AbstractStmtExecuter.lastStmt` is also **static** — the last-executed SQL string is shared state.
-- `fetchTableValue(String[], where)` looks up table bindings internally via the executer's own `TypeRegistration`, which starts empty. The caller must populate it via `new TypeRegistration(dbmstype)` separately **and** pass the same data, or use the overload that accepts a pre-built `TypeRegistration`. (The test application demonstrates registering through the separate `reg` object and relying on the shared static map.)
-- Date values serialised to `PreparedStatement` are converted to a formatted string (`toDateString`), not via `ps.setDate()`. DBMS-specific creators may override `toDateString` for correct dialect formatting.
-
----
-
-## DBManager Layer (`at.redeye.FrameWork.base.dbmanager`)
-
-The DBManager layer sits **above** `SqlDBInterface` and provides schema lifecycle management:
-table creation, versioned migration, and type-safe DML via strongly-typed `DBStrukt` objects.
-`SqlDBInterface` handles raw SQL; `DBManager` handles the schema and the object model.
-
-### Package Map
-
-```
-FrameWork/base/
-├── bindtypes/
-│   ├── DBValue.java          # abstract column descriptor (name, type, PK flag, index flag)
-│   ├── DBStrukt.java         # table descriptor — holds DBValue objects with version numbers
-│   ├── DBString.java         # concrete DBValue for VARCHAR
-│   ├── DBInteger.java        # concrete DBValue for INTEGER
-│   ├── DBDateTime.java       # concrete DBValue for DATETIME
-│   ├── ...                   # one subclass per SQL type
-│   ├── Condition.java        # fluent typed WHERE builder; renders SQL + collects bind values
-│   └── ConditionStep.java    # package-private builder step: holds pending column ref until op is chosen
-│
-├── transaction/
-│   └── Transaction.java      # abstract bridge: opens Connection + StmtExecInterface,
-│                             # registers DBStrukt bindings, provides fetchTable / updateValues
-│
-└── dbmanager/
-    ├── DBManager.java         # interface: createTable, autoCreateTable, migrateTable, …
-    ├── DBBindtypeManager.java # interface: register, autocreate, check_table_versions, …
-    ├── ShowTables.java        # interface: showTables, db_supports_all_requested_features
-    ├── CreateSql.java         # interface (thin): createSqlforTable(strukt, dbmstype)
-    └── impl/
-        ├── BaseCreateSql.java         # generates DDL strings from DBStrukt
-        ├── CreateSqlMySql.java        # MySQL dialect (type mapping + storage engine)
-        ├── CreateSqlMariaDB.java      # MariaDB dialect (extends MySQL, utf32 collation)
-        ├── CreateSqlMSSql.java        # MSSQL dialect
-        ├── CreateSqlOracle.java       # Oracle dialect
-        ├── CreateSqlSqlite.java       # SQLite dialect
-        ├── CreateSqlDerby.java        # Derby/JavaDB dialect
-        ├── ShowTablesMySql.java       # MySQL SHOW TABLES + version detection
-        ├── ShowTablesMSSql.java       # MSSQL information_schema query
-        ├── ShowTablesOracle.java      # Oracle user_tables query
-        ├── ShowTablesSqlite.java      # SQLite sqlite_master query
-        ├── ShowTablesDerby.java       # Derby system tables query
-        ├── DatabaseManager.java       # implements DBManager + DBBindtypeManager
-        └── bindtypes/
-            └── DBTableVersion.java    # DBStrukt for the TABLEVERSION tracking table
-```
-
----
-
-### `DBValue` and `DBStrukt` — The Object Model
-
-`DBValue` is the abstract base for a typed column. Concrete subclasses (`DBString`, `DBInteger`,
-`DBDateTime`, …) know their `DBDataType`, can load from DB result sets, and carry a title for
-UI display. Key flags on `DBValue`:
-
-- `isPrimaryKey()` / `setAsPrimaryKey()` — marks the column as a PK.
-- `shouldHaveIndex()` / `setShouldHaveIndex()` — requests a secondary index.
-
-`DBStrukt` is a named collection of `DBValue` objects representing one table.
-Columns are added with an integer **version number**:
-
-```java
-public void add(DBValue value)                    // version defaults to 1
-public void add(DBValue value, Integer version)   // explicitly versioned
-```
-
-The strukt's own version is the maximum version of any of its columns.
-`getHashMap()` returns all columns; `getHashMapForVersion(v)` returns only columns
-introduced **at** version `v` (used during migration).
-Foreign key declarations are stored alongside columns:
-
-```java
-public void addForeignKey(ForeignKeyDefinition fk)              // version defaults to 1
-public void addForeignKey(ForeignKeyDefinition fk, int version) // explicitly versioned
-public ArrayList<ForeignKeyDefinition> getForeignKeys()         // all FKs
-public ArrayList<ForeignKeyDefinition> getForeignKeysForVersion(int version) // FKs at that version
-```
-**Typical subclass:**
-
-```java
-public class Customer extends DBStrukt {
-    public DBString  name    = new DBString("name", 100);
-    public DBString  email   = new DBString("email", 200);
-    public DBInteger active  = new DBInteger("active");
-    public DBInteger group_idx = new DBInteger("group_idx");
-
-    public Customer() {
-        super("CUSTOMER");
-        name.setAsPrimaryKey();
-        add(name,   1);
-        add(email,  1);
-        add(active, 2);    // added in schema version 2
-        add(group_idx, 3); // added in schema version 3
-
-        addForeignKey(new ForeignKeyDefinition("group_idx", "CUSTOMER_GROUP", "idx"), 3);
+    public DBEventMember() {
+        // ... add columns ...
+        addForeignKey(FK_BILLING_PERIOD, 6);
+        addForeignKey(FK_EVENT, 6);
+        addForeignKey(FK_MEMBER, 6);
+        addForeignKey(FK_GROUP, 6);
+        addForeignKey(FK_BILL, 6);
+        addForeignKey(FK_REGISTRATION_BILL, 6);
     }
-
-    @Override public DBStrukt getNewOne() { return new Customer(); }
 }
 ```
 
 ---
 
-### `Transaction` — The Bridge
+## Schema Migration
 
-`Transaction` (abstract) combines a `SqlDBInterface` connection + executor with
-`DBStrukt`-aware DML:
+The application uses **versioned schema migration** via the FrameWork's `DatabaseManager`:
+
+### How Migration Works
+
+1. Each `DBStrukt` declares its current version via `setVersion(N)`
+2. Columns added in later versions specify their version: `add(column, version)`
+3. The `TABLEVERSION` table tracks each table's current database version
+4. On startup, `DatabaseManager.check_table_versions()` compares DB versions with code versions
+5. `DatabaseManager.autocreate()` performs migrations automatically
+
+### Migration Process
 
 ```
-new ConnectionDefinition(...)
-    → new DBConnector(def).connectToDatabase()    (SqlDBInterface layer)
-    → new DefaultStmtExecuter(conn, dbmstype)
-    → new TypeRegistration(dbmstype)
+For table T with current DB version V and code version N (V < N):
+1. Drop all foreign key constraints on T
+2. Create backup table T_backup
+3. For each version step from V+1 to N:
+   - Execute ALTER TABLE ADD COLUMN for columns added at that version
+4. Re-create all foreign key constraints
+5. Update TABLEVERSION for T to N
 ```
 
-Convenience methods on `Transaction` bridge `DBStrukt` ↔ `SqlDBInterface`:
+### Version History
 
-| Method | Description |
-|--------|-------------|
-| `fetchTable(DBStrukt, whereStmt)` | SELECT all registered columns; returns `Vector<DBStrukt>` |
-| `fetchTable2(DBStrukt, whereStmt)` | Same as `fetchTable` but returns `List<T>` (type-safe) |
-| `fetchTable2(T strukt, Condition condition)` | SELECT with typed, injection-safe WHERE clause built by `Condition`; values bound via `?` |
-| `fetchTableWithPrimkey(DBStrukt)` | SELECT single row by PK values already set on the strukt |
-| `insertValues(DBStrukt)` | INSERT using current field values |
-| `updateValues(DBStrukt)` | UPDATE by PK |
-| `updateValues(String sql)` | Raw SQL UPDATE/INSERT/DDL |
-| `getSql()` | Returns last executed SQL (for diagnostics) |
-| `getDBMSType()` | Returns the active `SupportedDBMSTypes` |
-| `markTable(DBStrukt)` | Returns dialect-quoted table name |
-
-`Transaction` also auto-registers all `DBStrukt` bindings into `TypeRegistration`
-so that `StmtExecInterface` can marshall result sets back to Java types.
+| Table | Current Version | Notable Changes |
+|-------|-----------------|-----------------|
+| BILLING_PERIOD | 1 | Initial |
+| GROUP | 1 | Initial |
+| ACCOUNT_CLASSES | 1 | Initial |
+| AUDIT | 1 | Initial |
+| MEMBER | 2 | Added bp_idx FK |
+| CONTACT | 2 | Added bp_idx FK |
+| MEMBERS2CONTACTS | 2 | Added bp_idx FK |
+| BILL_TEMPLATES | 2 | Added description, file_name |
+| BOOKINGLINE | 3 | Added account_class_idx, account_class |
+| MEMBERS2GROUPS | 3 | Added bp_idx FK, group, member_name |
+| BOOKINGLINE2EVENTS | 3 | Added member_name, event_name |
+| BILL | 6 | Added registration_number, bill_type, direction, state |
+| EVENT | 9 | Added costs, paid, planned_costs, templates, registration_costs, account fields |
+| EVENTMEMBERS | 6 | Added bill_idx, registration_bill_idx |
+| MAIL_JOBS | 3 | Added acknowledged flag |
 
 ---
 
-### `BaseCreateSql` — DDL Generation
+## Typed WHERE Conditions
 
-`BaseCreateSql.createSqlforTable(DBStrukt)` produces a multi-statement DDL string:
-
-```
-CREATE TABLE <t> (col1 TYPE NOT NULL, col2 TYPE NOT NULL, ...);
-ALTER TABLE <t> ADD PRIMARY KEY (pk_col);
-ALTER TABLE <t> ADD INDEX IDX_<T>_<COL>(col);
-```
-
-Each dialect subclass overrides:
-- `createSqlForRow(ColumnAttribute)` → maps `DBDataType` to the DBMS SQL type token.
-- `markColumn(String)` → dialect-appropriate identifier quoting.
-- `addStorageInfo()` → appended after `CREATE TABLE (...)`, e.g. `ENGINE='InnoDB'`.
-- `appendNotNullIfSupportedbyNewRows(ColumnAttribute)` → some DBMS cannot add `NOT NULL` columns via `ALTER TABLE ADD`.
-
-`createSqlForNewRows(DBStrukt, Integer version)` generates `ALTER TABLE ADD` statements
-for all columns introduced **at** that version — used during migration.
-
-FK-related methods on `BaseCreateSql`:
-
-| Method | Description |
-|--------|-------------|
-| `createFKSql(DBStrukt)` | Returns `ALTER TABLE ADD CONSTRAINT` statements for all FKs on the strukt; empty string when none declared |
-| `dropFKSql(DBStrukt)` | Returns drop statements for all FKs; delegates per-FK to `dropFKStatement` |
-| `dropFKStatement(table, name)` | Single-FK drop; override per dialect (default: ANSI `DROP CONSTRAINT`) |
-| `fkActionSql(FKAction)` | `NO_ACTION` → `"NO ACTION"` etc. |
-
-| Dialect subclass | Notable differences |
-|---|---|
-| `CreateSqlMySql` | Detects MySQL version; uses `TEXT` for large `VARCHAR`; `InnoDB` engine; `dropFKStatement` uses `DROP FOREIGN KEY` |
-| `CreateSqlMariaDB` | Extends MySQL; `utf32_bin` collation; inherits `DROP FOREIGN KEY` |
-| `CreateSqlMSSql` | `[bracket]` quoting; ANSI `DROP CONSTRAINT` |
-| `CreateSqlOracle` | `"double-quote"` quoting; `NUMBER`/`VARCHAR2` types; ANSI `DROP CONSTRAINT` |
-| `CreateSqlSqlite` | Backtick quoting; `NOT NULL` omitted in `ALTER TABLE ADD`; `dropFKStatement` returns `""` (SQLite cannot drop named constraints) |
-| `CreateSqlDerby` | Derby-specific quoting and types; ANSI `DROP CONSTRAINT` |
-
----
-
-### `DatabaseManager` — Schema Lifecycle
-
-`DatabaseManager` implements both `DBManager` and `DBBindtypeManager`.
-It is initialised with a `Root` and optionally a `Transaction`:
+All tables support the `Condition` API for type-safe, injection-safe queries:
 
 ```java
-DatabaseManager mgr = new DatabaseManager(root);
-mgr.setTransaction(trans);   // picks correct CreateSql* and ShowTables* by DBMS type
-```
+// Using Condition API (recommended)
+List<DBMember> activeMembers = trans.fetchTable2(
+    new DBMember(),
+    Condition.where(DBMember.INAKTIV).eq(0)
+        .and(DBMember.DE_REGISTERED).eq(0)
+        .and(DBMember.BP_IDX).eq(currentBpIdx)
+);
 
-#### Registration
+// Using raw SQL string (legacy, still works)
+List<DBMember> activeMembers = trans.fetchTable2(
+    new DBMember(),
+    "WHERE inaktiv = 0 AND de_registered = 0 AND bp_idx = " + currentBpIdx
+);
 
-```java
-mgr.register(new Customer());   // adds to internal Vector<DBStrukt>
-mgr.register(new Order());
-```
-
-#### `autocreate()` — creates or migrates all registered tables
-
-Calls `autoCreateTable(strukt)` for each registered strukt. Returns `false` on first failure.
-
-#### `autoCreateTable(DBStrukt strukt)` — per-table lifecycle
-
-```
-tableExists("TABLEVERSION")?
-  No  → createTable(DBTableVersion)  → recurse
-  Yes →
-    tableExists(strukt.getName())?
-      No  → createTable(strukt)          → applyForeignKeys(strukt) → setTableVersion(name, version)
-      Yes →
-        getTableVersion(strukt.getName()) == strukt.getVersion()?
-          Yes → nothing to do
-          No  → dropAllForeignKeys(strukt)
-                  → migrateTable(strukt, currentVersion)
-                      → applyForeignKeys(strukt)
-                  → setTableVersion(name, version)
-```
-
-#### `migrateTable(DBStrukt strukt, Integer fromVersion)` — non-destructive migration
-
-1. **Drop all FK constraints** (`dropAllForeignKeys`) — required so `ALTER TABLE ADD COLUMN` is not blocked by referential checks.
-2. Finds a free backup name (e.g. `CUSTOMER_01_01`, `CUSTOMER_01_02`, …).
-3. `backupTable(origin, backupName)` — `CREATE TABLE backup AS SELECT * FROM origin`.
-4. For each version step from `fromVersion` to `strukt.getVersion()`:
-   - `createSqlForNewRows(strukt, i+1)` → `ALTER TABLE ADD` for new columns at that step.
-5. Executes the combined SQL.
-6. **Re-apply all FK constraints** (`applyForeignKeys`) — restores the complete constraint set.
-7. Updates `TABLEVERSION`.
-
-#### `check_table_versions()` — detects out-of-date tables without migrating
-
-Returns `false` if any registered table's DB version differs from the strukt's declared version.
-Used at startup to show a warning dialog (`check_table_versions_with_message(permLevel)`).
-
-#### `TABLEVERSION` — the version tracking table
-
-A single special table (`DBTableVersion` strukt) with columns `table` (PK) and `version`.
-`getTableVersion(name)` reads from it (result cached in `table_versions` HashMap).
-`setTableVersion(name, version)` upserts into it.
-
----
-
-### Typical Application Startup Flow
-
-```
-1. App creates ConnectionDefinition + Transaction (subclass)
-2. mgr.setTransaction(trans)
-3. mgr.register(new Customer())      // register all app tables
-   mgr.register(new Order())
-   mgr.register(new OrderLine())
-4. mgr.check_table_versions_with_message(permLevel)
-     → if out-of-date and user is admin → prompt to run autocreate
-5. mgr.autocreate()
-     → autoCreateTable per strukt
-     → create new tables / migrate existing ones
-6. App proceeds; DML via trans.fetchTable() / trans.insertValues() / trans.updateValues()
+// Fetch with foreign key helper
+List<DBEventMember> participants = trans.fetchChildren(
+    new DBEventMember(),
+    DBEventMember.FK_EVENT,  // static FK field
+    eventId                   // FK value
+);
 ```
 
 ---
 
----
+## Sequences
 
-## Typed WHERE Conditions (`Condition` API)
+Each primary key uses a database sequence:
 
-### Motivation
-
-Raw WHERE strings (e.g. `"WHERE status = 'open'"`) have three problems:
-- Typos in column names are silent at compile time.
-- String-concatenated values are a SQL-injection risk.
-- Values are never bound via `PreparedStatement` parameters.
-
-The `Condition` API solves all three:
-
-| Goal | How |
-|------|-----|
-| Compile-time column name safety | Column refs are existing `static final DBValue` fields — typo → `cannot find symbol` |
-| No raw string concatenation | Values stored internally; rendered as `?` in SQL |
-| `PreparedStatement` binding | `fetchTable2(strukt, condition)` threads bind values through `setObject` |
-| Zero breaking changes | All existing `fetchTable2(strukt, String where)` calls still work |
-
-### Classes
-
-**`Condition`** (`at.redeye.FrameWork.base.bindtypes`) — immutable after construction.
-Holds an ordered list of `Term` records. Entry point is a static factory:
-
-```java
-Condition.where(MyTable.SOME_COL)  →  ConditionStep
-```
-
-After completing a term via an operator method, the returned `Condition` exposes `.and(col)` / `.or(col)` to chain the next step.
-
-Key methods:
-
-| Method | Description |
-|--------|-------------|
-| `static ConditionStep where(DBValue column)` | Entry point; starts a new condition chain |
-| `ConditionStep and(DBValue column)` | Appends a term joined by `AND` |
-| `ConditionStep or(DBValue column)` | Appends a term joined by `OR` |
-| `String renderWhere(StmtCreatorInterface creator, String tableName)` | Builds `WHERE t.col1 = ? AND t.col2 > ?`; `IS NULL`/`IS NOT NULL` are literal (no `?`) |
-| `List<Object> getBindValues()` | Values in term order; `IS NULL`/`IS NOT NULL` terms contribute no entry |
-
-**`ConditionStep`** (`at.redeye.FrameWork.base.bindtypes`, package-private) — transient;
-holds a pending column reference until an operator method completes the term.
-
-| Operator | SQL fragment | Bind value? |
-|----------|-------------|-------------|
-| `.eq(val)` | `col = ?` | yes |
-| `.ne(val)` | `col <> ?` | yes |
-| `.gt(val)` | `col > ?` | yes |
-| `.lt(val)` | `col < ?` | yes |
-| `.gte(val)` | `col >= ?` | yes |
-| `.lte(val)` | `col <= ?` | yes |
-| `.like(val)` | `col LIKE ?` | yes |
-| `.isNull()` | `col IS NULL` | no |
-| `.isNotNull()` | `col IS NOT NULL` | no |
-
-### Call-site examples
-
-```java
-// Single equality condition
-List<DBOrderLine> lines = fetchTable2(new DBOrderLine(),
-        Condition.where(DBOrderLine.ORDER_IDX).eq(42));
-
-// AND chain
-List<DBOrderLine> lines = fetchTable2(new DBOrderLine(),
-        Condition.where(DBOrderLine.ORDER_IDX).eq(orderId)
-                 .and(DBOrderLine.ITEM_CODE).like("A%"));
-
-// OR
-Condition cond = Condition.where(DBOrderLine.STATUS).eq("open")
-                          .or(DBOrderLine.STATUS).eq("pending");
-
-// IS NULL check
-Condition unassigned = Condition.where(DBOrderLine.ASSIGNED_IDX).isNull();
-```
-
-### How `fetchTable2(T strukt, Condition condition)` works
-
-```
-Condition.renderWhere(creator, strukt.getName())
-    → "WHERE `ORDER_LINE`.`order_idx` = ? AND `ORDER_LINE`.`item_code` LIKE ?"
-Condition.getBindValues()
-    → [42, "A%"]
-executer.fetchTableValue(new String[]{ strukt.getName() }, whereSql, params)
-    → PreparedStatement with setObject(1, 42), setObject(2, "A%")
-    → result assembled same as fetchTable2(T, String)
-```
-
-### Note on FK fetch methods
-
-`fetchChildren` and `fetchParent` (see below) were originally backed by a private
-`buildWhereForValue` helper that produced a quoted raw string. After Phase 4 of the
-Condition plan, those methods delegate to `fetchTable2(strukt, Condition)` internally,
-so all FK fetches also use `PreparedStatement` binding.
+| Table | Sequence Name | Purpose |
+|-------|---------------|---------|
+| MEMBER | MEMBERS_IDX_SEQUENCE | Member IDs |
+| CONTACT | CONTACT_IDX_SEQUENCE | Contact IDs |
+| GROUP | GROUP_IDX_SEQUENCE | Group IDs |
+| EVENT | EVENT_IDX_SEQUENCE | Event IDs |
+| BILLS | BILL_IDX_SEQ | Bill IDs |
+| BILLS | REGISTRATION_IDX_SEQ | Registration numbers |
+| EVENTMEMBERS | EVENTMEMBER_IDX_SEQUENCE | Participant IDs |
+| MAIL_JOBS | MAIL_JOB_IDX_SEQ | Mail job IDs |
+| MEMBERS2GROUPS | M2G_IDX_SEQUENCE | Member-group link IDs |
+| MEMBERS2CONTACTS | M2C_IDX_SEQUENCE | Member-contact link IDs |
+| BOOKINGLINE2EVENTS | B2E_IDX_SEQUENCE | Booking-event link IDs |
+| BOOKINGLINE | BL_IDX_SEQUENCE | Booking line IDs |
+| ACCOUNT_CLASSES | ACCLASS_IDX_SEQU | Account class IDs |
+| BILL_TEMPLATES | BILL_TEMP_IDX_SEQ | Template IDs |
+| AUDIT | AUDIT_IDX_SEQ | Audit entry IDs |
 
 ---
 
----
+## Common Patterns
 
-## Foreign Keys
+### Pattern 1: Multi-Tenant Query
 
-### Classes
-
-**`FKAction`** (enum) — referential action for `ON DELETE` / `ON UPDATE`:
-
-| Value | SQL | Behaviour |
-|-------|-----|-----------|
-| `NO_ACTION` | `NO ACTION` | DBMS rejects the operation if it would break the constraint (default) |
-| `CASCADE` | `CASCADE` | Automatically delete / update dependent rows |
-| `SET_NULL` | `SET NULL` | Set the FK column to NULL (column must be nullable) |
-| `RESTRICT` | `RESTRICT` | Like `NO_ACTION` but checked immediately, not deferred |
-
-**`ForeignKeyDefinition`** (immutable value object):
+Always filter by `bp_idx`:
 
 ```java
-// Minimal — NO_ACTION for both; constraint name auto-generated as FK_<TABLE>_<COLUMN>
-new ForeignKeyDefinition("owner_col", "PARENT_TABLE", "parent_col")
-
-// With explicit actions
-new ForeignKeyDefinition("owner_col", "PARENT_TABLE", "parent_col",
-                         FKAction.CASCADE, FKAction.NO_ACTION)
-
-// With explicit constraint name
-new ForeignKeyDefinition("FK_MY_NAME", "owner_col", "PARENT_TABLE", "parent_col",
-                         FKAction.NO_ACTION, FKAction.NO_ACTION)
-```
-
-If the constraint name is `null`, `DBStrukt.addForeignKey` auto-generates one as
-`FK_<OWNINGTABLE>_<OWNERCOLUMN>` (uppercased).
-
-### Declaring FKs in a DBStrukt
-
-**Declare `ForeignKeyDefinition` objects as `public static final` fields** on the strukt
-subclass — not as inline `new ForeignKeyDefinition(...)` inside the constructor.
-
-| Concern | inline `new` in constructor | `static final` field |
-|---------|-----------------------------|---------------------|
-| Allocation | One object per strukt instance | One object per class |
-| Auto-name generation | Repeated string concat per instance | Done once; `withName()` copy stored in `foreign_keys_` |
-| Use with `fetchChildren` | Must lookup via `getForeignKeys()` at runtime | Pass `MyTable.FK_NAME` directly — type-safe, zero lookup |
-| Readability | Anonymous | Self-documenting symbol |
-
-`ForeignKeyDefinition` is **immutable**. When `addForeignKey()` auto-generates a
-constraint name, it calls `fk.withName(autoName)` which returns a **new copy** — the
-static field is never mutated:
-
-```
-OrderLine.FK_ORDER         (name = null)                     ← static field, unchanged forever
-    ↓  addForeignKey() calls withName("FK_ORDER_LINE_ORDER_ID")
-stored copy                (name = "FK_ORDER_LINE_ORDER_ID") ← used for DDL only
-```
-
-The static field with `name = null` is still fully usable for `fetchChildren` and
-`fetchParent` because those methods only need `ownerColumn`, `referencedTable`, and
-`referencedColumn` — never the constraint name.
-
-**Pattern:**
-
-```java
-public class DBOrderLine extends DBStrukt {
-
-    // FK declarations — static final, created once per class
-    public static final ForeignKeyDefinition FK_ORDER =
-        new ForeignKeyDefinition("order_idx", "ORDERS", "idx");
-    public static final ForeignKeyDefinition FK_PRODUCT =
-        new ForeignKeyDefinition("product_idx", "PRODUCTS", "idx",
-                                 FKAction.RESTRICT, FKAction.NO_ACTION);
-
-    // Column instances — per-instance as usual
-    public DBInteger idx        = new DBInteger("idx");
-    public DBInteger order_idx  = new DBInteger("order_idx");
-    public DBInteger product_idx = new DBInteger("product_idx");
-    public DBInteger qty        = new DBInteger("qty");
-
-    public DBOrderLine() {
-        super("ORDER_LINE");
-        idx.setAsPrimaryKey();
-        add(idx,         1);
-        add(order_idx,   1);
-        add(product_idx, 1);
-        add(qty,         1);
-        addForeignKey(FK_ORDER,   1);   // reference to static field
-        addForeignKey(FK_PRODUCT, 1);
-        setVersion(1);
-    }
-
-    @Override public DBStrukt getNewOne() { return new DBOrderLine(); }
+public List<DBMember> getMembersForBillingPeriod(int bpIdx) throws SQLException {
+    return trans.fetchTable2(
+        new DBMember(),
+        Condition.where(DBMember.BP_IDX).eq(bpIdx)
+    );
 }
 ```
 
-### FK-based fetch methods (`Transaction`)
+### Pattern 2: Denormalized Fields
 
-Three convenience methods on `Transaction` use FK metadata to build WHERE clauses without
-the caller writing raw SQL strings.
-
-**`ForeignKeyNotFoundException`** (checked) — thrown when the requested FK relationship
-cannot be resolved from the strukt's declared FK list (wrong column name or table name).
-
-#### `fetchChildren` — given a parent row, find all children
+Many junction tables include denormalized fields for performance:
 
 ```java
-// High-level: parent strukt provides the filter value automatically
-public <T extends DBStrukt> List<T> fetchChildren(
-        T childStrukt, DBStrukt parentStrukt, String fkColumnName)
-    throws SQLException, ..., ForeignKeyNotFoundException
+// In DBEventMember:
+public DBString name = NAME.getCopy();           // Copy of member name
+public DBString forname = FORNAME.getCopy();     // Copy of member forname
+public DBString group = GROUP.getCopy();         // Copy of group name
+
+// In DBMembers2Groups:
+public DBString group = GROUP.getCopy();         // Copy of group name
+public DBString member_name = MEMBER_NAME.getCopy(); // Copy of member name
+
+// In DBBookingLine2Events:
+public DBString member_name = MEMBER_NAME.getCopy();
+public DBString event_name = EVENT_NAME.getCopy();
 ```
 
-Searches `childStrukt.getForeignKeys()` for a FK where `ownerColumn == fkColumnName`
-and `referencedTable == parentStrukt.getName()` (both case-insensitive). Gets the parent's
-referenced-column value, builds a `WHERE` clause, delegates to `fetchTable2`.
+These allow displaying related data without joins.
+
+### Pattern 3: Flag Fields
+
+Boolean flags are implemented as `DBFlagInteger` (0 = false, >0 = true):
 
 ```java
-// Low-level: pass a static FK field and the filter value directly
-public <T extends DBStrukt> List<T> fetchChildren(
-        T childStrukt, ForeignKeyDefinition fk, Object fkValue)
-    throws SQLException, ...
+public DBFlagInteger INAKTIV = new DBFlagInteger("inactiv","Inactiv");
+
+// Check flag
+if (member.inaktiv.getValue() > 0) {
+    // Member is inactive
+}
+
+// Set flag
+member.inaktiv.handler.setValue(1); // true
+member.inaktiv.handler.setValue(0); // false
 ```
 
-Useful when the FK value comes from a UI field or raw result rather than a loaded strukt.
+### Pattern 4: Enum Fields
 
-#### `fetchParent` — given a child row, fetch the referenced parent
+Enum-type columns use `DBEnumAsInteger` with custom handlers:
 
 ```java
-public <P extends DBStrukt> P fetchParent(
-        DBStrukt childStrukt, String fkColumnName, P parentStrukt)
-    throws SQLException, ..., ForeignKeyNotFoundException
+// In DBBill:
+public enum State { NORMAL, CANCELED }
+public enum Direction { OUTGOING, INCOMING }
+public enum BillType { INVOICE, REGISTRATION }
+
+// Column definitions use handlers:
+public static final DBEnumAsInteger STATE = 
+    new DBEnumAsInteger("state", "State", new StateHandler());
+
+// Usage:
+bill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+if (bill.isCanceled()) { /* ... */ }
 ```
 
-Reads the FK column's current value from `childStrukt`, builds a WHERE clause against the
-parent table's referenced column, delegates to `fetchTable2`. Returns `null` if not found.
+### Pattern 5: DBHistory
 
-#### `buildWhereForValue` (internal — superseded)
-
-Originally produced `WHERE <table>.<col> = <value>` as a quoted raw string.
-After the `Condition` API was introduced (Phase 4 of the typed-condition plan), the FK
-fetch methods delegate to `fetchTable2(strukt, Condition)` instead, so values are bound
-via `PreparedStatement` parameters. `buildWhereForValue` is retained as a private helper
-but is no longer the primary implementation path.
-
-#### Usage example
+All tables have a `hist` field (DBHistory) for change tracking:
 
 ```java
-// Load a parent order
-DBOrder order = new DBOrder();
-order.idx.loadFromString("42");
-trans.fetchTableWithPrimkey(order);
+public static final DBHistory HIST = new DBHistory("hist");
 
-// Fetch all order lines — no raw WHERE string needed
-List<DBOrderLine> lines = trans.fetchChildren(new DBOrderLine(), order, "order_idx");
+// In constructor:
+hist.setTitle(" "); // Sets display title for history dialog
 
-// Navigate back to the parent
-DBOrder parent = trans.fetchParent(lines.get(0), "order_idx", new DBOrder());
-
-// Low-level variant using the static FK field directly
-List<DBOrderLine> lines2 = trans.fetchChildren(new DBOrderLine(), DBOrderLine.FK_ORDER, 42);
+// Usage: The framework automatically tracks changes
 ```
 
-#### Error behaviour
+---
 
-| Situation | Behaviour |
-|-----------|----------|
-| No FK matching `(fkColumnName, parentTable)` | Throws `ForeignKeyNotFoundException` |
-| FK column value is `null` | `WHERE col = 'null'` — no rows returned (safe no-op) |
-| Multiple FKs from child to same parent via same column | First declaration wins; log warning |
-| Parent `getValue(referencedColumn)` returns `null` | `NullPointerException` — caller must load parent columns before calling |
+## Application Startup Flow
 
-### DDL lifecycle (DatabaseManager)
-
-`DatabaseManager` calls two private helpers that wrap `BaseCreateSql`:
-
-| Helper | When called | Behaviour on error |
-|--------|-------------|--------------------|
-| `applyForeignKeys(strukt)` | After `createTable` and after `migrateTable` | Logs a warning, returns `true` (non-fatal) |
-| `dropAllForeignKeys(strukt)` | Before `migrateTable` | Logs at DEBUG level, swallows exception (constraint may not exist yet) |
-
-Generated DDL example (MySQL/MariaDB):
-```sql
-ALTER TABLE `ORDERS` ADD CONSTRAINT `FK_ORDERS_CUSTOMER_IDX`
-  FOREIGN KEY (`customer_idx`) REFERENCES `CUSTOMER` (`idx`)
-  ON DELETE NO ACTION ON UPDATE NO ACTION;
+```
+1. App creates Root with module name
+2. AppConfigDefinitions.registerDefinitions()
+3. FrameWorkConfigDefinitions.registerDefinitions()
+4. Register all DBStrukt classes with root.getBindtypeManager()
+5. Load database connection from setup
+6. DatabaseManager.check_table_versions_with_message()
+   - Compares DB table versions with DBStrukt versions
+   - Shows warning if out-of-date
+   - Prompts admin to run autocreate
+7. DatabaseManager.autocreate()
+   - Creates missing tables
+   - Migrates existing tables to current version
+   - Creates TABLEVERSION tracking table
+8. App is ready for use
 ```
 
-### Dialect differences
+---
 
-| DBMS | DROP syntax |
-|------|-------------|
-| MySQL / MariaDB | `ALTER TABLE … DROP FOREIGN KEY <name>` |
-| MSSQL / Oracle / Derby | `ALTER TABLE … DROP CONSTRAINT <name>` (ANSI) |
-| SQLite | No-op — SQLite cannot drop named constraints; FK enforcement requires `PRAGMA foreign_keys = ON` per connection |
+## Test Setup
 
-### TwelveLittleScoutsClerk FK map
+See `SetupTestDB.java` for the test database configuration pattern:
 
-All FKs use `NO_ACTION` (reject violating DML; no automatic cascades).
+```java
+// Register all tables
+root.getBindtypeManager().register(new DBBillingPeriod());
+root.getBindtypeManager().register(new DBMember());
+root.getBindtypeManager().register(new DBContact());
+// ... register all other DBStrukt classes ...
 
-| Child table | FK column(s) | Parent table |
-|---|---|---|
-| `MEMBER` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `CONTACT` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `EVENT` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `BILLS` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `BOOKINGLINE` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `BOOKINGLINE` | `contact_idx` | `CONTACT.idx` |
-| `MAIL_JOBS` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `MAIL_JOBS` | `bill_idx` | `BILLS.idx` |
-| `EVENTMEMBERS` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `EVENTMEMBERS` | `event_idx` | `EVENT.idx` |
-| `EVENTMEMBERS` | `member_idx` | `MEMBER.idx` |
-| `EVENTMEMBERS` | `group_idx` | `GROUP.idx` |
-| `EVENTMEMBERS` | `bill_idx` (v4) | `BILLS.idx` |
-| `EVENTMEMBERS` | `registration_bill_idx` (v5) | `BILLS.idx` |
-| `MEMBERS2GROUPS` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `MEMBERS2GROUPS` | `member_idx` | `MEMBER.idx` |
-| `MEMBERS2GROUPS` | `group_idx` | `GROUP.idx` |
-| `MEMBERS2CONTACTS` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `MEMBERS2CONTACTS` | `member_idx` | `MEMBER.idx` |
-| `MEMBERS2CONTACTS` | `contact_idx` | `CONTACT.idx` |
-| `BOOKINGLINE2EVENTS` | `bp_idx` | `BILLING_PERIOD.idx` |
-| `BOOKINGLINE2EVENTS` | `bl_idx` | `BOOKINGLINE.idx` |
-| `BOOKINGLINE2EVENTS` | `event_idx` | `EVENT.idx` |
-| `BOOKINGLINE2EVENTS` | `member_idx` | `MEMBER.idx` |
-| `BOOKINGLINE2EVENTS` | `contact_idx` | `CONTACT.idx` |
+// Set transaction
+DBBindtypeManager bindtypeManager = root.getBindtypeManager();
+bindtypeManager.setTransaction(t);
 
-### See Also
+// Autocreate all tables
+bindtypeManager.autocreate();
+```
 
-- [Foreign Key Implementation Plan](./references/foreign-key-plan.md) — original design notes (now implemented).
+---
+
+## See Also
+
+- [SqlDBInterface Skill](../../FrameWork/.github/skills/database/SKILL.md) - Low-level SQL abstraction
+- [Foreign Key Implementation Plan](../references/foreign-key-plan.md) - FK design notes
+- [FrameWork DBManager Documentation](../../FrameWork/docs/DBManager.md) - Schema lifecycle
+- [Condition API Documentation](../../FrameWork/docs/ConditionAPI.md) - Typed WHERE clauses

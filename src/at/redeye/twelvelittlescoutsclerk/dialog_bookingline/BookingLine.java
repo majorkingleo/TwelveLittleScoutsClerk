@@ -50,6 +50,8 @@ import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.log4j.Logger;
 
 public class BookingLine extends BaseDialog implements NewSequenceValueInterface {
@@ -1417,27 +1419,32 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             return;
         }
 
+        DBBookingLine2Events bl2e = new DBBookingLine2Events();
+
         MemberDescr member_descr = (MemberDescr) jCMember.getSelectedItem();
+
         if( member_descr == null ) {
-            return;
+            bl2e.member_idx.loadFromCopy(null);
+        } else {
+            bl2e.member_idx.loadFromCopy(member_descr.member.idx.getValue());
+            bl2e.member_name.loadFromString(member_descr.member.forname.toString() + " " + member_descr.member.name.toString() );
         }
 
         ContactDescr contact_descr = (ContactDescr) jCContact.getSelectedItem();
-        if( contact_descr == null ) {
-            return;
-        }
         
-        DBBookingLine2Events bl2e = new DBBookingLine2Events();
+        if( contact_descr == null ) {
+            bl2e.contact_idx.loadFromCopy(null);
+        } else {
+            bl2e.contact_idx.loadFromCopy(contact_descr.contact.idx.getValue());
+        }
+
+
         bl2e.bl_idx.loadFromCopy(current_value.idx.getValue());
         bl2e.bp_idx.loadFromCopy(current_value.bp_idx.getValue());
         bl2e.event_idx.loadFromCopy(event_descr.event.idx.getValue());
-        bl2e.member_idx.loadFromCopy(member_descr.member.idx.getValue());
-        bl2e.member_name.loadFromString(member_descr.member.forname.toString() + " " + member_descr.member.name.toString() );
+        
         bl2e.event_name.loadFromString(event_descr.event.name.toString());
         
-        if( contact_descr != null ) {
-            bl2e.contact_idx.loadFromCopy(contact_descr.contact.idx.getValue());
-        }
         
         bl2es.put(current_value.idx.getValue(), bl2e);
         

@@ -66,13 +66,19 @@ public class DBBookingLine2Events extends DBStrukt
         bp_idx.shouldHaveIndex();
         hist.setTitle(" ");
 
+        // Mark required FKs as NOT NULL (nullable by default, so explicitly set cannot be null)
+        bl_idx.setCannotBeNull();
+        event_idx.setCannotBeNull();
+        bp_idx.setCannotBeNull();
+        // member_idx and contact_idx remain nullable (default: canBeNull = true)
+
         addForeignKey(FK_BILLING_PERIOD, 3);
         addForeignKey(FK_BOOKING_LINE, 3);
         addForeignKey(FK_EVENT, 3);
         addForeignKey(FK_MEMBER, 3);
         addForeignKey(FK_CONTACT, 3);
 
-        setVersion(3);
+        setVersion(4);  // Bump version due to NULL constraint changes
     }
     
     @Override

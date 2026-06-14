@@ -77,7 +77,7 @@ public class DBBookingLine2Events extends DBStrukt
         addForeignKey(FK_MEMBER, 3);
         addForeignKey(FK_CONTACT, 3);
 
-        setVersion(4);  // Bump version due to NULL constraint changes
+        setVersion(5);
     }
     
     @Override

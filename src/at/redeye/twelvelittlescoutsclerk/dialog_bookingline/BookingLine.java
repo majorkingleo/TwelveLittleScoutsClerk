@@ -50,8 +50,6 @@ import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.log4j.Logger;
 
 public class BookingLine extends BaseDialog implements NewSequenceValueInterface {
@@ -1192,9 +1190,9 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     fillJCMember( l2e.member_idx.getValue() );
                     fillJCEvent( l2e.event_idx.getValue() );
                 } else {
-                    fillJCContact( -1 );
-                    fillJCMember(-1);
-                    fillJCEvent(-1);
+                    fillJCContact( null );
+                    fillJCMember(null);
+                    fillJCEvent(null);
                 }
                 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
                 fillJCAccountClassEdit(current_value.account_class_idx.getValue());
@@ -1206,7 +1204,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         var_to_gui();    
     }
         
-    private void fillJCContact( int selected_contact_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
+    private void fillJCContact(Integer selected_contact_idx) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
     {
         jCContact.removeAllItems();
         
@@ -1222,7 +1220,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             var c = contacts.get(i);
             
             jCContact.addItem( new ContactDescr(c) );
-            if( c.idx.getValue() == selected_contact_idx ) {
+            if( selected_contact_idx != null && c.idx.getValue() != null && c.idx.getValue().equals(selected_contact_idx) ) {
                 idx = i;
             }
         }
@@ -1235,7 +1233,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
     }
     
-    private void fillJCMember( int selected_member_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
+    private void fillJCMember(Integer selected_member_idx) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
     {
         jCMember.removeAllItems();
         
@@ -1251,7 +1249,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             var c = members.get(i);
             
             jCMember.addItem( new MemberDescr(c) );
-            if( c.idx.getValue() == selected_member_idx ) {
+            if( selected_member_idx != null && c.idx.getValue() != null && c.idx.getValue().equals(selected_member_idx) ) {
                 idx = i;
             }
         }
@@ -1264,7 +1262,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
     }    
     
-    private void fillJCEvent( int selected_event_idx ) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
+    private void fillJCEvent(Integer selected_event_idx) throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException 
     {
         jCEvent.removeAllItems();
         
@@ -1280,7 +1278,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             var c = events.get(i);
             
             jCEvent.addItem( new EventDescr(c) );
-            if( c.idx.getValue() == selected_event_idx ) {
+            if( selected_event_idx != null && c.idx.getValue() != null && c.idx.getValue().equals(selected_event_idx) ) {
                 idx = i;
             }
         }
@@ -1445,7 +1443,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         bl2e.event_name.loadFromString(event_descr.event.name.toString());
         
-        
+        logger.info( "bl2e.idx: " + bl2e.idx.getValue() + " bl2e.event_idx: " + bl2e.event_idx.getValue() + " bl2e.bl_idx: " + bl2e.bl_idx.getValue() + " bl2e.bp_idx: " + bl2e.bp_idx.getValue() + " bl2e.member_idx: " + bl2e.member_idx.getValue() + " bl2e.contact_idx: " + bl2e.contact_idx.getValue() + " bl2e.member_name: " + bl2e.member_name.getValue() + " bl2e.event_name: " + bl2e.event_name.getValue() + "");
         bl2es.put(current_value.idx.getValue(), bl2e);
         
         tm.setEdited(row);        

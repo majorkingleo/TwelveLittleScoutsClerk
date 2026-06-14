@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -26,6 +27,9 @@ import java.util.Set;
  */
 public class BookingLineHelper 
 {
+    private static final Logger logger = Logger.getLogger(BookingLineHelper.class.getName());
+    
+
     public static void delete_bookingline( Transaction trans, DBBookingLine line )  throws SQLException, TableBindingNotRegisteredException, UnsupportedDBDataTypeException, WrongBindFileFormatException, IOException
     {
         DBBookingLine2Events b2l = new DBBookingLine2Events();
@@ -93,6 +97,8 @@ public class BookingLineHelper
                 if( bl2e.idx.getValue() == 0 ) {
                     bl2e.idx.loadFromCopy(mainwin.getNewSequenceValue(DBBookingLine2Events.BOOKINGLINE2EVENTS_IDX_SEQUENCE));
                 }
+
+                logger.info( "bl2e.idx: " + bl2e.idx.getValue() + " bl2e.event_idx: " + bl2e.event_idx.getValue() + " bl2e.bl_idx: " + bl2e.bl_idx.getValue() + " bl2e.bp_idx: " + bl2e.bp_idx.getValue() + " bl2e.member_idx: " + bl2e.member_idx.getValue() + " bl2e.contact_idx: " + bl2e.contact_idx.getValue() + " bl2e.member_name: " + bl2e.member_name.getValue() + " bl2e.event_name: " + bl2e.event_name.getValue() );
 
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl2e);
             }            

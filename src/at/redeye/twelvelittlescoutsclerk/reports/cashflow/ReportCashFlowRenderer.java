@@ -16,19 +16,32 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+import org.apache.log4j.Logger;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
 public class ReportCashFlowRenderer extends BaseReportRenderer implements ReportRenderer {
+
+    private static final Logger logger = Logger.getLogger(ReportCashFlowRenderer.class.getName());
 
     private final Transaction trans;
     private final DBBillingPeriod bp;
     private final double currentBankCash;
     private final DBDateTime dateFrom;
     private final DBDateTime dateTill;
+    
+    // Data structures for export
+    private LinkedHashMap<Integer, String> acNames;
+    private LinkedHashMap<Integer, Double> sumByClass;
+    private double grandTotal;
+    private double plannedCostsTotal;
+    private double paidTotal;
 
     public ReportCashFlowRenderer(Transaction trans, DBBillingPeriod bp, double currentBankCash, DBDateTime dateFrom, DBDateTime dateTill) {
         this.trans = trans;
@@ -36,6 +49,8 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         this.currentBankCash = currentBankCash;
         this.dateFrom = dateFrom != null ? dateFrom : new DBDateTime("dummy");
         this.dateTill = dateTill != null ? dateTill : new DBDateTime("dummy");
+        this.acNames = new LinkedHashMap<>();
+        this.sumByClass = new LinkedHashMap<>();
     }
 
     @Override
@@ -81,10 +96,10 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         List<DBAccountClasses> accountClasses = trans.fetchTable2(acProto,
                 "where " + trans.markColumn(acProto, acProto.bp_idx) + " = " + bp.idx
                 + " order by " + trans.markColumn(acProto, acProto.name));
-        Map<Integer, String> acNames = new LinkedHashMap<>();
-        acNames.put(0, "(unassigned)");
+        this.acNames.clear();
+        this.acNames.put(0, "(unassigned)");
         for (DBAccountClasses ac : accountClasses) {
-            acNames.put(ac.idx.getValue(), ac.name.toString());
+            this.acNames.put(ac.idx.getValue(), ac.name.toString());
         }
 
         // --- load all booking lines for this billing period (no splits) ---
@@ -100,14 +115,14 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         // Rule:
         //   - line has no event assignment → always count
         //   - line has event assignment → count only if event.counts_to_available_cash_amount == true
-        Map<Integer, Double> sumByClass = new LinkedHashMap<>();
-        for (Integer k : acNames.keySet()) {
-            sumByClass.put(k, 0.0);
+        this.sumByClass.clear();
+        for (Integer k : this.acNames.keySet()) {
+            this.sumByClass.put(k, 0.0);
         }
 
-        double grandTotal = 0.0;
-        double plannedCostsTotal = 0.0;
-        double paidTotal = 0.0;
+        this.grandTotal = 0.0;
+        this.plannedCostsTotal = 0.0;
+        this.paidTotal = 0.0;
 
         for (DBBookingLine bl : lines) {
             Integer eventIdx = blToEvent.get(bl.idx.getValue());
@@ -121,8 +136,10 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
             int acIdx = bl.account_class_idx.getValue();
             double amount = bl.amount.getValue();
 
-            sumByClass.merge(acIdx, amount, Double::sum);
-            grandTotal += amount;
+            logger.info( "blIdx: " + bl.idx.getValue() + ", ac: " + bl.account_class.toString() + ", amount: " + amount ); 
+
+            this.sumByClass.merge(acIdx, amount, Double::sum);
+            this.grandTotal += amount;
         }
 
         // --- calculate planned costs and costs for events with counts_to_available_cash_amount ---
@@ -130,8 +147,8 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
             if (ev.counts_to_available_cash_amount.getValue() == 1) {
                 double evPlanned = ev.planned_costs.getValue();
                 double evPaid = ev.paid.getValue();
-                plannedCostsTotal += evPlanned;
-                paidTotal += evPaid;
+                this.plannedCostsTotal += evPlanned;
+                this.paidTotal += evPaid;
                 logger.info("Event '" + ev.name.getValue() + "' counts to available cash: planned_costs=" + evPlanned + ", costs=" + evPaid);
             }
         }
@@ -164,9 +181,9 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         text.append("<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;'>");
         text.append("<tr><th align='left'>Account Class</th><th align='right'>Sum (€)</th></tr>");
 
-        for (Map.Entry<Integer, String> entry : acNames.entrySet()) {
+        for (Map.Entry<Integer, String> entry : this.acNames.entrySet()) {
             int acIdx = entry.getKey();
-            double sum = sumByClass.getOrDefault(acIdx, 0.0);
+            double sum = this.sumByClass.getOrDefault(acIdx, 0.0);
             if (sum == 0.0) {
                 continue; // skip empty classes for brevity
             }
@@ -175,14 +192,14 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         }
 
         text.append("<tr style='font-weight:bold'><td>Total from booking lines</td>")
-            .append("<td align='right'>").append(String.format("%.2f", grandTotal)).append("</td></tr>");
+            .append("<td align='right'>").append(String.format("%.2f", this.grandTotal)).append("</td></tr>");
 
-        double available = currentBankCash + grandTotal;
+        double available = currentBankCash + this.grandTotal;
         text.append("<tr style='font-weight:bold;background-color:#d0f0d0'><td>Available cash (bank + total)</td>")
             .append("<td align='right'>").append(String.format("%.2f", available)).append("</td></tr>");
 
         // --- add planned costs information for events with counts_to_available_cash_amount ---
-        double plannedCostsMinusCosts = plannedCostsTotal - paidTotal;
+        double plannedCostsMinusCosts = this.plannedCostsTotal - this.paidTotal;
         if (plannedCostsTotal > 0 || paidTotal > 0) {
             text.append("<tr><td>Planned costs - Costs (for counting events)</td>");
             text.append("<td align='right'>").append(String.format("%.2f", plannedCostsMinusCosts)).append("</td></tr>");
@@ -201,6 +218,35 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
     private static String escapeHtml(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+    
+    // Getters for data export
+    public LinkedHashMap<Integer, String> getAccountClassNames() {
+        return new LinkedHashMap<>(this.acNames);
+    }
+    
+    public LinkedHashMap<Integer, Double> getSumByClass() {
+        return new LinkedHashMap<>(this.sumByClass);
+    }
+    
+    public double getGrandTotal() {
+        return this.grandTotal;
+    }
+    
+    public double getPlannedCostsTotal() {
+        return this.plannedCostsTotal;
+    }
+    
+    public double getPaidTotal() {
+        return this.paidTotal;
+    }
+    
+    public double getCurrentBankCash() {
+        return this.currentBankCash;
+    }
+    
+    public DBBillingPeriod getBillingPeriod() {
+        return this.bp;
     }
 }
 // AI-generated end

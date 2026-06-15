@@ -11,6 +11,9 @@ import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.Plugins.JDatePicker.JDatePicker;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
+import java.io.File;
+import java.io.FileOutputStream;
+import javax.swing.JFileChooser;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
 public class ReportCashFlow extends BaseDialog {
@@ -115,6 +118,7 @@ public class ReportCashFlow extends BaseDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         jReport = new javax.swing.JTextPane();
         jPanelButtons = new javax.swing.JPanel();
+        jBExportODT = new javax.swing.JButton();
         jBPrint = new javax.swing.JButton();
         jBClose = new javax.swing.JButton();
 
@@ -217,6 +221,14 @@ public class ReportCashFlow extends BaseDialog {
             }
         });
 
+        jBExportODT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
+        jBExportODT.setText("Export ODS");
+        jBExportODT.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBExportODTActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanelButtonsLayout = new javax.swing.GroupLayout(jPanelButtons);
         jPanelButtons.setLayout(jPanelButtonsLayout);
         jPanelButtonsLayout.setHorizontalGroup(
@@ -224,6 +236,8 @@ public class ReportCashFlow extends BaseDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelButtonsLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jBPrint)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBExportODT)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBClose)
                 .addContainerGap())
@@ -234,6 +248,7 @@ public class ReportCashFlow extends BaseDialog {
                 .addContainerGap()
                 .addGroup(jPanelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBPrint)
+                    .addComponent(jBExportODT)
                     .addComponent(jBClose))
                 .addContainerGap())
         );
@@ -275,8 +290,116 @@ public class ReportCashFlow extends BaseDialog {
         }
     }//GEN-LAST:event_jBCloseActionPerformed
 
+    private void jBExportODTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBExportODTActionPerformed
+        exportToODT();
+    }//GEN-LAST:event_jBExportODTActionPerformed
+
+    private void exportToODT() {
+        if (jReport.getText() == null || jReport.getText().trim().isEmpty()) {
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser(mainwin.getLastOpenPath());
+        chooser.setDialogTitle("Export as ODS");
+        chooser.setSelectedFile(new File("CashFlow.ods"));
+        int result = chooser.showSaveDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        final File targetFile;
+        {
+            File selected = chooser.getSelectedFile();
+            if (!selected.getName().toLowerCase().endsWith(".ods")) {
+                targetFile = new File(selected.getAbsolutePath() + ".ods");
+            } else {
+                targetFile = selected;
+            }
+            mainwin.setLastOpenPath(targetFile.getParent());
+        }
+
+        new AutoMBox("Export ODS") {
+            @Override
+            public void do_stuff() throws Exception {
+                setWaitCursor();
+                gui_to_var();
+                double bankCash = parseBankCash();
+                ReportCashFlowRenderer renderer =
+                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill);
+                renderer.collectData();
+                String html = renderer.render();
+                
+                // Create ODS spreadsheet using odfdom
+                org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument spreadsheet = 
+                        org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument.newSpreadsheetDocument();
+                
+                // Get the first table
+                java.util.List<org.odftoolkit.odfdom.doc.table.OdfTable> tables = spreadsheet.getSpreadsheetTables();
+                org.odftoolkit.odfdom.doc.table.OdfTable table = tables.get(0);
+                
+                // Clear existing content
+                java.util.List<org.odftoolkit.odfdom.doc.table.OdfTableRow> rows = table.getRowList();
+                for (org.odftoolkit.odfdom.doc.table.OdfTableRow row : rows) {
+                    table.removeRowsByIndex(row.getRowIndex(), 1);
+                }
+                
+                // Add header row
+                org.odftoolkit.odfdom.doc.table.OdfTableRow headerRow = table.appendRow();
+                headerRow.getCellByIndex(0).setStringValue("Account Class");
+                headerRow.getCellByIndex(1).setStringValue("Sum (€)");
+                
+                // Add data rows from renderer
+                java.util.LinkedHashMap<Integer, String> acNames = renderer.getAccountClassNames();
+                java.util.LinkedHashMap<Integer, Double> sumByClass = renderer.getSumByClass();
+                
+                for (java.util.Map.Entry<Integer, String> entry : acNames.entrySet()) {
+                    int acIdx = entry.getKey();
+                    double sum = sumByClass.getOrDefault(acIdx, 0.0);
+                    if (sum == 0.0) {
+                        continue;
+                    }
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow dataRow = table.appendRow();
+                    dataRow.getCellByIndex(0).setStringValue(entry.getValue());
+                    dataRow.getCellByIndex(1).setDoubleValue(sum);
+                }
+                
+                // Add total row
+                org.odftoolkit.odfdom.doc.table.OdfTableRow totalRow = table.appendRow();
+                totalRow.getCellByIndex(0).setStringValue("Total from booking lines");
+                totalRow.getCellByIndex(1).setDoubleValue(renderer.getGrandTotal());
+                
+                // Add available cash row
+                double available = bankCash + renderer.getGrandTotal();
+                org.odftoolkit.odfdom.doc.table.OdfTableRow availableRow = table.appendRow();
+                availableRow.getCellByIndex(0).setStringValue("Available cash (bank + total)");
+                availableRow.getCellByIndex(1).setDoubleValue(available);
+                
+                // Add planned costs info if applicable
+                double plannedCostsTotal = renderer.getPlannedCostsTotal();
+                double paidTotalVal = renderer.getPaidTotal();
+                if (plannedCostsTotal > 0 || paidTotalVal > 0) {
+                    double plannedCostsMinusCosts = plannedCostsTotal - paidTotalVal;
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow costsRow = table.appendRow();
+                    costsRow.getCellByIndex(0).setStringValue("Planned costs - Costs (for counting events)");
+                    costsRow.getCellByIndex(1).setDoubleValue(plannedCostsMinusCosts);
+                    
+                    double estimatedIncome = available + plannedCostsMinusCosts;
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow estimatedRow = table.appendRow();
+                    estimatedRow.getCellByIndex(0).setStringValue("Estimated income (available + planned - costs)");
+                    estimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
+                }
+                
+                try (FileOutputStream fos = new FileOutputStream(targetFile)) {
+                    spreadsheet.save(fos);
+                }
+                setWaitCursor(false);
+            }
+        };
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
+    private javax.swing.JButton jBExportODT;
     private at.redeye.Plugins.JDatePicker.JDatePicker jDateFrom;
     private at.redeye.Plugins.JDatePicker.JDatePicker jDateTill;
     private javax.swing.JButton jBGenerate;

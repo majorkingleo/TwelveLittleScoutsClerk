@@ -47,7 +47,7 @@ public class ReportCashFlow extends BaseDialog {
                 dateFrom.loadFromString(savedFrom);
             }
         } catch (Exception ex) {
-            logger.error(ex, ex);
+            logger.error(ex, ex);            
         }
         try {
             if (!savedTill.trim().isEmpty()) {
@@ -327,67 +327,169 @@ public class ReportCashFlow extends BaseDialog {
                 ReportCashFlowRenderer renderer =
                         new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill);
                 renderer.collectData();
-                String html = renderer.render();
+                // Call render() to populate the data structures (we ignore the HTML output)
+                renderer.render();
                 
                 // Create ODS spreadsheet using odfdom
                 org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument spreadsheet = 
                         org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument.newSpreadsheetDocument();
                 
-                // Get the first table
+                java.util.LinkedHashMap<Integer, String> acNames = renderer.getAccountClassNames();
+                java.util.LinkedHashMap<Integer, Double> sumByClass = renderer.getSumByClass();
+                double grandTotal = renderer.getGrandTotal();
+                double plannedCostsTotal = renderer.getPlannedCostsTotal();
+                double paidTotalVal = renderer.getPaidTotal();
+                double available = bankCash + grandTotal;
+                double plannedCostsMinusCosts = plannedCostsTotal - paidTotalVal;
+                double estimatedIncome = available + plannedCostsMinusCosts;
+
+                // ===== SHEET 1: FORMATTED (matching HTML report structure) =====
+                // Get the first table (default sheet)
                 java.util.List<org.odftoolkit.odfdom.doc.table.OdfTable> tables = spreadsheet.getSpreadsheetTables();
-                org.odftoolkit.odfdom.doc.table.OdfTable table = tables.get(0);
+                org.odftoolkit.odfdom.doc.table.OdfTable formattedTable = tables.get(0);
+                formattedTable.setTableName("Cash Flow");
                 
                 // Clear existing content
-                java.util.List<org.odftoolkit.odfdom.doc.table.OdfTableRow> rows = table.getRowList();
-                for (org.odftoolkit.odfdom.doc.table.OdfTableRow row : rows) {
-                    table.removeRowsByIndex(row.getRowIndex(), 1);
+                java.util.List<org.odftoolkit.odfdom.doc.table.OdfTableRow> existingRows = formattedTable.getRowList();
+                for (org.odftoolkit.odfdom.doc.table.OdfTableRow row : existingRows) {
+                    formattedTable.removeRowsByIndex(row.getRowIndex(), 1);
                 }
                 
+                // Set column widths (in characters, approximate)
+                formattedTable.getColumnByIndex(0).setWidth(40); // wider for account class names
+                formattedTable.getColumnByIndex(1).setWidth(20); // narrower for amounts
+                
                 // Add header row
-                org.odftoolkit.odfdom.doc.table.OdfTableRow headerRow = table.appendRow();
+                org.odftoolkit.odfdom.doc.table.OdfTableRow headerRow = formattedTable.appendRow();
                 headerRow.getCellByIndex(0).setStringValue("Account Class");
                 headerRow.getCellByIndex(1).setStringValue("Sum (€)");
                 
-                // Add data rows from renderer
-                java.util.LinkedHashMap<Integer, String> acNames = renderer.getAccountClassNames();
-                java.util.LinkedHashMap<Integer, Double> sumByClass = renderer.getSumByClass();
-                
+                // Add data rows (non-zero only, like HTML)
                 for (java.util.Map.Entry<Integer, String> entry : acNames.entrySet()) {
                     int acIdx = entry.getKey();
                     double sum = sumByClass.getOrDefault(acIdx, 0.0);
                     if (sum == 0.0) {
                         continue;
                     }
-                    org.odftoolkit.odfdom.doc.table.OdfTableRow dataRow = table.appendRow();
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow dataRow = formattedTable.appendRow();
                     dataRow.getCellByIndex(0).setStringValue(entry.getValue());
                     dataRow.getCellByIndex(1).setDoubleValue(sum);
                 }
                 
                 // Add total row
-                org.odftoolkit.odfdom.doc.table.OdfTableRow totalRow = table.appendRow();
+                org.odftoolkit.odfdom.doc.table.OdfTableRow totalRow = formattedTable.appendRow();
                 totalRow.getCellByIndex(0).setStringValue("Total from booking lines");
-                totalRow.getCellByIndex(1).setDoubleValue(renderer.getGrandTotal());
+                totalRow.getCellByIndex(1).setDoubleValue(grandTotal);
                 
                 // Add available cash row
-                double available = bankCash + renderer.getGrandTotal();
-                org.odftoolkit.odfdom.doc.table.OdfTableRow availableRow = table.appendRow();
+                org.odftoolkit.odfdom.doc.table.OdfTableRow availableRow = formattedTable.appendRow();
                 availableRow.getCellByIndex(0).setStringValue("Available cash (bank + total)");
                 availableRow.getCellByIndex(1).setDoubleValue(available);
                 
                 // Add planned costs info if applicable
-                double plannedCostsTotal = renderer.getPlannedCostsTotal();
-                double paidTotalVal = renderer.getPaidTotal();
                 if (plannedCostsTotal > 0 || paidTotalVal > 0) {
-                    double plannedCostsMinusCosts = plannedCostsTotal - paidTotalVal;
-                    org.odftoolkit.odfdom.doc.table.OdfTableRow costsRow = table.appendRow();
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow costsRow = formattedTable.appendRow();
                     costsRow.getCellByIndex(0).setStringValue("Planned costs - Costs (for counting events)");
                     costsRow.getCellByIndex(1).setDoubleValue(plannedCostsMinusCosts);
                     
-                    double estimatedIncome = available + plannedCostsMinusCosts;
-                    org.odftoolkit.odfdom.doc.table.OdfTableRow estimatedRow = table.appendRow();
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow estimatedRow = formattedTable.appendRow();
                     estimatedRow.getCellByIndex(0).setStringValue("Estimated income (available + planned - costs)");
                     estimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
                 }
+                
+                // ===== SHEET 2: RAW (no formatting) =====
+                // Add a new table for the raw data sheet
+                org.odftoolkit.odfdom.doc.table.OdfTable rawTable = 
+                        org.odftoolkit.odfdom.doc.table.OdfTable.newTable(spreadsheet);
+                rawTable.setTableName("raw");
+                
+                // Add header row
+                org.odftoolkit.odfdom.doc.table.OdfTableRow rawHeaderRow = rawTable.appendRow();
+                rawHeaderRow.getCellByIndex(0).setStringValue("Account Class");
+                rawHeaderRow.getCellByIndex(1).setStringValue("Sum (€)");
+                
+                // Add data rows - all entries including zero ones
+                for (java.util.Map.Entry<Integer, String> entry : acNames.entrySet()) {
+                    int acIdx = entry.getKey();
+                    double sum = sumByClass.getOrDefault(acIdx, 0.0);
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow rawDataRow = rawTable.appendRow();
+                    rawDataRow.getCellByIndex(0).setStringValue(entry.getValue());
+                    rawDataRow.getCellByIndex(1).setDoubleValue(sum);
+                }
+                
+                // Add summary rows without formatting
+                org.odftoolkit.odfdom.doc.table.OdfTableRow rawTotalRow = rawTable.appendRow();
+                rawTotalRow.getCellByIndex(0).setStringValue("Total from booking lines");
+                rawTotalRow.getCellByIndex(1).setDoubleValue(grandTotal);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow rawAvailableRow = rawTable.appendRow();
+                rawAvailableRow.getCellByIndex(0).setStringValue("Available cash (bank + total)");
+                rawAvailableRow.getCellByIndex(1).setDoubleValue(available);
+                
+                if (plannedCostsTotal > 0 || paidTotalVal > 0) {
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow rawCostsRow = rawTable.appendRow();
+                    rawCostsRow.getCellByIndex(0).setStringValue("Planned costs - Costs (for counting events)");
+                    rawCostsRow.getCellByIndex(1).setDoubleValue(plannedCostsMinusCosts);
+                    
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow rawEstimatedRow = rawTable.appendRow();
+                    rawEstimatedRow.getCellByIndex(0).setStringValue("Estimated income (available + planned - costs)");
+                    rawEstimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
+                }
+                
+                // Add additional info rows
+                org.odftoolkit.odfdom.doc.table.OdfTableRow rawBankRow = rawTable.appendRow();
+                rawBankRow.getCellByIndex(0).setStringValue("Current bank account cash");
+                rawBankRow.getCellByIndex(1).setDoubleValue(bankCash);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow rawPlannedRow = rawTable.appendRow();
+                rawPlannedRow.getCellByIndex(0).setStringValue("Planned costs total");
+                rawPlannedRow.getCellByIndex(1).setDoubleValue(plannedCostsTotal);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow rawPaidRow = rawTable.appendRow();
+                rawPaidRow.getCellByIndex(0).setStringValue("Paid total");
+                rawPaidRow.getCellByIndex(1).setDoubleValue(paidTotalVal);
+                
+                // ===== SHEET 3: SUMMARY =====
+                org.odftoolkit.odfdom.doc.table.OdfTable summaryTable = 
+                        org.odftoolkit.odfdom.doc.table.OdfTable.newTable(spreadsheet);
+                summaryTable.setTableName("Summary");
+                
+                // Add summary information
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryTitleRow = summaryTable.appendRow();
+                summaryTitleRow.getCellByIndex(0).setStringValue("Cash Flow Summary");
+                summaryTitleRow.getCellByIndex(1).setStringValue("");
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryBlankRow = summaryTable.appendRow();
+                summaryBlankRow.getCellByIndex(0).setStringValue("");
+                summaryBlankRow.getCellByIndex(1).setStringValue("");
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryBankRow = summaryTable.appendRow();
+                summaryBankRow.getCellByIndex(0).setStringValue("Bank Cash");
+                summaryBankRow.getCellByIndex(1).setDoubleValue(bankCash);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryGrandRow = summaryTable.appendRow();
+                summaryGrandRow.getCellByIndex(0).setStringValue("Grand Total from Booking Lines");
+                summaryGrandRow.getCellByIndex(1).setDoubleValue(grandTotal);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryAvailableRow = summaryTable.appendRow();
+                summaryAvailableRow.getCellByIndex(0).setStringValue("Available (Bank + Grand Total)");
+                summaryAvailableRow.getCellByIndex(1).setDoubleValue(available);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryPlannedRow = summaryTable.appendRow();
+                summaryPlannedRow.getCellByIndex(0).setStringValue("Planned Costs Total");
+                summaryPlannedRow.getCellByIndex(1).setDoubleValue(plannedCostsTotal);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryPaidRow = summaryTable.appendRow();
+                summaryPaidRow.getCellByIndex(0).setStringValue("Paid Total");
+                summaryPaidRow.getCellByIndex(1).setDoubleValue(paidTotalVal);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryNetRow = summaryTable.appendRow();
+                summaryNetRow.getCellByIndex(0).setStringValue("Planned - Paid");
+                summaryNetRow.getCellByIndex(1).setDoubleValue(plannedCostsMinusCosts);
+                
+                org.odftoolkit.odfdom.doc.table.OdfTableRow summaryEstimatedRow = summaryTable.appendRow();
+                summaryEstimatedRow.getCellByIndex(0).setStringValue("Estimated Income");
+                summaryEstimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
                 
                 try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                     spreadsheet.save(fos);

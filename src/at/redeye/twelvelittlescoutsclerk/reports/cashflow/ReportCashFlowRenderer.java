@@ -18,6 +18,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
     // Data structures for export
     private LinkedHashMap<Integer, String> acNames;
     private LinkedHashMap<Integer, Double> sumByClass;
+    private List<DBBookingLine> bookingLines;
     private double grandTotal;
     private double plannedCostsTotal;
     private double paidTotal;
@@ -51,6 +53,7 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         this.dateTill = dateTill != null ? dateTill : new DBDateTime("dummy");
         this.acNames = new LinkedHashMap<>();
         this.sumByClass = new LinkedHashMap<>();
+        this.bookingLines = new ArrayList<>();
     }
 
     @Override
@@ -110,6 +113,7 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
                 + " and " + trans.markColumn(blProto, blProto.splitpos) + " = 0"
                 + dateFilter
                 + " order by " + trans.markColumn(blProto, blProto.date));
+        this.bookingLines = lines;
 
         // --- accumulate sums per account class idx ---
         // Rule:
@@ -243,6 +247,10 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
     
     public double getCurrentBankCash() {
         return this.currentBankCash;
+    }
+    
+    public List<DBBookingLine> getBookingLines() {
+        return new ArrayList<>(this.bookingLines);
     }
     
     public DBBillingPeriod getBillingPeriod() {

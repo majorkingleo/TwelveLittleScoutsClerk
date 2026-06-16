@@ -336,6 +336,7 @@ public class ReportCashFlow extends BaseDialog {
                 
                 java.util.LinkedHashMap<Integer, String> acNames = renderer.getAccountClassNames();
                 java.util.LinkedHashMap<Integer, Double> sumByClass = renderer.getSumByClass();
+                java.util.List<at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine> bookingLines = renderer.getBookingLines();
                 double grandTotal = renderer.getGrandTotal();
                 double plannedCostsTotal = renderer.getPlannedCostsTotal();
                 double paidTotalVal = renderer.getPaidTotal();
@@ -354,10 +355,6 @@ public class ReportCashFlow extends BaseDialog {
                 for (org.odftoolkit.odfdom.doc.table.OdfTableRow row : existingRows) {
                     formattedTable.removeRowsByIndex(row.getRowIndex(), 1);
                 }
-                
-                // Set column widths (in characters, approximate)
-                formattedTable.getColumnByIndex(0).setWidth(40); // wider for account class names
-                formattedTable.getColumnByIndex(1).setWidth(20); // narrower for amounts
                 
                 // Add header row
                 org.odftoolkit.odfdom.doc.table.OdfTableRow headerRow = formattedTable.appendRow();
@@ -490,6 +487,53 @@ public class ReportCashFlow extends BaseDialog {
                 org.odftoolkit.odfdom.doc.table.OdfTableRow summaryEstimatedRow = summaryTable.appendRow();
                 summaryEstimatedRow.getCellByIndex(0).setStringValue("Estimated Income");
                 summaryEstimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
+                
+                // ===== SHEET 4: BOOKING LINES (detailed raw data) =====
+                org.odftoolkit.odfdom.doc.table.OdfTable bookingLinesTable = 
+                        org.odftoolkit.odfdom.doc.table.OdfTable.newTable(spreadsheet);
+                bookingLinesTable.setTableName("Booking Lines");
+                
+                // Add header row
+                org.odftoolkit.odfdom.doc.table.OdfTableRow blHeaderRow = bookingLinesTable.appendRow();
+                blHeaderRow.getCellByIndex(0).setStringValue("Account Category");
+                blHeaderRow.getCellByIndex(1).setStringValue("Date");
+                blHeaderRow.getCellByIndex(2).setStringValue("Amount (€)");
+                blHeaderRow.getCellByIndex(3).setStringValue("Booking Line with IBAN");
+                
+                // Add data rows from booking lines
+                for (at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine bl : bookingLines) {
+                    org.odftoolkit.odfdom.doc.table.OdfTableRow blDataRow = bookingLinesTable.appendRow();
+                    
+                    // Account Category
+                    String accountCategory = bl.account_class != null && bl.account_class.getValue() != null 
+                        ? bl.account_class.getValue() : "(unassigned)";
+                    blDataRow.getCellByIndex(0).setStringValue(accountCategory);
+                    
+                    // Date
+                    String dateStr = bl.date != null && bl.date.getValue() != null 
+                        ? bl.date.getValue().toString() : "";
+                    blDataRow.getCellByIndex(1).setStringValue(dateStr);
+                    
+                    // Amount
+                    double amount = bl.amount != null ? bl.amount.getValue() : 0.0;
+                    blDataRow.getCellByIndex(2).setDoubleValue(amount);
+                    
+                    // Booking Line with IBAN
+                    StringBuilder bookingLineInfo = new StringBuilder();
+                    if (bl.line != null && bl.line.getValue() != null && !bl.line.getValue().isEmpty()) {
+                        bookingLineInfo.append(bl.line.getValue());
+                    }
+                    if (bl.from_bank_account_iban != null && bl.from_bank_account_iban.getValue() != null 
+                            && !bl.from_bank_account_iban.getValue().isEmpty()) {
+                        if (bookingLineInfo.length() > 0) {
+                            bookingLineInfo.append(" | ");
+                        }
+                        bookingLineInfo.append("IBAN: ").append(bl.from_bank_account_iban.getValue());
+                    }
+                    String bookingLineStr = bookingLineInfo.length() > 0 
+                        ? bookingLineInfo.toString() : "(no description)";
+                    blDataRow.getCellByIndex(3).setStringValue(bookingLineStr);
+                }
                 
                 try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                     spreadsheet.save(fos);

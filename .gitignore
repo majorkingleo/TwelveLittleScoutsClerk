@@ -4,3 +4,4 @@
 /target/
 /jdks/
 __pycache__
+*.class

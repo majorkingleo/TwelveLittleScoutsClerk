@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import javax.swing.JFileChooser;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties;
+import org.odftoolkit.odfdom.dom.style.props.OdfTableColumnProperties;
 import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
@@ -407,6 +408,8 @@ public class ReportCashFlow extends BaseDialog {
                     estimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
                 }
                 
+                autoFitColumnWidths(formattedTable);
+                
                 // ===== SHEET 2: RAW (no formatting) =====
                 // Add a new table for the raw data sheet
                 org.odftoolkit.odfdom.doc.table.OdfTable rawTable = 
@@ -459,6 +462,8 @@ public class ReportCashFlow extends BaseDialog {
                 rawPaidRow.getCellByIndex(0).setStringValue("Paid total");
                 rawPaidRow.getCellByIndex(1).setDoubleValue(paidTotalVal);
                 
+                autoFitColumnWidths(rawTable);
+                
                 // ===== SHEET 3: SUMMARY =====
                 org.odftoolkit.odfdom.doc.table.OdfTable summaryTable = 
                         org.odftoolkit.odfdom.doc.table.OdfTable.newTable(spreadsheet);
@@ -500,6 +505,8 @@ public class ReportCashFlow extends BaseDialog {
                 org.odftoolkit.odfdom.doc.table.OdfTableRow summaryEstimatedRow = summaryTable.appendRow();
                 summaryEstimatedRow.getCellByIndex(0).setStringValue("Estimated Income");
                 summaryEstimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
+                
+                autoFitColumnWidths(summaryTable);
                 
                 // ===== SHEET 4: BOOKING LINES (detailed raw data) =====
                 org.odftoolkit.odfdom.doc.table.OdfTable bookingLinesTable = 
@@ -548,6 +555,8 @@ public class ReportCashFlow extends BaseDialog {
                     blDataRow.getCellByIndex(3).setStringValue(bookingLineStr);
                 }
                 
+                autoFitColumnWidths(bookingLinesTable);
+                
                 try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                     spreadsheet.save(fos);
                 }
@@ -566,6 +575,45 @@ public class ReportCashFlow extends BaseDialog {
     private void setCellBackgroundColor(org.odftoolkit.odfdom.doc.table.OdfTableCell cell, String color) {
         // Use public getOdfElement().setProperty() instead of protected getCellStyleElementForWrite()
         cell.getOdfElement().setProperty(OdfTableCellProperties.BackgroundColor, color);
+    }
+    
+    /**
+     * Auto-fit column widths based on content text length.
+     * Estimates width in mm: chars × 2.5mm + 8mm padding, clamped to [20, 300] mm.
+     */
+    private void autoFitColumnWidths(org.odftoolkit.odfdom.doc.table.OdfTable table) {
+        int colCount = table.getColumnCount();
+        int rowCount = table.getRowCount();
+        if (colCount == 0 || rowCount == 0) {
+            return;
+        }
+        
+        // Find max text length per column
+        int[] maxLen = new int[colCount];
+        for (int r = 0; r < rowCount; r++) {
+            org.odftoolkit.odfdom.doc.table.OdfTableRow row = table.getRowByIndex(r);
+            for (int c = 0; c < colCount && c < row.getCellCount(); c++) {
+                org.odftoolkit.odfdom.doc.table.OdfTableCell cell = row.getCellByIndex(c);
+                String text = cell.getDisplayText();
+                if (text != null && text.length() > maxLen[c]) {
+                    maxLen[c] = text.length();
+                }
+            }
+        }
+        
+        // Set widths via style property (bypasses buggy setWidth in odfdom 0.10.0)
+        for (int c = 0; c < colCount; c++) {
+            long widthMm = Math.max(20, Math.min(300, maxLen[c] * 5 / 2 + 8));
+            org.odftoolkit.odfdom.doc.table.OdfTableColumn col = table.getColumnByIndex(c);
+            if (col != null) {
+                try {
+                    col.getOdfElement().setProperty(OdfTableColumnProperties.ColumnWidth, widthMm + "mm");
+                } catch (Exception e) {
+                    // Fallback: let the viewer auto-fit this column
+                    col.setUseOptimalWidth(true);
+                }
+            }
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

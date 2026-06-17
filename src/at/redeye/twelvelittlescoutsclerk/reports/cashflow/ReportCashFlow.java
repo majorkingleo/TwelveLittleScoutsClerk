@@ -14,6 +14,8 @@ import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
 import java.io.File;
 import java.io.FileOutputStream;
 import javax.swing.JFileChooser;
+import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties;
+import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
 public class ReportCashFlow extends BaseDialog {
@@ -373,13 +375,19 @@ public class ReportCashFlow extends BaseDialog {
                     dataRow.getCellByIndex(1).setDoubleValue(sum);
                 }
                 
-                // Add total row
+                // Add total row (bold, like HTML)
                 org.odftoolkit.odfdom.doc.table.OdfTableRow totalRow = formattedTable.appendRow();
+                setCellBold(totalRow.getCellByIndex(0));
+                setCellBold(totalRow.getCellByIndex(1));
                 totalRow.getCellByIndex(0).setStringValue("Total from booking lines");
                 totalRow.getCellByIndex(1).setDoubleValue(grandTotal);
                 
-                // Add available cash row
+                // Add available cash row (bold + green background, like HTML)
                 org.odftoolkit.odfdom.doc.table.OdfTableRow availableRow = formattedTable.appendRow();
+                setCellBold(availableRow.getCellByIndex(0));
+                setCellBold(availableRow.getCellByIndex(1));
+                setCellBackgroundColor(availableRow.getCellByIndex(0), "#d0f0d0");
+                setCellBackgroundColor(availableRow.getCellByIndex(1), "#d0f0d0");
                 availableRow.getCellByIndex(0).setStringValue("Available cash (bank + total)");
                 availableRow.getCellByIndex(1).setDoubleValue(available);
                 
@@ -389,7 +397,12 @@ public class ReportCashFlow extends BaseDialog {
                     costsRow.getCellByIndex(0).setStringValue("Planned costs - Costs (for counting events)");
                     costsRow.getCellByIndex(1).setDoubleValue(plannedCostsMinusCosts);
                     
+                    // Add estimated income row (bold + yellow background, like HTML)
                     org.odftoolkit.odfdom.doc.table.OdfTableRow estimatedRow = formattedTable.appendRow();
+                    setCellBold(estimatedRow.getCellByIndex(0));
+                    setCellBold(estimatedRow.getCellByIndex(1));
+                    setCellBackgroundColor(estimatedRow.getCellByIndex(0), "#f0f0d0");
+                    setCellBackgroundColor(estimatedRow.getCellByIndex(1), "#f0f0d0");
                     estimatedRow.getCellByIndex(0).setStringValue("Estimated income (available + planned - costs)");
                     estimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
                 }
@@ -543,6 +556,18 @@ public class ReportCashFlow extends BaseDialog {
         };
     }
 
+    // ---- ODS formatting helpers ----
+    
+    private void setCellBold(org.odftoolkit.odfdom.doc.table.OdfTableCell cell) {
+        // Use public getOdfElement().setProperty() instead of protected getCellStyleElementForWrite()
+        cell.getOdfElement().setProperty(OdfTextProperties.FontWeight, "bold");
+    }
+    
+    private void setCellBackgroundColor(org.odftoolkit.odfdom.doc.table.OdfTableCell cell, String color) {
+        // Use public getOdfElement().setProperty() instead of protected getCellStyleElementForWrite()
+        cell.getOdfElement().setProperty(OdfTableCellProperties.BackgroundColor, color);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBExportODT;

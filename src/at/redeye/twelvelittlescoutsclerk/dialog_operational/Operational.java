@@ -609,21 +609,28 @@ public class Operational extends BaseDialog {
             @Override
             public void do_stuff() throws Exception {
                 Transaction trans = getTransaction();
-                for (int modelRow : modelRows) {
-                    if (modelRow < 0 || modelRow >= values.size()) {
-                        continue;
+                // AI-modified start: wrap in try/catch to rollback on failure
+                try {
+                    for (int modelRow : modelRows) {
+                        if (modelRow < 0 || modelRow >= values.size()) {
+                            continue;
+                        }
+                        DBBookingLine bl = values.get(modelRow);
+                        if (descr.accountClass != null) {
+                            bl.account_class_idx.loadFromCopy(descr.accountClass.idx.getValue());
+                            bl.account_class.loadFromString(descr.accountClass.name.toString());
+                        } else {
+                            bl.account_class_idx.loadFromCopy(0);
+                            bl.account_class.loadFromString("");
+                        }
+                        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl);
                     }
-                    DBBookingLine bl = values.get(modelRow);
-                    if (descr.accountClass != null) {
-                        bl.account_class_idx.loadFromCopy(descr.accountClass.idx.getValue());
-                        bl.account_class.loadFromString(descr.accountClass.name.toString());
-                    } else {
-                        bl.account_class_idx.loadFromCopy(0);
-                        bl.account_class.loadFromString("");
-                    }
-                    DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl);
+                    trans.commit();
+                } catch (Exception ex) {
+                    trans.rollback();
+                    throw ex;
                 }
-                trans.commit();
+                // AI-modified end
                 feed_table(false);
             }
         };

@@ -33,6 +33,14 @@ public class EditAccountClasses extends BaseDialogDialog {
         bindVar(jTName, entity.name);
         bindVar(jCBCategory, entity.category);
 
+        // AI-modified start: populate combo box from all Category enum values
+        java.util.List<String> categoryValues = new java.util.ArrayList<>();
+        for (DBAccountClasses.Category c : DBAccountClasses.Category.values()) {
+            categoryValues.add(c.name());
+        }
+        jCBCategory.setModel(new javax.swing.DefaultComboBoxModel<>(categoryValues.toArray(new String[0])));
+        // AI-modified end
+
         var_to_gui();
 
         if (mainwin.isAzLocked()) {
@@ -142,8 +150,15 @@ public class EditAccountClasses extends BaseDialogDialog {
             public void do_stuff() throws Exception {
                 gui_to_var();
                 Transaction trans = getTransaction();
-                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, entity, entity.hist, root.getUserName());
-                trans.commit();
+                // AI-modified start: wrap in try/catch to rollback on failure
+                try {
+                    DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, entity, entity.hist, root.getUserName());
+                    trans.commit();
+                } catch (Exception ex) {
+                    trans.rollback();
+                    throw ex;
+                }
+                // AI-modified end
                 saved = true;
                 close();
             }

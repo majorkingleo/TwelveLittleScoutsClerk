@@ -1118,8 +1118,17 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
 
             @Override
             public void do_stuff() throws Exception {
-                
-                save();
+
+                Transaction trans = getTransaction();
+                // AI-modified start: wrap in try/catch to rollback on failure
+                try {
+                    save();
+                    trans.commit();
+                } catch (Exception ex) {
+                    trans.rollback();
+                    throw ex;
+                }
+                // AI-modified end
                 //close();
                 feed_table();
             }

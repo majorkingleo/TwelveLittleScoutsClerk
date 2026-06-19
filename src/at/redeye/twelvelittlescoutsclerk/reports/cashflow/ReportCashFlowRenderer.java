@@ -20,9 +20,11 @@ import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import org.apache.log4j.Logger;
 
@@ -36,6 +38,7 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
     private final double currentBankCash;
     private final DBDateTime dateFrom;
     private final DBDateTime dateTill;
+    private final Set<DBAccountClasses.Category> categoryFilter;
     
     // Data structures for export
     private LinkedHashMap<Integer, String> acNames;
@@ -45,12 +48,14 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
     private double plannedCostsTotal;
     private double paidTotal;
 
-    public ReportCashFlowRenderer(Transaction trans, DBBillingPeriod bp, double currentBankCash, DBDateTime dateFrom, DBDateTime dateTill) {
+    public ReportCashFlowRenderer(Transaction trans, DBBillingPeriod bp, double currentBankCash,
+            DBDateTime dateFrom, DBDateTime dateTill, Set<DBAccountClasses.Category> categoryFilter) {
         this.trans = trans;
         this.bp = bp;
         this.currentBankCash = currentBankCash;
         this.dateFrom = dateFrom != null ? dateFrom : new DBDateTime("dummy");
         this.dateTill = dateTill != null ? dateTill : new DBDateTime("dummy");
+        this.categoryFilter = categoryFilter != null ? categoryFilter : Set.of(DBAccountClasses.Category.values());
         this.acNames = new LinkedHashMap<>();
         this.sumByClass = new LinkedHashMap<>();
         this.bookingLines = new ArrayList<>();
@@ -99,10 +104,19 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         List<DBAccountClasses> accountClasses = trans.fetchTable2(acProto,
                 "where " + trans.markColumn(acProto, acProto.bp_idx) + " = " + bp.idx
                 + " order by " + trans.markColumn(acProto, acProto.name));
+
+        // build a set of account class indices that match the selected category filter
+        Set<Integer> filteredAcIdx = new HashSet<>();
         this.acNames.clear();
         this.acNames.put(0, "(unassigned)");
+        // (unassigned) always passes the filter
+        filteredAcIdx.add(0);
         for (DBAccountClasses ac : accountClasses) {
             this.acNames.put(ac.idx.getValue(), ac.name.toString());
+            DBAccountClasses.Category cat = DBAccountClasses.Category.values()[ac.category.getValue()];
+            if (categoryFilter.contains(cat)) {
+                filteredAcIdx.add(ac.idx.getValue());
+            }
         }
 
         // --- load all booking lines for this billing period (no splits) ---
@@ -119,6 +133,7 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
         // Rule:
         //   - line has no event assignment → always count
         //   - line has event assignment → count only if event.counts_to_available_cash_amount == true
+        //   - also skip lines whose account class category is not in the filter
         this.sumByClass.clear();
         for (Integer k : this.acNames.keySet()) {
             this.sumByClass.put(k, 0.0);
@@ -139,6 +154,11 @@ public class ReportCashFlowRenderer extends BaseReportRenderer implements Report
 
             int acIdx = bl.account_class_idx.getValue();
             double amount = bl.amount.getValue();
+
+            // skip account classes not in the category filter
+            if (!filteredAcIdx.contains(acIdx)) {
+                continue;
+            }
 
             logger.info( "blIdx: " + bl.idx.getValue() + ", ac: " + bl.account_class.toString() + ", amount: " + amount ); 
 

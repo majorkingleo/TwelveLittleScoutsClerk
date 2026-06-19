@@ -10,9 +10,12 @@ import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.Plugins.JDatePicker.JDatePicker;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
 import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.swing.JFileChooser;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableColumnProperties;
@@ -24,6 +27,9 @@ public class ReportCashFlow extends BaseDialog {
     private static final String CONFIG_BANK_CASH = ReportCashFlow.class.getName() + ".bankCash";
     private static final String CONFIG_DATE_FROM = ReportCashFlow.class.getName() + ".dateFrom";
     private static final String CONFIG_DATE_TILL = ReportCashFlow.class.getName() + ".dateTill";
+    private static final String CONFIG_CAT_INCOME = ReportCashFlow.class.getName() + ".catIncome";
+    private static final String CONFIG_CAT_EXPENSE = ReportCashFlow.class.getName() + ".catExpense";
+    private static final String CONFIG_CAT_LIABILITY = ReportCashFlow.class.getName() + ".catLiability";
 
     private final MainWin mainwin;
     private final DBDateTime dateFrom;
@@ -41,6 +47,11 @@ public class ReportCashFlow extends BaseDialog {
         // restore last-used bank cash value
         String saved = root.getSetup().getLocalConfig(CONFIG_BANK_CASH, "0.0");
         jTBankCash.setText(saved);
+
+        // restore last-used category filter (default: INCOME + EXPENSE on, LIABILITY off)
+        jCBCatIncome.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_INCOME, "true")));
+        jCBCatExpense.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_EXPENSE, "true")));
+        jCBCatLiability.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_LIABILITY, "false")));
 
         // restore last-used date range
         String savedFrom = root.getSetup().getLocalConfig(CONFIG_DATE_FROM, "");
@@ -77,6 +88,9 @@ public class ReportCashFlow extends BaseDialog {
         root.getSetup().setLocalConfig(CONFIG_BANK_CASH, jTBankCash.getText().trim());
         root.getSetup().setLocalConfig(CONFIG_DATE_FROM, dateFrom.toString());
         root.getSetup().setLocalConfig(CONFIG_DATE_TILL, dateTill.toString());
+        root.getSetup().setLocalConfig(CONFIG_CAT_INCOME, String.valueOf(jCBCatIncome.isSelected()));
+        root.getSetup().setLocalConfig(CONFIG_CAT_EXPENSE, String.valueOf(jCBCatExpense.isSelected()));
+        root.getSetup().setLocalConfig(CONFIG_CAT_LIABILITY, String.valueOf(jCBCatLiability.isSelected()));
         super.close();
     }
 
@@ -88,6 +102,18 @@ public class ReportCashFlow extends BaseDialog {
         }
     }
 
+    /**
+     * Build the set of selected Category values from the checkboxes.
+     * INCOME and EXPENSE enabled by default.
+     */
+    private Set<DBAccountClasses.Category> buildCategoryFilter() {
+        Set<DBAccountClasses.Category> filter = EnumSet.noneOf(DBAccountClasses.Category.class);
+        if (jCBCatIncome.isSelected()) filter.add(DBAccountClasses.Category.INCOME);
+        if (jCBCatExpense.isSelected()) filter.add(DBAccountClasses.Category.EXPENSE);
+        if (jCBCatLiability.isSelected()) filter.add(DBAccountClasses.Category.LIABILITY);
+        return filter;
+    }
+
     private void generateReport() {
         new AutoMBox(getTitle()) {
             @Override
@@ -95,8 +121,9 @@ public class ReportCashFlow extends BaseDialog {
                 setWaitCursor();
                 gui_to_var();
                 double bankCash = parseBankCash();
+                Set<DBAccountClasses.Category> categoryFilter = buildCategoryFilter();
                 ReportCashFlowRenderer renderer =
-                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill);
+                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill, categoryFilter);
                 renderer.collectData();
                 jReport.setText(renderer.render());
                 jReport.setCaretPosition(0);
@@ -144,6 +171,18 @@ public class ReportCashFlow extends BaseDialog {
             }
         });
 
+        // Category filter checkboxes (INCOME + EXPENSE enabled by default)
+        jCBCatIncome = new javax.swing.JCheckBox();
+        jCBCatIncome.setText("INCOME");
+        jCBCatIncome.setSelected(true);
+
+        jCBCatExpense = new javax.swing.JCheckBox();
+        jCBCatExpense.setText("EXPENSE");
+        jCBCatExpense.setSelected(true);
+
+        jCBCatLiability = new javax.swing.JCheckBox();
+        jCBCatLiability.setText("LIABILITY");
+
         javax.swing.GroupLayout jPanelControlsLayout = new javax.swing.GroupLayout(jPanelControls);
         jPanelControls.setLayout(jPanelControlsLayout);
         jPanelControlsLayout.setHorizontalGroup(
@@ -155,6 +194,12 @@ public class ReportCashFlow extends BaseDialog {
                         .addComponent(jLabelBankCash)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTBankCash, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanelControlsLayout.createSequentialGroup()
+                        .addComponent(jCBCatIncome)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCBCatExpense)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCBCatLiability))
                     .addGroup(jPanelControlsLayout.createSequentialGroup()
                         .addComponent(jLabelDateFrom)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -175,6 +220,11 @@ public class ReportCashFlow extends BaseDialog {
                     .addComponent(jLabelBankCash)
                     .addComponent(jTBankCash, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBGenerate))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jCBCatIncome)
+                    .addComponent(jCBCatExpense)
+                    .addComponent(jCBCatLiability))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabelDateFrom)
@@ -327,8 +377,9 @@ public class ReportCashFlow extends BaseDialog {
                 setWaitCursor();
                 gui_to_var();
                 double bankCash = parseBankCash();
+                Set<DBAccountClasses.Category> categoryFilter = buildCategoryFilter();
                 ReportCashFlowRenderer renderer =
-                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill);
+                        new ReportCashFlowRenderer(getTransaction(), mainwin.getAZ(), bankCash, dateFrom, dateTill, categoryFilter);
                 renderer.collectData();
                 // Call render() to populate the data structures (we ignore the HTML output)
                 renderer.render();
@@ -407,6 +458,8 @@ public class ReportCashFlow extends BaseDialog {
                     estimatedRow.getCellByIndex(0).setStringValue("Estimated income (available + planned - costs)");
                     estimatedRow.getCellByIndex(1).setDoubleValue(estimatedIncome);
                 }
+                
+                autoFitColumnWidths(formattedTable);
                 
                 autoFitColumnWidths(formattedTable);
                 
@@ -568,18 +621,18 @@ public class ReportCashFlow extends BaseDialog {
     // ---- ODS formatting helpers ----
     
     private void setCellBold(org.odftoolkit.odfdom.doc.table.OdfTableCell cell) {
-        // Use public getOdfElement().setProperty() instead of protected getCellStyleElementForWrite()
         cell.getOdfElement().setProperty(OdfTextProperties.FontWeight, "bold");
     }
     
     private void setCellBackgroundColor(org.odftoolkit.odfdom.doc.table.OdfTableCell cell, String color) {
-        // Use public getOdfElement().setProperty() instead of protected getCellStyleElementForWrite()
         cell.getOdfElement().setProperty(OdfTableCellProperties.BackgroundColor, color);
     }
     
     /**
      * Auto-fit column widths based on content text length.
      * Estimates width in mm: chars × 2.5mm + 8mm padding, clamped to [20, 300] mm.
+     * Uses setProperty on the column's ODF element to bypass the buggy setWidth()
+     * in odfdom 0.10.0 (which throws NumberFormatException on locale comma values).
      */
     private void autoFitColumnWidths(org.odftoolkit.odfdom.doc.table.OdfTable table) {
         int colCount = table.getColumnCount();
@@ -619,6 +672,9 @@ public class ReportCashFlow extends BaseDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBExportODT;
+    private javax.swing.JCheckBox jCBCatExpense;
+    private javax.swing.JCheckBox jCBCatIncome;
+    private javax.swing.JCheckBox jCBCatLiability;
     private at.redeye.Plugins.JDatePicker.JDatePicker jDateFrom;
     private at.redeye.Plugins.JDatePicker.JDatePicker jDateTill;
     private javax.swing.JButton jBGenerate;

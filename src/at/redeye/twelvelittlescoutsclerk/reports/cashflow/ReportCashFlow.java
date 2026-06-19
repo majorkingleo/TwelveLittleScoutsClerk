@@ -36,7 +36,8 @@ public class ReportCashFlow extends BaseDialog {
     private final DBDateTime dateTill;
 
     public ReportCashFlow(MainWin mainwin) {
-        super(mainwin.getRoot(), "Cash Flow");
+        super(mainwin.getRoot(), mainwin.getRoot().MlM( "Cash Flow") + " - " + mainwin.getAZ().title
+    );
         this.mainwin = mainwin;
         dateFrom = new DBDateTime("dateFrom");
         dateTill = new DBDateTime("dateTill");
@@ -45,17 +46,17 @@ public class ReportCashFlow extends BaseDialog {
         FixNimbusBackgroundColor.fixNimbusBackgroundColor(jReport);
 
         // restore last-used bank cash value
-        String saved = root.getSetup().getLocalConfig(CONFIG_BANK_CASH, "0.0");
+        String saved = root.getSetup().getLocalConfig(CONFIG_BANK_CASH + mainwin.getAZ().title, "0.0");
         jTBankCash.setText(saved);
 
         // restore last-used category filter (default: INCOME + EXPENSE on, LIABILITY off)
-        jCBCatIncome.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_INCOME, "true")));
-        jCBCatExpense.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_EXPENSE, "true")));
-        jCBCatLiability.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_LIABILITY, "false")));
+        jCBCatIncome.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_INCOME + mainwin.getAZ().title, "true")));
+        jCBCatExpense.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_EXPENSE + mainwin.getAZ().title, "true")));
+        jCBCatLiability.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_LIABILITY + mainwin.getAZ().title, "false")));
 
         // restore last-used date range
-        String savedFrom = root.getSetup().getLocalConfig(CONFIG_DATE_FROM, "");
-        String savedTill = root.getSetup().getLocalConfig(CONFIG_DATE_TILL, "");
+        String savedFrom = root.getSetup().getLocalConfig(CONFIG_DATE_FROM + mainwin.getAZ().title, "");
+        String savedTill = root.getSetup().getLocalConfig(CONFIG_DATE_TILL + mainwin.getAZ().title, "");
         try {
             if (!savedFrom.trim().isEmpty()) {
                 dateFrom.loadFromString(savedFrom);
@@ -85,12 +86,12 @@ public class ReportCashFlow extends BaseDialog {
     @Override
     public void close() {
         gui_to_var();
-        root.getSetup().setLocalConfig(CONFIG_BANK_CASH, jTBankCash.getText().trim());
-        root.getSetup().setLocalConfig(CONFIG_DATE_FROM, dateFrom.toString());
-        root.getSetup().setLocalConfig(CONFIG_DATE_TILL, dateTill.toString());
-        root.getSetup().setLocalConfig(CONFIG_CAT_INCOME, String.valueOf(jCBCatIncome.isSelected()));
-        root.getSetup().setLocalConfig(CONFIG_CAT_EXPENSE, String.valueOf(jCBCatExpense.isSelected()));
-        root.getSetup().setLocalConfig(CONFIG_CAT_LIABILITY, String.valueOf(jCBCatLiability.isSelected()));
+        root.getSetup().setLocalConfig(CONFIG_BANK_CASH + mainwin.getAZ().title, jTBankCash.getText().trim());
+        root.getSetup().setLocalConfig(CONFIG_DATE_FROM + mainwin.getAZ().title, dateFrom.toString());
+        root.getSetup().setLocalConfig(CONFIG_DATE_TILL + mainwin.getAZ().title, dateTill.toString());
+        root.getSetup().setLocalConfig(CONFIG_CAT_INCOME + mainwin.getAZ().title, String.valueOf(jCBCatIncome.isSelected()));
+        root.getSetup().setLocalConfig(CONFIG_CAT_EXPENSE + mainwin.getAZ().title, String.valueOf(jCBCatExpense.isSelected()));
+        root.getSetup().setLocalConfig(CONFIG_CAT_LIABILITY + mainwin.getAZ().title, String.valueOf(jCBCatLiability.isSelected()));
         super.close();
     }
 

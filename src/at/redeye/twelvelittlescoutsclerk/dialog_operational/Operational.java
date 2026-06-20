@@ -116,7 +116,13 @@ public class Operational extends BaseDialog {
                 }
             } else if (comp instanceof JDatePicker) {
                 JDatePicker date = (JDatePicker) comp;
-                date.setDate(root.getSetup().getLocalConfig(check_filter, ""));
+                // AI-modified: restore ISO date (yyyy-MM-dd) → append time for DBDateTime parser
+                String savedDate = root.getSetup().getLocalConfig(check_filter, "");
+                if (!savedDate.isEmpty() && savedDate.length() == 10) {
+                    savedDate = savedDate + " 00:00:00";
+                }
+                date.setDate(savedDate);
+                // AI-modified end
             } else if (comp instanceof javax.swing.JComboBox) {
                 @SuppressWarnings("unchecked")
                 javax.swing.JComboBox<AccountClassDescr> combo = (javax.swing.JComboBox<AccountClassDescr>) comp;
@@ -145,7 +151,10 @@ public class Operational extends BaseDialog {
                 root.getSetup().setLocalConfig(check_filter, Boolean.toString(check.isSelected()));
             } else if (comp instanceof JDatePicker) {
                 JDatePicker date = (JDatePicker) comp;
-                root.getSetup().setLocalConfig(check_filter, date.getDate());
+                // AI-modified: save ISO date-only (yyyy-MM-dd), strip time part
+                String fullDate = date.getDate();
+                root.getSetup().setLocalConfig(check_filter, fullDate != null && fullDate.length() >= 10 ? fullDate.substring(0, 10) : fullDate);
+                // AI-modified end
             } else if (comp instanceof javax.swing.JComboBox) {
                 @SuppressWarnings("unchecked")
                 javax.swing.JComboBox<AccountClassDescr> combo = (javax.swing.JComboBox<AccountClassDescr>) comp;

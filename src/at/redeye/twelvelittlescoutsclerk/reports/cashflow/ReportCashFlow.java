@@ -18,7 +18,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.JFileChooser;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties;
-import org.odftoolkit.odfdom.dom.style.props.OdfTableColumnProperties;
 import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
@@ -32,7 +31,9 @@ public class ReportCashFlow extends BaseDialog {
     private static final String CONFIG_CAT_LIABILITY = ReportCashFlow.class.getName() + ".catLiability";
 
     private final MainWin mainwin;
-    private final DBDateTime dateFrom;
+    // dateFrom/dateTill are bound to jDateFrom/jDateTill for gui_to_var()/var_to_gui()
+    // persistence uses jDateFrom.getDate()/setDate() directly (matching Operational/BookingLines pattern)
+    private final DBDateTime dateFrom;  // needed for var_to_gui()/gui_to_var() and renderer
     private final DBDateTime dateTill;
 
     public ReportCashFlow(MainWin mainwin) {
@@ -54,23 +55,17 @@ public class ReportCashFlow extends BaseDialog {
         jCBCatExpense.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_EXPENSE + mainwin.getAZ().title, "true")));
         jCBCatLiability.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_LIABILITY + mainwin.getAZ().title, "false")));
 
-        // restore last-used date range
+        // restore last-used date range (same pattern as Operational/BookingLines)
         String savedFrom = root.getSetup().getLocalConfig(CONFIG_DATE_FROM + mainwin.getAZ().title, "");
         String savedTill = root.getSetup().getLocalConfig(CONFIG_DATE_TILL + mainwin.getAZ().title, "");
-        try {
-            if (!savedFrom.trim().isEmpty()) {
-                dateFrom.loadFromString(savedFrom);
-            }
-        } catch (Exception ex) {
-            logger.error(ex, ex);            
+        if (!savedFrom.isEmpty() && savedFrom.length() == 10) {
+            savedFrom = savedFrom + " 00:00:00";
         }
-        try {
-            if (!savedTill.trim().isEmpty()) {
-                dateTill.loadFromString(savedTill);
-            }
-        } catch (Exception ex) {
-            logger.error(ex, ex);
+        jDateFrom.setDate(savedFrom);
+        if (!savedTill.isEmpty() && savedTill.length() == 10) {
+            savedTill = savedTill + " 00:00:00";
         }
+        jDateTill.setDate(savedTill);
 
         // bind date fields to UI components
         bindVar(jDateFrom, dateFrom);
@@ -87,8 +82,12 @@ public class ReportCashFlow extends BaseDialog {
     public void close() {
         gui_to_var();
         root.getSetup().setLocalConfig(CONFIG_BANK_CASH + mainwin.getAZ().title, jTBankCash.getText().trim());
-        root.getSetup().setLocalConfig(CONFIG_DATE_FROM + mainwin.getAZ().title, dateFrom.toString());
-        root.getSetup().setLocalConfig(CONFIG_DATE_TILL + mainwin.getAZ().title, dateTill.toString());
+        // save date-only ISO format (same pattern as Operational/BookingLines)
+        String fromDate = jDateFrom.getDate();
+        root.getSetup().setLocalConfig(CONFIG_DATE_FROM + mainwin.getAZ().title, fromDate != null && fromDate.length() >= 10 ? fromDate.substring(0, 10) : fromDate);
+        String tillDate = jDateTill.getDate();
+        root.getSetup().setLocalConfig(CONFIG_DATE_TILL + mainwin.getAZ().title, tillDate != null && tillDate.length() >= 10 ? tillDate.substring(0, 10) : tillDate);
+        // AI-modified end
         root.getSetup().setLocalConfig(CONFIG_CAT_INCOME + mainwin.getAZ().title, String.valueOf(jCBCatIncome.isSelected()));
         root.getSetup().setLocalConfig(CONFIG_CAT_EXPENSE + mainwin.getAZ().title, String.valueOf(jCBCatExpense.isSelected()));
         root.getSetup().setLocalConfig(CONFIG_CAT_LIABILITY + mainwin.getAZ().title, String.valueOf(jCBCatLiability.isSelected()));
@@ -142,9 +141,9 @@ public class ReportCashFlow extends BaseDialog {
         jLabelBankCash = new javax.swing.JLabel();
         jTBankCash = new javax.swing.JTextField();
         jLabelDateFrom = new javax.swing.JLabel();
-        jDateFrom = new JDatePicker(root);
+        jDateFrom = new JDatePicker();
         jLabelDateTill = new javax.swing.JLabel();
-        jDateTill = new JDatePicker(root);
+        jDateTill = new JDatePicker();
         jBGenerate = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jReport = new javax.swing.JTextPane();
@@ -655,19 +654,15 @@ public class ReportCashFlow extends BaseDialog {
             }
         }
         
-        // Set widths via style property (bypasses buggy setWidth in odfdom 0.10.0)
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        // Set widths — useUseOptimalWidth(true) to avoid odfdom 0.10.0 locale bug in setWidth()
         for (int c = 0; c < colCount; c++) {
-            long widthMm = Math.max(20, Math.min(300, maxLen[c] * 5 / 2 + 8));
             org.odftoolkit.odfdom.doc.table.OdfTableColumn col = table.getColumnByIndex(c);
             if (col != null) {
-                try {
-                    col.getOdfElement().setProperty(OdfTableColumnProperties.ColumnWidth, widthMm + "mm");
-                } catch (Exception e) {
-                    // Fallback: let the viewer auto-fit this column
-                    col.setUseOptimalWidth(true);
-                }
+                col.setUseOptimalWidth(true);
             }
         }
+        // AI-generated end
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

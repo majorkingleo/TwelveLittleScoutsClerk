@@ -154,7 +154,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private List<String> current_member_match_terms = new ArrayList<>();
     
     public BookingLine(MainWin mainwin) {
-        super( mainwin.getRoot(), "BookingLines");
+        super( mainwin.getRoot(), mainwin.getRoot().MlM( "BookingLines") + " - " + mainwin.getAZ().title );
         open_dialog_instance = this;
         
         initComponents();
@@ -241,7 +241,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 }
             } else if( comp instanceof JDatePicker ) {
                 JDatePicker date = (JDatePicker)comp;
-                date.setDate(root.getSetup().getLocalConfig(check_filter,""));
+                // AI-modified: restore ISO date (yyyy-MM-dd) → append time for DBDateTime parser
+                String savedDate = root.getSetup().getLocalConfig(check_filter, "");
+                if (!savedDate.isEmpty() && savedDate.length() == 10) {
+                    savedDate = savedDate + " 00:00:00";
+                }
+                date.setDate(savedDate);
+                // AI-modified end
             // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
             } else if( comp instanceof javax.swing.JComboBox ) {
                 @SuppressWarnings("unchecked")
@@ -275,7 +281,10 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 
             } else if( comp instanceof JDatePicker ) {
                 JDatePicker date = (JDatePicker)comp;
-                root.getSetup().setLocalConfig(check_filter,date.getDate());
+                // AI-modified: save ISO date-only (yyyy-MM-dd), strip time part
+                String fullDate = date.getDate();
+                root.getSetup().setLocalConfig(check_filter, fullDate != null && fullDate.length() >= 10 ? fullDate.substring(0, 10) : fullDate);
+                // AI-modified end
             // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
             } else if( comp instanceof javax.swing.JComboBox ) {
                 @SuppressWarnings("unchecked")

@@ -55,7 +55,18 @@ public class ReportCashFlow extends BaseDialog {
         jCBCatExpense.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_EXPENSE + mainwin.getAZ().title, "true")));
         jCBCatLiability.setSelected(Boolean.parseBoolean(root.getSetup().getLocalConfig(CONFIG_CAT_LIABILITY + mainwin.getAZ().title, "false")));
 
-        // restore last-used date range (same pattern as Operational/BookingLines)
+        // bind date fields to UI components (must happen before var_to_gui)
+        bindVar(jDateFrom, dateFrom);
+        bindVar(jDateTill, dateTill);
+        
+        // make date pickers text-editable like in Operational dialog
+        jDateFrom.setTextEditable(true);
+        jDateTill.setTextEditable(true);
+        
+        var_to_gui();
+
+        // AI-modified start (GitHub Copilot): restore saved dates AFTER var_to_gui()
+        // to avoid var_to_gui() overwriting them with the default DBDateTime epoch value
         String savedFrom = root.getSetup().getLocalConfig(CONFIG_DATE_FROM + mainwin.getAZ().title, "");
         String savedTill = root.getSetup().getLocalConfig(CONFIG_DATE_TILL + mainwin.getAZ().title, "");
         if (!savedFrom.isEmpty() && savedFrom.length() == 10) {
@@ -66,16 +77,7 @@ public class ReportCashFlow extends BaseDialog {
             savedTill = savedTill + " 00:00:00";
         }
         jDateTill.setDate(savedTill);
-
-        // bind date fields to UI components
-        bindVar(jDateFrom, dateFrom);
-        bindVar(jDateTill, dateTill);
-        
-        // make date pickers text-editable like in Operational dialog
-        jDateFrom.setTextEditable(true);
-        jDateTill.setTextEditable(true);
-        
-        var_to_gui();
+        // AI-modified end
     }
 
     @Override

@@ -1162,6 +1162,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             @Override
             public void do_stuff() throws Exception {
 
+                gui_to_var();
+
                 Set<Integer> rows = tm.getSelectedRows();
 
                 if( rows == null || rows.isEmpty() ) {

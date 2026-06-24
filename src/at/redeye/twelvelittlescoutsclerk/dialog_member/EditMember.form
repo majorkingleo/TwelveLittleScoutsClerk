@@ -279,6 +279,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jBAddContact" max="32767" attributes="0"/>
                       <Component id="jBRemoveContact" max="32767" attributes="0"/>
+                      <Component id="jBWhatsApp" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -290,7 +291,9 @@
                   <Component id="jBAddContact" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jBRemoveContact" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="97" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jBWhatsApp" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="70" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -333,6 +336,17 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBRemoveContactActionPerformed"/>
           </Events>
         </Component>
+        <!-- AI-generated start (Claude Sonnet 4.6 / GitHub Copilot) -->
+        <Component class="javax.swing.JButton" name="jBWhatsApp">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Contact via WhatsApp"/>
+            <Property name="enabled" type="boolean" value="false"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBWhatsAppActionPerformed"/>
+          </Events>
+        </Component>
+        <!-- AI-generated end -->
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel5">

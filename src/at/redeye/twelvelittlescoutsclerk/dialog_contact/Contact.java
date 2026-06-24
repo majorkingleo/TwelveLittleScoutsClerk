@@ -19,10 +19,14 @@ import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBContact;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 public class Contact extends BaseDialog implements NewSequenceValueInterface {
 
@@ -62,6 +66,14 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
         tm.autoResize();
         
         tableFilter1.setFilter(jTContent);
+
+        // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+        jTContent.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateWhatsAppButton();
+            }
+        });
+        // AI-generated end
         
         
         if( mainwin.isAzLocked() ) {
@@ -109,6 +121,9 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
         jBNew = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
         jBEdit = new javax.swing.JButton();
+        // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+        jBWhatsApp = new javax.swing.JButton();
+        // AI-generated end
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -173,6 +188,17 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
             }
         });
 
+        // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+        jBWhatsApp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/twelvelittlescoutsclerk/resources/icons/phone.png")));
+        jBWhatsApp.setText("WhatsApp");
+        jBWhatsApp.setEnabled(false);
+        jBWhatsApp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBWhatsAppActionPerformed(evt);
+            }
+        });
+        // AI-generated end
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -186,6 +212,10 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
                 .addComponent(jBEdit)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBDel)
+                // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBWhatsApp)
+                // AI-generated end
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addComponent(jBClose)
                 .addContainerGap())
@@ -199,7 +229,11 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
                     .addComponent(jBNew)
                     .addComponent(jBClose)
                     .addComponent(jBDel)
-                    .addComponent(jBEdit))
+                    .addComponent(jBEdit)
+                    // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+                    .addComponent(jBWhatsApp)
+                    // AI-generated end
+                    )
                 .addContainerGap())
         );
 
@@ -385,11 +419,53 @@ public class Contact extends BaseDialog implements NewSequenceValueInterface {
         }
     }//GEN-LAST:event_jTContentMouseClicked
 
+    // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+    /** Enables the WhatsApp button when a single contact with a phone number is selected. */
+    private void updateWhatsAppButton() {
+        int row = tm.getSelectedRow();
+        if (row < 0 || row >= values.size()) {
+            jBWhatsApp.setEnabled(false);
+            return;
+        }
+        String tel = values.get(row).tel.getValue();
+        jBWhatsApp.setEnabled(tel != null && !tel.trim().isEmpty());
+    }
+
+    /** Opens WhatsApp chat to the selected contact's phone number. */
+    private void jBWhatsAppActionPerformed(java.awt.event.ActionEvent evt) {
+        int row = tm.getSelectedRow();
+        if (row < 0 || row >= values.size()) {
+            return;
+        }
+        String tel = values.get(row).tel.getValue();
+        if (tel == null || tel.trim().isEmpty()) {
+            return;
+        }
+        // Normalize Austrian phone numbers: replace leading 0 with +43
+        String cleaned = tel.trim();
+        if (cleaned.startsWith("0") && !cleaned.startsWith("+")) {
+            cleaned = "+43" + cleaned.substring(1);
+        }
+        try {
+            String msg = URLEncoder.encode("Hello from the scouts clerk application!", StandardCharsets.UTF_8);
+            URI uri = new URI("https://wa.me/" + cleaned + "?text=" + msg);
+            java.awt.Desktop.getDesktop().browse(uri);
+        } catch (Exception ex) {
+            logger.error("Failed to open WhatsApp link", ex);
+            JOptionPane.showMessageDialog(this,
+                    MlM("Could not open WhatsApp: %s").formatted(ex.getMessage()));
+        }
+    }
+    // AI-generated end
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBDel;
     private javax.swing.JButton jBEdit;
+    // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+    private javax.swing.JButton jBWhatsApp;
+    // AI-generated end
     private javax.swing.JButton jBNew;
     private javax.swing.JButton jBSave;
     private javax.swing.JLabel jLInfo;

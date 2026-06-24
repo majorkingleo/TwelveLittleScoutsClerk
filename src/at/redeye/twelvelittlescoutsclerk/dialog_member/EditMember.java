@@ -32,6 +32,9 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Contacts;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMembers2Groups;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -147,6 +150,15 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
         feed_groups();
         
         var_to_gui();
+
+        // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+        // Enables WhatsApp button only when a contact row with a phone number is selected
+        jTM2C.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateWhatsAppButton();
+            }
+        });
+        // AI-generated end
         
         started = true;               
         
@@ -383,6 +395,9 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
         jTM2C = new javax.swing.JTable();
         jBAddContact = new javax.swing.JButton();
         jBRemoveContact = new javax.swing.JButton();
+        // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+        jBWhatsApp = new javax.swing.JButton();
+        // AI-generated end
         jLabel5 = new javax.swing.JLabel();
         jCGroup = new javax.swing.JComboBox<>();
 
@@ -507,6 +522,16 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
             }
         });
 
+        // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+        jBWhatsApp.setText("Contact via WhatsApp");
+        jBWhatsApp.setEnabled(false);
+        jBWhatsApp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBWhatsAppActionPerformed(evt);
+            }
+        });
+        // AI-generated end
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -517,7 +542,11 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jBAddContact, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jBRemoveContact, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jBRemoveContact, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+                    .addComponent(jBWhatsApp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    // AI-generated end
+                    ))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -526,6 +555,10 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
                 .addComponent(jBAddContact)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBRemoveContact)
+                // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBWhatsApp)
+                // AI-generated end
                 .addContainerGap(97, Short.MAX_VALUE))
         );
 
@@ -772,6 +805,48 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
         
     }//GEN-LAST:event_jBRemoveContactActionPerformed
 
+    // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+    /** Enables the WhatsApp button only when exactly one contact row is selected
+     *  and that contact has a non-empty phone number. */
+    private void updateWhatsAppButton() {
+        int row = tm.getSelectedRow();
+        if (row < 0 || row >= m2csv.size()) {
+            jBWhatsApp.setEnabled(false);
+            return;
+        }
+        DBMember2ContactView view = m2csv.get(row);
+        String tel = view.contact.tel.getValue();
+        jBWhatsApp.setEnabled(tel != null && !tel.trim().isEmpty());
+    }
+
+    /** Opens WhatsApp chat to the selected contact's phone number. */
+    private void jBWhatsAppActionPerformed(java.awt.event.ActionEvent evt) {
+        int row = tm.getSelectedRow();
+        if (row < 0 || row >= m2csv.size()) {
+            return;
+        }
+        DBMember2ContactView view = m2csv.get(row);
+        String tel = view.contact.tel.getValue();
+        if (tel == null || tel.trim().isEmpty()) {
+            return;
+        }
+        // Normalize Austrian phone numbers: replace leading 0 with +43
+        String cleaned = tel.trim();
+        if (cleaned.startsWith("0") && !cleaned.startsWith("+")) {
+            cleaned = "+43" + cleaned.substring(1);
+        }
+        try {
+            String msg = URLEncoder.encode("Hello from the scouts clerk application!", StandardCharsets.UTF_8);
+            URI uri = new URI("https://wa.me/" + cleaned + "?text=" + msg);
+            java.awt.Desktop.getDesktop().browse(uri);
+        } catch (Exception ex) {
+            logger.error("Failed to open WhatsApp link", ex);
+            JOptionPane.showMessageDialog(this,
+                    MlM("Could not open WhatsApp: %s").formatted(ex.getMessage()));
+        }
+    }
+    // AI-generated end
+
   
     DBMember2ContactView createEntry( DBContact contact ) throws SQLException, UnsupportedDBDataTypeException, WrongBindFileFormatException, TableBindingNotRegisteredException, IOException
     {
@@ -794,6 +869,9 @@ public class EditMember extends BaseDialogDialog implements NewSequenceValueInte
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBClose1;
     private javax.swing.JButton jBRemoveContact;
+    // AI-generated start (Claude Sonnet 4.6 / GitHub Copilot)
+    private javax.swing.JButton jBWhatsApp;
+    // AI-generated end
     private javax.swing.JButton jBSave;
     private javax.swing.JComboBox<GroupDescr> jCGroup;
     private javax.swing.JCheckBox jCgekuendigt;

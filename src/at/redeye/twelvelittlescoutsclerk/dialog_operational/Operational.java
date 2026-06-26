@@ -55,7 +55,7 @@ public class Operational extends BaseDialog {
     ArrayList<JComponent> filters = new ArrayList<>();
 
     public Operational(MainWin mainwin) {
-        super(mainwin.getRoot(), "Operational");
+        super(mainwin.getRoot(), "Operational" + " - " + mainwin.getAZ().title );
 
         initComponents();
 
@@ -142,6 +142,9 @@ public class Operational extends BaseDialog {
 
     @Override
     public void close() {
+
+        gui_to_var();
+
         for (int i = 0; i < filters.size(); i++) {
             JComponent comp = filters.get(i);
             String check_filter = getUniqueDialogIdentifier("Filter").concat(String.format(".Filter[%d]", i));

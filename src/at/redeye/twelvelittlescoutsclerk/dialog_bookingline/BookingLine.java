@@ -264,12 +264,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         gui_to_var();
         feed_table(false);
         tm.autoResize();
-        tableFilter1.setFilter(jTContent);
+        tableFilter1.setFilter(jTContent);        
     }
     
     @Override
     public void close()
     {
+        gui_to_var();
+
         for( int i = 0; i < filters.size(); i++ )
         {
             JComponent comp = filters.get(i);
@@ -283,7 +285,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 JDatePicker date = (JDatePicker)comp;
                 // AI-modified: save ISO date-only (yyyy-MM-dd), strip time part
                 String fullDate = date.getDate();
-                root.getSetup().setLocalConfig(check_filter, fullDate != null && fullDate.length() >= 10 ? fullDate.substring(0, 10) : fullDate);
+
+                if( fullDate != null && fullDate.length() >= 10 ) {
+                    fullDate = fullDate.substring(0, 10);
+                }
+
+                logger.debug("Saving date filter: " + fullDate);
+                root.getSetup().setLocalConfig(check_filter, fullDate);
                 // AI-modified end
             // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
             } else if( comp instanceof javax.swing.JComboBox ) {

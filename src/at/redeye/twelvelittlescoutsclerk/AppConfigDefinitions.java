@@ -37,6 +37,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig MailSmtpPassword = new DBConfig("MailSmtpPassword","","SMTP password");
 
     public static DBConfig OpenCommand = new DBConfig("OpenCommand","","Command to open files (e.g. PDF viewer). Use %s as placeholder for the file path. If empty, java.awt.Desktop.open() is used.");
+    public static DBConfig SyncBillsFolder = new DBConfig("SyncBillsFolder", "", "Automatically copies all bills into thgis directory");
 
     public static void registerDefinitions() {
 
@@ -60,6 +61,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         addLocal(MailSmtpUser);
         addLocal(MailSmtpPassword);
         add(OpenCommand);
+        addLocal(SyncBillsFolder);
     
         GlobalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");
         LocalConfigDefinitions.add_help_path("/at/redeye/twelvelittlescoutsclerk/resources/Help/Params/");

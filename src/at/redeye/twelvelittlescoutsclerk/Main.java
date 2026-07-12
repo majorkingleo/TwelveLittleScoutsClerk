@@ -150,6 +150,14 @@ public class Main extends BaseModuleLauncher
         Thread mailThread = new Thread(mailWorker, "MailWorker");
         mailThread.setDaemon(true);
         mailThread.start();
+
+        // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
+        // Start background bill sync worker
+        SyncBillsWorker syncBillsWorker = new SyncBillsWorker(root, root.getDBConnection().getDefaultTransaction());
+        Thread syncBillsThread = new Thread(syncBillsWorker, "SyncBillsWorker");
+        syncBillsThread.setDaemon(true);
+        syncBillsThread.start();
+        // AI-generated end
     }
     
     public void silentCheckTableVersions() {

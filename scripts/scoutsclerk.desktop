@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ScoutsClerk
+GenericName=12 Little Scouts Clerk
+Comment=Scouts financial management application
+Exec=java -jar /opt/scoutsclerk/TwelveLittleScoutsClerk-1.0-SNAPSHOT.jar
+Icon=scoutsclerk
+Terminal=false
+Categories=Office;Finance;
+StartupNotify=true

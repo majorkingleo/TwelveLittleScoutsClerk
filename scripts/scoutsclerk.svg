@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Bag body -->
+  <path d="
+    M 12 28
+    C 12 18, 20 10, 32 10
+    C 44 10, 52 18, 52 28
+    L 52 52
+    C 52 56, 48 58, 44 58
+    L 20 58
+    C 16 58, 12 56, 12 52
+    Z
+  " fill="#8B6914" stroke="#5C4A0E" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Rope/drawstring -->
+  <path d="
+    M 16 28
+    C 18 24, 24 22, 32 22
+    C 40 22, 46 24, 48 28
+  " fill="none" stroke="#C4A035" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Dollar sign ($) -->
+  <text x="32" y="46" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="28" font-weight="bold" fill="#FFD700" stroke="#5C4A0E"
+        stroke-width="0.8" paint-order="stroke fill">$</text>
+
+  <!-- Bag highlight (left side) -->
+  <path d="
+    M 14 30
+    C 14 38, 16 50, 20 56
+  " fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Rope bow/knot -->
+  <ellipse cx="32" cy="28" rx="4" ry="2.5" fill="#C4A035" stroke="#9B7B1E" stroke-width="0.8"/>
+  <path d="M 28 28 Q 24 24, 22 26" fill="none" stroke="#C4A035" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 36 28 Q 40 24, 42 26" fill="none" stroke="#C4A035" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

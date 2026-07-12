@@ -41,6 +41,10 @@ public class Main extends BaseModuleLauncher
         BaseAppConfigDefinitions.DoLogging.setConfigValue("TRUE");
         
         root.setLanguageTranslationResourcePath("/at/redeye/twelvelittlescoutsclerk/resources/translations");
+
+        // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+        root.setAppIconPath("/at/redeye/twelvelittlescoutsclerk/resources/icons/logo.png");
+        // AI modification end
     }
     
     final String getAppName()

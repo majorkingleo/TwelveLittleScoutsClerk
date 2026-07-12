@@ -199,7 +199,14 @@ public class ViewBill extends BaseDialogDialog {
     }//GEN-LAST:event_jBCloseActionPerformed
 
     private void jBDownloadODTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBDownloadODTActionPerformed
-        downloadFile(entity.odt_data.value, entity.file_name.toString().isEmpty() ? "rechnung.odt" : entity.file_name.toString());
+        
+        String filename = entity.file_name.toString().isEmpty() ? "rechnung.odt" : entity.file_name.toString();
+
+        if( !filename.endsWith(".odt") ) {
+            filename = filename + ".odt";
+        }
+
+        downloadFile(entity.odt_data.value,filename);
     }//GEN-LAST:event_jBDownloadODTActionPerformed
 
     private void jBDownloadPDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBDownloadPDFActionPerformed
@@ -209,6 +216,11 @@ public class ViewBill extends BaseDialogDialog {
         } else {
             name = "rechnung.pdf";
         }
+
+        if( !name.endsWith(".pdf") ) {
+            name = name + ".pdf";
+        }
+
         downloadFile(entity.pdf_data.value, name);
     }//GEN-LAST:event_jBDownloadPDFActionPerformed
 

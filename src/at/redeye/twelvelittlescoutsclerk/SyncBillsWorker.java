@@ -67,17 +67,29 @@ public class SyncBillsWorker implements Runnable {
         }
 
         List<DBBill> bills = fetchValidBills();
-        if (bills.isEmpty()) {
-            return;
-        }
-
-        for (DBBill bill : bills) {
-            try {
-                syncBill(bill, targetDir);
-            } catch (Exception ex) {
-                logger.warn("Failed to sync bill " + bill.billingnr.getValue(), ex);
+        if (!bills.isEmpty()) {
+            for (DBBill bill : bills) {
+                try {
+                    syncBill(bill, targetDir);
+                } catch (Exception ex) {
+                    logger.warn("Failed to sync bill " + bill.billingnr.getValue(), ex);
+                }
             }
         }
+
+        // AI-generated start (GitHub Copilot / DeepSeek V4 Pro)
+        // Rename files for canceled bills
+        List<DBBill> canceledBills = fetchCanceledBills();
+        if (!canceledBills.isEmpty()) {
+            for (DBBill bill : canceledBills) {
+                try {
+                    renameCanceledBill(bill, targetDir);
+                } catch (Exception ex) {
+                    logger.warn("Failed to rename canceled bill " + bill.billingnr.getValue(), ex);
+                }
+            }
+        }
+        // AI-generated end
     }
 
     private List<DBBill> fetchValidBills() throws Exception {
@@ -90,6 +102,18 @@ public class SyncBillsWorker implements Runnable {
                 + " and " + trans.markColumn(proto.pdf_data) + " is not null"
                 + " order by " + trans.markColumn(proto.idx));
     }
+
+    // AI-generated start (GitHub Copilot / DeepSeek V4 Pro)
+    private List<DBBill> fetchCanceledBills() throws Exception {
+        DBBill proto = new DBBill();
+        return trans.fetchTable2(proto,
+                "where " + trans.markColumn(proto.state) + " = "
+                + DBBill.State.CANCELED.ordinal()
+                + " and " + trans.markColumn(proto.direction) + " = "
+                + DBBill.Direction.OUTGOING.ordinal()
+                + " order by " + trans.markColumn(proto.idx));
+    }
+    // AI-generated end
 
     private void syncBill(DBBill bill, Path targetDir) throws Exception {
         // Determine member name: look up via DBEventMember
@@ -129,6 +153,51 @@ public class SyncBillsWorker implements Runnable {
         }
         logger.info("Synced bill to: " + targetFile.getAbsolutePath());
     }
+
+    // AI-generated start (GitHub Copilot / DeepSeek V4 Pro)
+    /**
+     * If a bill is canceled and a file still exists under the expected name,
+     * rename it to append _CANCELED before the extension.
+     * E.g. "2025-01-15 Rechnung-42-John_Doe.pdf" → "2025-01-15 Rechnung-42-John_Doe_CANCELED.pdf"
+     */
+    private void renameCanceledBill(DBBill bill, Path targetDir) throws Exception {
+        // Build the expected file name using the same scheme as syncBill
+        String memberName = resolveMemberName(bill);
+        if (memberName == null || memberName.trim().isEmpty()) {
+            memberName = "unknown";
+        }
+        memberName = sanitizeFileName(memberName);
+
+        String datePart = formatDate(bill.hist.an_zeit.getValue());
+
+        String billingNr = bill.billingnr.getValue();
+        if (billingNr == null || billingNr.trim().isEmpty()) {
+            billingNr = "no-nr";
+        }
+
+        String fileName = datePart + " Rechnung-" + billingNr + "-" + memberName + ".pdf";
+        File targetFile = targetDir.resolve(fileName).toFile();
+
+        if (!targetFile.exists()) {
+            return; // Nothing to rename
+        }
+
+        // Build new name: insert _CANCELED before .pdf
+        String canceledName = fileName.replace(".pdf", "_CANCELED.pdf");
+        File canceledFile = targetDir.resolve(canceledName).toFile();
+
+        // Skip if already renamed
+        if (canceledFile.exists()) {
+            return;
+        }
+
+        if (targetFile.renameTo(canceledFile)) {
+            logger.info("Renamed canceled bill: " + targetFile.getName() + " → " + canceledFile.getName());
+        } else {
+            logger.warn("Failed to rename canceled bill: " + targetFile.getAbsolutePath());
+        }
+    }
+    // AI-generated end
 
     /**
      * Resolve the member name associated with this bill.

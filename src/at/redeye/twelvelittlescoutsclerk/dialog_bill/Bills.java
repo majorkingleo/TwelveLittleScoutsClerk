@@ -9,6 +9,7 @@ import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import java.util.List;
@@ -85,7 +86,8 @@ public class Bills extends BaseDialog {
                 values = trans.fetchTable2(bill, " where "
                         + trans.markColumn(bill, bill.bp_idx) + " = "
                         + mainwin.getBPIdx()
-                        + " order by " + trans.markColumn(bill, bill.billingnr));
+                        + " order by " + trans.markColumn(bill, bill.billingnr),
+                        FetchOption.EXCLUDE_BLOBS);
 
                 for (DBBill entry : values) {
                     tm.add(entry);
@@ -229,7 +231,16 @@ public class Bills extends BaseDialog {
             return;
         }
 
-        invokeDialogUnique(new ViewBill(mainwin, values.get(i)));
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+
+                DBBill bill = values.get(i);
+                getTransaction().fetchTableWithPrimkey(bill);
+                
+                invokeDialogUnique(new ViewBill(mainwin, bill));
+            }
+        };
 
     }//GEN-LAST:event_jBViewActionPerformed
 

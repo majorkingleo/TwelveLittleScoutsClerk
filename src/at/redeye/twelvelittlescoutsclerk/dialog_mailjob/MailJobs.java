@@ -9,6 +9,7 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
 import at.redeye.FrameWork.base.FrameWorkConfigDefinitions;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMailJob;
@@ -79,7 +80,8 @@ public class MailJobs extends BaseDialog {
                 Transaction trans = getTransaction();
                 DBMailJob proto = new DBMailJob();
                 values = trans.fetchTable2(proto,
-                        "order by " + trans.markColumn(proto.idx) + " desc");
+                        "order by " + trans.markColumn(proto.idx) + " desc",
+                    FetchOption.EXCLUDE_BLOBS);
                 for (DBMailJob job : values) {
                     tm.add(job);
                 }
@@ -315,6 +317,7 @@ public class MailJobs extends BaseDialog {
     }//GEN-LAST:event_jBRefreshActionPerformed
 
     private void jBPreviewMailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBPreviewMailActionPerformed
+        
         if (!checkAnyAndSingleSelection(jTContent)) {
             return;
         }
@@ -322,12 +325,21 @@ public class MailJobs extends BaseDialog {
         if (row < 0 || row >= values.size()) {
             return;
         }
-        final DBMailJob job = values.get(row);
-        if (job.body.value == null || job.body.value.length == 0) {
-            JOptionPane.showMessageDialog(this, MESSAGE_NO_MAIL_BODY, getTitle(), JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        invokeDialogUnique(new MailJobPreview(this, mainwin, job));
+
+        final var parent = this;
+
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+                DBMailJob job = values.get(row);
+                getTransaction().fetchTableWithPrimkey(job);
+                if (job.body.value == null || job.body.value.length == 0) {
+                    JOptionPane.showMessageDialog(parent, MESSAGE_NO_MAIL_BODY, getTitle(), JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                invokeDialogUnique(new MailJobPreview(parent, mainwin, job));
+            }
+        };
     }//GEN-LAST:event_jBPreviewMailActionPerformed
 
     private void jBViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBViewActionPerformed
@@ -338,14 +350,20 @@ public class MailJobs extends BaseDialog {
         if (row < 0 || row >= values.size()) {
             return;
         }
-        final DBMailJob job = values.get(row);
-        if (job.pdf_data.value == null || job.pdf_data.value.length == 0) {
-            JOptionPane.showMessageDialog(this, MESSAGE_NO_PDF, getTitle(), JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
+
+        final var parent = this;
+
         new AutoMBox(getTitle()) {
             @Override
             public void do_stuff() throws Exception {
+
+                DBMailJob job = values.get(row);
+                getTransaction().fetchTableWithPrimkey(job);
+                if (job.pdf_data.value == null || job.pdf_data.value.length == 0) {
+                    JOptionPane.showMessageDialog(parent, MESSAGE_NO_PDF, getTitle(), JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+        
                 File tmpFile = File.createTempFile("mailjob_", ".pdf");
                 tmpFile.deleteOnExit();
                 try (FileOutputStream fos = new FileOutputStream(tmpFile)) {

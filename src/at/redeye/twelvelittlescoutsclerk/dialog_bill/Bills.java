@@ -257,8 +257,17 @@ public class Bills extends BaseDialog {
 
                 DBBill bill = values.get(i);
                 getTransaction().fetchTableWithPrimkey(bill);
-                
-                invokeDialogUnique(new ViewBill(mainwin, bill));
+
+                // AI modification start (Claude Sonnet 4.6)
+                ViewBill viewBill = new ViewBill(mainwin, bill);
+                viewBill.registerOnCloseListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        feed_table();
+                    }
+                });
+                invokeDialogUnique(viewBill);
+                // AI modification end
             }
         };
 

@@ -11,6 +11,7 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import java.awt.Container;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -31,6 +32,21 @@ public class UploadExternalBill extends BaseDialogDialog {
     MainWin mainwin;
     File selectedFile;
     boolean saved = false;
+
+    // AI modification start (Claude Sonnet 4.6)
+    static class EventDescr {
+        public DBEvent event;
+
+        public EventDescr(DBEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public String toString() {
+            return event == null ? "(none)" : event.name.toString();
+        }
+    }
+    // AI modification end
 
     // AI modification start (Claude Sonnet 4.6)
     private String MESSAGE_TITLE;
@@ -54,6 +70,7 @@ public class UploadExternalBill extends BaseDialogDialog {
         }
         jTAmount.setDocument(new DocumentFieldDoubleAndNoComma(7));
         initDropSupport();
+        fillJCEvent(null);
         // AI modification end
     }
 
@@ -76,13 +93,15 @@ public class UploadExternalBill extends BaseDialogDialog {
         jLFileName = new javax.swing.JLabel();
         jLabelAmount = new javax.swing.JLabel();
         jTAmount = new javax.swing.JTextField();
+        jLabelEvent = new javax.swing.JLabel();
+        jCEvent = new javax.swing.JComboBox<>();
         jPanelButtons = new javax.swing.JPanel();
         jBChooseFile = new javax.swing.JButton();
         jBSave = new javax.swing.JButton();
         jBClose = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(480, 280));
+        setMinimumSize(new java.awt.Dimension(480, 320));
 
         jLabelDrop.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabelDrop.setText("Drop PDF, ODT or JPEG file here");
@@ -112,6 +131,8 @@ public class UploadExternalBill extends BaseDialogDialog {
         jLabelAmount.setText("Amount:");
 
         jTAmount.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+
+        jLabelEvent.setText("Event:");
 
         jBChooseFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
         jBChooseFile.setText("Choose File");
@@ -179,6 +200,12 @@ public class UploadExternalBill extends BaseDialogDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTAmount, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelEvent)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCEvent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -193,6 +220,10 @@ public class UploadExternalBill extends BaseDialogDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabelAmount)
                     .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelEvent)
+                    .addComponent(jCEvent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanelButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -223,6 +254,7 @@ public class UploadExternalBill extends BaseDialogDialog {
 
         final File file = selectedFile;
         final double amountVal = parseAmount();
+        final EventDescr eventDescr = getSelectedEventDescr();
 
         new AutoMBox(UploadExternalBill.class.getName()) {
             @Override
@@ -241,6 +273,13 @@ public class UploadExternalBill extends BaseDialogDialog {
                 bill.state.handler.setValue(DBBill.State.NORMAL.ordinal());
                 bill.direction.handler.setValue(DBBill.Direction.INCOMING.ordinal());
                 bill.amount.loadFromCopy(amountVal);
+                if (eventDescr != null && eventDescr.event != null) {
+                    bill.event_idx.loadFromCopy(eventDescr.event.idx.getValue());
+                    bill.event_name.loadFromString(eventDescr.event.name.toString());
+                } else {
+                    bill.event_idx.loadFromCopy(null);
+                    bill.event_name.loadFromString("");
+                }
                 if (lowerName.endsWith(".odt")) {
                     bill.odt_data.value = data;
                 } else {
@@ -287,6 +326,40 @@ public class UploadExternalBill extends BaseDialogDialog {
             return 0.0;
         }
         return Double.parseDouble(text.replace(",", "."));
+    }
+
+    /**
+     * Fills the event combo with "(none)" plus all events of the current
+     * billing period and preselects the given event idx (or "(none)").
+     */
+    private void fillJCEvent(Integer selected_event_idx) {
+        jCEvent.removeAllItems();
+        try {
+            Transaction trans = getTransaction();
+            DBEvent event = new DBEvent();
+            List<DBEvent> events = trans.fetchTable2(event,
+                    "where " + trans.markColumn(event, event.bp_idx) + " = " + mainwin.getBPIdx()
+                    + " order by " + trans.markColumn(event, event.name));
+
+            int idx = 0;
+            jCEvent.addItem(new EventDescr(null));
+            for (int i = 0; i < events.size(); i++) {
+                DBEvent ev = events.get(i);
+                jCEvent.addItem(new EventDescr(ev));
+                if (selected_event_idx != null && ev.idx.getValue() != null
+                        && ev.idx.getValue().equals(selected_event_idx)) {
+                    idx = i + 1;
+                }
+            }
+            jCEvent.setSelectedIndex(idx);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private EventDescr getSelectedEventDescr() {
+        Object sel = jCEvent.getSelectedItem();
+        return sel instanceof EventDescr ? (EventDescr) sel : null;
     }
 
     public boolean pressedSave() {
@@ -362,9 +435,11 @@ public class UploadExternalBill extends BaseDialogDialog {
     private javax.swing.JButton jBChooseFile;
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBSave;
+    private javax.swing.JComboBox<EventDescr> jCEvent;
     private javax.swing.JLabel jLFileName;
     private javax.swing.JLabel jLabelAmount;
     private javax.swing.JLabel jLabelDrop;
+    private javax.swing.JLabel jLabelEvent;
     private javax.swing.JLabel jLabelFile;
     private javax.swing.JPanel jPanelButtons;
     private javax.swing.JPanel jPanelDrop;

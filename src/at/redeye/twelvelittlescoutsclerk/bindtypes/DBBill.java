@@ -23,6 +23,9 @@ public class DBBill extends DBStrukt {
     public static final ForeignKeyDefinition FK_BILLING_PERIOD =
         new ForeignKeyDefinition("bp_idx", "BILLING_PERIOD", "idx");
 
+    public static final ForeignKeyDefinition FK_EVENT =
+        new ForeignKeyDefinition("event_idx", "EVENT", "idx");
+
     public enum State { NORMAL, CANCELED }
     public enum Direction { OUTGOING, INCOMING }
 
@@ -242,6 +245,8 @@ public class DBBill extends DBStrukt {
     public static final DBInteger       REGISTRATION_NUMBER  = new DBInteger("registration_number");  // seq from REGISTRATION_IDX_SEQ
     public static final DBHistory       HIST                 = new DBHistory("hist");
     public static final DBDouble        AMOUNT               = new DBDouble("amount", "Amount");
+    public static final DBInteger       EVENT_IDX            = new DBInteger("event_idx", "Event Idx");  // FK to EVENT.idx
+    public static final DBString        EVENT_NAME           = new DBString("event_name", "Event Name", 50);  // copy of EVENT.name    
     
 
     public DBInteger       idx                  = IDX.getCopy();
@@ -257,6 +262,8 @@ public class DBBill extends DBStrukt {
     public DBInteger       registration_number  = REGISTRATION_NUMBER.getCopy();
     public DBHistory       hist                 = (DBHistory) HIST.getCopy();
     public DBDouble        amount               = AMOUNT.getCopy();
+    public DBInteger       event_idx            = EVENT_IDX.getCopy();
+    public DBString        event_name           = EVENT_NAME.getCopy();
 
     public DBBill() {
         super("BILLS");
@@ -273,15 +280,22 @@ public class DBBill extends DBStrukt {
         add(bill_type, 3);
         add(registration_number, 4);
         add(amount, 7);
+        add(event_idx, 8);
+        add(event_name, 8);
         add(hist);        
 
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
+
+        event_idx.canBeNull();
+
+
         hist.setTitle(" ");
 
         addForeignKey(FK_BILLING_PERIOD, 5);
+        addForeignKey(FK_EVENT, 8);
 
-        setVersion(7);
+        setVersion(8);
     }
 
     @Override

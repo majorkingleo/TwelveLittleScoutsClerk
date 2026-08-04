@@ -12,8 +12,10 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -22,6 +24,21 @@ public class ViewBill extends BaseDialogDialog {
 
     DBBill entity;
     MainWin mainwin;
+
+    // AI modification start (Claude Sonnet 4.6)
+    static class EventDescr {
+        public DBEvent event;
+
+        public EventDescr(DBEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public String toString() {
+            return event == null ? "(none)" : event.name.toString();
+        }
+    }
+    // AI modification end
 
     // AI modification start (Claude Sonnet 4.6)
     private String MESSAGE_AMOUNT_SAVED;
@@ -56,6 +73,7 @@ public class ViewBill extends BaseDialogDialog {
         Double amount = entity.amount.getValue();
         jTAmount.setText(amount == null ? "" : String.valueOf(amount));
         jBSave.setEnabled(!mainwin.isAzLocked());
+        fillJCEvent(entity.event_idx.getValue());
         // AI modification end
     }
 
@@ -79,6 +97,8 @@ public class ViewBill extends BaseDialogDialog {
         jLDirection = new javax.swing.JLabel();
         jLabelAmount = new javax.swing.JLabel();
         jTAmount = new javax.swing.JTextField();
+        jLabelEvent = new javax.swing.JLabel();
+        jCEvent = new javax.swing.JComboBox<>();
         jPanelButtons = new javax.swing.JPanel();
         jBDownloadODT = new javax.swing.JButton();
         jBDownloadPDF = new javax.swing.JButton();
@@ -104,6 +124,8 @@ public class ViewBill extends BaseDialogDialog {
 
         jLabelAmount.setText("Amount:");
         jTAmount.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+
+        jLabelEvent.setText("Event:");
 
         jBDownloadODT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N;
         jBDownloadODT.setText("Download ODT");
@@ -206,14 +228,16 @@ public class ViewBill extends BaseDialogDialog {
                     .addComponent(jLabelFileName)
                     .addComponent(jLabelState)
                     .addComponent(jLabelDirection)
-                    .addComponent(jLabelAmount))
+                    .addComponent(jLabelAmount)
+                    .addComponent(jLabelEvent))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLBillingnr, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLFileName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLDirection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jTAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jCEvent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -239,6 +263,10 @@ public class ViewBill extends BaseDialogDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabelAmount)
                     .addComponent(jTAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelEvent)
+                    .addComponent(jCEvent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanelButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -264,10 +292,19 @@ public class ViewBill extends BaseDialogDialog {
             return;
         }
 
+        final EventDescr eventDescr = getSelectedEventDescr();
+
         new AutoMBox(ViewBill.class.getName()) {
             @Override
             public void do_stuff() throws Exception {
                 entity.amount.loadFromCopy(amountVal);
+                if (eventDescr != null && eventDescr.event != null) {
+                    entity.event_idx.loadFromCopy(eventDescr.event.idx.getValue());
+                    entity.event_name.loadFromString(eventDescr.event.name.toString());
+                } else {
+                    entity.event_idx.loadFromCopy(null);
+                    entity.event_name.loadFromString("");
+                }
                 Transaction trans = getTransaction();
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                         trans, entity, entity.hist, root.getUserName());
@@ -286,6 +323,40 @@ public class ViewBill extends BaseDialogDialog {
             return 0.0;
         }
         return Double.parseDouble(text.replace(",", "."));
+    }
+
+    /**
+     * Fills the event combo with "(none)" plus all events of the current
+     * billing period and preselects the given event idx (or "(none)").
+     */
+    private void fillJCEvent(Integer selected_event_idx) {
+        jCEvent.removeAllItems();
+        try {
+            Transaction trans = getTransaction();
+            DBEvent event = new DBEvent();
+            List<DBEvent> events = trans.fetchTable2(event,
+                    "where " + trans.markColumn(event, event.bp_idx) + " = " + mainwin.getBPIdx()
+                    + " order by " + trans.markColumn(event, event.name));
+
+            int idx = 0;
+            jCEvent.addItem(new EventDescr(null));
+            for (int i = 0; i < events.size(); i++) {
+                DBEvent ev = events.get(i);
+                jCEvent.addItem(new EventDescr(ev));
+                if (selected_event_idx != null && ev.idx.getValue() != null
+                        && ev.idx.getValue().equals(selected_event_idx)) {
+                    idx = i + 1;
+                }
+            }
+            jCEvent.setSelectedIndex(idx);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private EventDescr getSelectedEventDescr() {
+        Object sel = jCEvent.getSelectedItem();
+        return sel instanceof EventDescr ? (EventDescr) sel : null;
     }
     // AI modification end
 
@@ -369,6 +440,7 @@ public class ViewBill extends BaseDialogDialog {
     private javax.swing.JButton jBDownloadPDF;
     private javax.swing.JButton jBSave;
     private javax.swing.JButton jBViewPDF;
+    private javax.swing.JComboBox<EventDescr> jCEvent;
     private javax.swing.JLabel jLBillingnr;
     private javax.swing.JLabel jLDirection;
     private javax.swing.JLabel jLFileName;
@@ -376,6 +448,7 @@ public class ViewBill extends BaseDialogDialog {
     private javax.swing.JLabel jLabelAmount;
     private javax.swing.JLabel jLabelBillingnr;
     private javax.swing.JLabel jLabelDirection;
+    private javax.swing.JLabel jLabelEvent;
     private javax.swing.JLabel jLabelFileName;
     private javax.swing.JLabel jLabelState;
     private javax.swing.JPanel jPanelActions;

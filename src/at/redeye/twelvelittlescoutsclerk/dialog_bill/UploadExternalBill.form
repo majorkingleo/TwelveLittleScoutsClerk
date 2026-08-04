@@ -4,7 +4,7 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="0"/>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[480, 280]"/>
+      <Dimension value="[480, 320]"/>
     </Property>
   </Properties>
   <SyntheticProperties>
@@ -42,6 +42,13 @@
               <Component id="jTAmount" pref="100" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jLabelEvent" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jCEvent" min="-2" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -58,6 +65,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabelAmount" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTAmount" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabelEvent" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCEvent" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanelButtons" min="-2" max="-2" attributes="0"/>
@@ -126,6 +138,13 @@
       <Properties>
         <Property name="horizontalAlignment" type="int" value="4"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabelEvent">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Event:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="jCEvent">
     </Component>
     <Container class="javax.swing.JPanel" name="jPanelButtons">
 

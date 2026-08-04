@@ -31,9 +31,15 @@ public class ViewBill extends BaseDialogDialog {
         jLState.setText(entity.state.handler.getValueAsString());
         jLDirection.setText(entity.direction.handler.getValueAsString());
 
+        // AI modification start (Claude Sonnet 4.6)
+        String lowerName = entity.file_name.toString().toLowerCase();
+        boolean isJpeg = lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg");
+
         jBDownloadODT.setEnabled(entity.odt_data.value != null && entity.odt_data.value.length > 0);
         jBDownloadPDF.setEnabled(entity.pdf_data.value != null && entity.pdf_data.value.length > 0);
-        jBViewPDF.setEnabled(entity.pdf_data.value != null && entity.pdf_data.value.length > 0);
+        jBViewPDF.setEnabled(entity.pdf_data.value != null
+                && entity.pdf_data.value.length > 0 && !isJpeg);
+        // AI modification end
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -211,14 +217,18 @@ public class ViewBill extends BaseDialogDialog {
 
     private void jBDownloadPDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBDownloadPDFActionPerformed
         String name = entity.file_name.toString();
-        if (!name.isEmpty()) {
-            name = name.replaceFirst("\\.[^.]+$", ".pdf");
-        } else {
+        if (name.isEmpty()) {
             name = "rechnung.pdf";
-        }
-
-        if( !name.endsWith(".pdf") ) {
-            name = name + ".pdf";
+        } else {
+            String lower = name.toLowerCase();
+            // Keep original extension for generic files (e.g. uploaded JPEG),
+            // otherwise treat the blob as a generated PDF.
+            if (!lower.endsWith(".pdf") && !lower.endsWith(".jpg") && !lower.endsWith(".jpeg")) {
+                name = name.replaceFirst("\\.[^.]+$", ".pdf");
+                if (!name.endsWith(".pdf")) {
+                    name = name + ".pdf";
+                }
+            }
         }
 
         downloadFile(entity.pdf_data.value, name);

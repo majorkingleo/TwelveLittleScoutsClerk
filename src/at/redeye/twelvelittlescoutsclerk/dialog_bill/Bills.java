@@ -26,6 +26,7 @@ public class Bills extends BaseDialog {
     private String MESSAGE_CANCEL_TITLE;
     private String MESSAGE_CANCEL_REASON_PROMPT;
     private String MESSAGE_CANCEL_REASON_EMPTY;
+    private String MESSAGE_UPLOAD_TITLE;
     // AI modification end
 
     public Bills(MainWin mainwin) {
@@ -58,6 +59,8 @@ public class Bills extends BaseDialog {
 
         // AI modification start (Claude Sonnet 4.6)
         initMessages();
+        jBUpload.setText(MESSAGE_UPLOAD_TITLE);
+        jBUpload.setEnabled(!mainwin.isAzLocked());
         // AI modification end
     }
 
@@ -66,6 +69,7 @@ public class Bills extends BaseDialog {
         MESSAGE_CANCEL_TITLE = MlM("Cancel Bill");
         MESSAGE_CANCEL_REASON_PROMPT = MlM("Enter cancel reason:");
         MESSAGE_CANCEL_REASON_EMPTY = MlM("Cancel reason must not be empty.");
+        MESSAGE_UPLOAD_TITLE = MlM("Upload External Bill");
     }
     // AI modification end
 
@@ -105,6 +109,9 @@ public class Bills extends BaseDialog {
         jBClose = new javax.swing.JButton();
         jBView = new javax.swing.JButton();
         jBCancel = new javax.swing.JButton();
+        // AI modification start (Claude Sonnet 4.6)
+        jBUpload = new javax.swing.JButton();
+        // AI modification end
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         jLabel1 = new javax.swing.JLabel();
         jLInfo = new javax.swing.JLabel();
@@ -153,12 +160,24 @@ public class Bills extends BaseDialog {
             }
         });
 
+        // AI modification start (Claude Sonnet 4.6)
+        jBUpload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
+        jBUpload.setText("Upload External Bill");
+        jBUpload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBUploadActionPerformed(evt);
+            }
+        });
+        // AI modification end
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jBUpload)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBView)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBCancel)
@@ -171,6 +190,7 @@ public class Bills extends BaseDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBUpload)
                     .addComponent(jBView)
                     .addComponent(jBCancel)
                     .addComponent(jBClose))
@@ -304,9 +324,24 @@ public class Bills extends BaseDialog {
     }//GEN-LAST:event_jBCancelActionPerformed
     // AI modification end
 
+    // AI modification start (Claude Sonnet 4.6)
+    private void jBUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUploadActionPerformed
+
+        UploadExternalBill upload = new UploadExternalBill(mainwin);
+        upload.registerOnCloseListener(new Runnable() {
+            @Override
+            public void run() {
+                feed_table();
+            }
+        });
+        invokeDialogUnique(upload);
+    }//GEN-LAST:event_jBUploadActionPerformed
+    // AI modification end
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBCancel;
     private javax.swing.JButton jBClose;
+    private javax.swing.JButton jBUpload;
     private javax.swing.JButton jBView;
     private javax.swing.JLabel jLInfo;
     private javax.swing.JLabel jLabel1;

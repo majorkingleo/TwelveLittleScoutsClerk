@@ -5,6 +5,7 @@
 package at.redeye.twelvelittlescoutsclerk.bindtypes;
 
 import at.redeye.FrameWork.base.bindtypes.DBBlob;
+import at.redeye.FrameWork.base.bindtypes.DBDouble;
 import at.redeye.FrameWork.base.bindtypes.DBEnumAsInteger;
 import at.redeye.FrameWork.base.bindtypes.DBHistory;
 import at.redeye.FrameWork.base.bindtypes.DBInteger;
@@ -240,6 +241,7 @@ public class DBBill extends DBStrukt {
     public static final DBEnumAsInteger BILL_TYPE            = new DBEnumAsInteger("bill_type", "Bill Type", new BillTypeHandler());
     public static final DBInteger       REGISTRATION_NUMBER  = new DBInteger("registration_number");  // seq from REGISTRATION_IDX_SEQ
     public static final DBHistory       HIST                 = new DBHistory("hist");
+    public static final DBDouble        AMOUNT               = new DBDouble("amount", "Amount");
     
 
     public DBInteger       idx                  = IDX.getCopy();
@@ -253,7 +255,8 @@ public class DBBill extends DBStrukt {
     public DBEnumAsInteger direction            = (DBEnumAsInteger) DIRECTION.getCopy();
     public DBEnumAsInteger bill_type            = (DBEnumAsInteger) BILL_TYPE.getCopy();
     public DBInteger       registration_number  = REGISTRATION_NUMBER.getCopy();
-    public DBHistory       hist                 = (DBHistory) HIST.getCopy();    
+    public DBHistory       hist                 = (DBHistory) HIST.getCopy();
+    public DBDouble        amount               = AMOUNT.getCopy();
 
     public DBBill() {
         super("BILLS");
@@ -269,6 +272,7 @@ public class DBBill extends DBStrukt {
         add(direction, 2);
         add(bill_type, 3);
         add(registration_number, 4);
+        add(amount, 7);
         add(hist);        
 
         idx.setAsPrimaryKey();
@@ -277,7 +281,7 @@ public class DBBill extends DBStrukt {
 
         addForeignKey(FK_BILLING_PERIOD, 5);
 
-        setVersion(6);
+        setVersion(7);
     }
 
     @Override

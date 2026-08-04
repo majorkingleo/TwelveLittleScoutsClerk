@@ -4,7 +4,7 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="0"/>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[480, 240]"/>
+      <Dimension value="[480, 280]"/>
     </Property>
   </Properties>
   <SyntheticProperties>
@@ -35,6 +35,13 @@
               <Component id="jLFileName" pref="327" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jLabelAmount" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jTAmount" pref="100" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -46,6 +53,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabelFile" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLFileName" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabelAmount" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jTAmount" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanelButtons" min="-2" max="-2" attributes="0"/>
@@ -103,6 +115,16 @@
     <Component class="javax.swing.JLabel" name="jLFileName">
       <Properties>
         <Property name="text" type="java.lang.String" value="(no file)"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabelAmount">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Amount:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="jTAmount">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="4"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JPanel" name="jPanelButtons">

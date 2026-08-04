@@ -38,6 +38,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillTemplate;
 import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
+import at.redeye.twelvelittlescoutsclerk.dialog_bill.UploadExternalBill;
 import java.awt.Color;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -150,6 +151,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         
         if( mainwin.isAzLocked() ) {
             jBSave.setEnabled(false);
+            // AI modification start (Claude Sonnet 4.6)
+            jBUploadBill.setEnabled(false);
+            // AI modification end
         }
         
         
@@ -573,6 +577,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jSeparator2 = new javax.swing.JSeparator();
         jBCreateBill = new javax.swing.JButton();
         jBCreateRegistration = new javax.swing.JButton();
+        jBUploadBill = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jTRegistrationTemplate = new javax.swing.JComboBox();
@@ -702,6 +707,16 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             }
         });
 
+        // AI modification start (Claude Sonnet 4.6)
+        jBUploadBill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
+        jBUploadBill.setText("Upload Bill");
+        jBUploadBill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBUploadBillActionPerformed(evt);
+            }
+        });
+        // AI modification end
+
         jBSendBillMail.setText("Send Bill Mail");
         jBSendBillMail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -732,6 +747,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jBBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBCreateBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBCreateRegistration, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    // AI modification start (Claude Sonnet 4.6)
+                    .addComponent(jBUploadBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    // AI modification end
                     .addComponent(jBSendBillMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBSendRegistrationMail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -756,6 +774,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBCreateRegistration)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                // AI modification start (Claude Sonnet 4.6)
+                .addComponent(jBUploadBill)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                // AI modification end
                 .addComponent(jBSendBillMail)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBSendRegistrationMail)
@@ -1369,6 +1391,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         };
     }
 
+    // AI modification start (Claude Sonnet 4.6)
+    private void jBUploadBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUploadBillActionPerformed
+        invokeDialogUnique(new UploadExternalBill(mainwin, event.idx.getValue()));
+    }//GEN-LAST:event_jBUploadBillActionPerformed
+    // AI modification end
+
     private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSendMailActionPerformed
 
         final EditEvent me = this;
@@ -1478,6 +1506,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBEditMember;
     private javax.swing.JButton jBRemoveMember;
     private javax.swing.JButton jBSave;
+    // AI modification start (Claude Sonnet 4.6)
+    private javax.swing.JButton jBUploadBill;
+    // AI modification end
     private javax.swing.JCheckBox jCCacheOpen;
     // AI modification start (GPT-5.4)
     private javax.swing.JCheckBox jCCountsToAvailableCashAmount;

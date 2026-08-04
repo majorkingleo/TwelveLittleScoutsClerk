@@ -265,6 +265,7 @@
                           <Component id="jBBookingLine" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBCreateBill" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBCreateRegistration" alignment="0" max="32767" attributes="0"/>
+                          <Component id="jBUploadBill" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBSendMail" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -290,6 +291,8 @@
                       <Component id="jBCreateBill" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBCreateRegistration" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jBUploadBill" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBSendMail" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="132" max="32767" attributes="0"/>
@@ -348,6 +351,17 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCreateRegistrationActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="jBUploadBill">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/at/redeye/FrameWork/base/resources/icons/fileexport.gif"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Upload Bill"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBUploadBillActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JButton" name="jBSendMail">

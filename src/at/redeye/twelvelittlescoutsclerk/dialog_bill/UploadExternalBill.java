@@ -57,6 +57,10 @@ public class UploadExternalBill extends BaseDialogDialog {
     // AI modification end
 
     public UploadExternalBill(MainWin mainwin) {
+        this(mainwin, null);
+    }
+
+    public UploadExternalBill(MainWin mainwin, Integer preselectedEventIdx) {
         super(mainwin.getRoot(), "Upload External Bill");
         initComponents();
 
@@ -70,7 +74,7 @@ public class UploadExternalBill extends BaseDialogDialog {
         }
         jTAmount.setDocument(new DocumentFieldDoubleAndNoComma(7));
         initDropSupport();
-        fillJCEvent(null);
+        fillJCEvent(preselectedEventIdx);
         // AI modification end
     }
 

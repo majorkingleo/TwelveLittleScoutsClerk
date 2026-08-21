@@ -13,6 +13,7 @@ import at.redeye.FrameWork.base.bindtypes.DBDouble;
 import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
 import at.redeye.FrameWork.widgets.documentfields.DocumentFieldLimit;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
@@ -39,6 +40,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillTemplate;
 import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_bill.UploadExternalBill;
+import at.redeye.twelvelittlescoutsclerk.dialog_bill.ViewBill;
 import java.awt.Color;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -104,6 +106,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     List<DBEventMember> values = new ArrayList<>();
     List<DBEventMember> values_to_remove = new ArrayList<>();
     ArrayList<JCheckBox> filters = new ArrayList<>();
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    TableManipulator tmBills;
+    List<DBBill> bills_values = new ArrayList<>();
+    // AI modification end
     
     /**
      * Creates new form EditKunde
@@ -207,6 +213,37 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 updateSendRegistrationMailButton();
             }
         });
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        // Bills tab: shows all bills associated with this event
+        DBBill billProto = new DBBill();
+
+        tmBills = new TableManipulator(root, jTBills, billProto);
+
+        tmBills.hide(billProto.hist.lo_user);
+        tmBills.hide(billProto.hist.lo_zeit);
+        tmBills.hide(billProto.hist.ae_user);
+        tmBills.hide(billProto.hist.an_user);
+        tmBills.hide(billProto.hist.an_zeit);
+        tmBills.hide(billProto.hist.ae_zeit);
+        tmBills.hide(billProto.bp_idx);
+        tmBills.hide(billProto.idx);
+        tmBills.hide(billProto.odt_data);
+        tmBills.hide(billProto.pdf_data);
+
+        tmBills.prepareTable();
+
+        feed_bills(false);
+
+        tmBills.autoResize();
+
+        // Refresh the bills table whenever the Bills tab becomes visible
+        jTabbedPane1.addChangeListener(e -> {
+            if (jTabbedPane1.getSelectedComponent() == jPanelBills) {
+                feed_bills();
+            }
+        });
+        // AI modification end
     }
     
     private void initMessages() {
@@ -401,8 +438,107 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 jStatusBar.setText(String.format(MESSAGE_TOTAL_PAID, total_paid, total_costs));
             }
         };
-    }     
-    
+    }
+
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private void feed_bills() {
+        feed_bills(true);
+    }
+
+    /**
+     * Loads all bills associated with this event into the Bills tab.
+     * A bill is associated when either
+     *  - it is linked via DBBill.event_idx, or
+     *  - it is referenced by bill_idx / registration_bill_idx of any member of this event.
+     */
+    private void feed_bills(boolean autombox) {
+        new AutoMBox(getTitle(), autombox) {
+
+            @Override
+            public void do_stuff() throws Exception {
+                tmBills.clear();
+
+                Transaction trans = getTransaction();
+
+                // Collect bill ids referenced by the event's members
+                DBEventMember em = new DBEventMember();
+                List<DBEventMember> members = trans.fetchTable2(em,
+                        "where " + trans.markColumn(em.bp_idx) + " = " + mainwin.getBPIdx()
+                                + " and " + trans.markColumn(em.event_idx) + " = " + event.idx.toString());
+
+                Set<Integer> member_bill_ids = new HashSet<>();
+                for (DBEventMember m : members) {
+                    if (m.bill_idx.getValue() != null && m.bill_idx.getValue() > 0) {
+                        member_bill_ids.add(m.bill_idx.getValue());
+                    }
+                    if (m.registration_bill_idx.getValue() != null && m.registration_bill_idx.getValue() > 0) {
+                        member_bill_ids.add(m.registration_bill_idx.getValue());
+                    }
+                }
+
+                DBBill bill = new DBBill();
+                String where = "where " + trans.markColumn(bill, bill.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and ( " + trans.markColumn(bill, bill.event_idx) + " = " + event.idx.toString();
+
+                if (!member_bill_ids.isEmpty()) {
+                    StringBuilder ids = new StringBuilder();
+                    for (Integer id : member_bill_ids) {
+                        if (ids.length() > 0) {
+                            ids.append(",");
+                        }
+                        ids.append(id);
+                    }
+                    where += " or " + trans.markColumn(bill, bill.idx) + " in ( " + ids + " )";
+                }
+
+                where += " )";
+                where += " order by " + trans.markColumn(bill, bill.billingnr);
+
+                bills_values = trans.fetchTable2(bill, where, FetchOption.EXCLUDE_BLOBS);
+
+                for (DBBill entry : bills_values) {
+                    tmBills.add(entry);
+                }
+            }
+        };
+    }
+
+    private void openBill() {
+        if (!checkAnyAndSingleSelection(jTBills)) {
+            return;
+        }
+
+        final int i = tmBills.getSelectedRow();
+
+        if (i < 0 || i >= bills_values.size()) {
+            return;
+        }
+
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+                DBBill bill = bills_values.get(i);
+                getTransaction().fetchTableWithPrimkey(bill);
+
+                ViewBill viewBill = new ViewBill(mainwin, bill);
+                viewBill.registerOnCloseListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        feed_bills();
+                    }
+                });
+                invokeDialogUnique(viewBill);
+            }
+        };
+    }
+
+    private void jTBillsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTBillsMouseClicked
+        if (evt.getClickCount() == 2) {
+            openBill();
+        }
+    }//GEN-LAST:event_jTBillsMouseClicked
+    // AI modification end
+
     @Override
     public void close()
     {
@@ -597,6 +733,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jCCacheOpen = new javax.swing.JCheckBox();
         jPanel5 = new javax.swing.JPanel();
         tableFilter1 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanelBills = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTBills = new javax.swing.JTable();
+        // AI modification end
         jLabel4 = new javax.swing.JLabel();
         jTBillingTemplate = new javax.swing.JComboBox();
 
@@ -859,6 +1001,49 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addContainerGap())
         );
 
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jTabbedPane1.addTab("Members", jPanel2);
+
+        jPanelBills.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jTBills.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jTBills.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTBillsMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(jTBills);
+
+        javax.swing.GroupLayout jPanelBillsLayout = new javax.swing.GroupLayout(jPanelBills);
+        jPanelBills.setLayout(jPanelBillsLayout);
+        jPanelBillsLayout.setHorizontalGroup(
+            jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelBillsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanelBillsLayout.setVerticalGroup(
+            jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelBillsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Bills", jPanelBills);
+        // AI modification end
+
         jLabel4.setText("Billing Template");
 
         jLabel5.setText("Registration Template");
@@ -883,7 +1068,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -939,7 +1124,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jCAccountClassEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 // AI-generated end
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -1532,6 +1717,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private javax.swing.JPanel jPanelBills;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTBills;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    // AI modification end
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;

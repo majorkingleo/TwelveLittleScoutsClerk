@@ -278,7 +278,6 @@
                           <Component id="jBBookingLine" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBCreateBill" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBCreateRegistration" alignment="0" max="32767" attributes="0"/>
-                          <Component id="jBUploadBill" alignment="0" max="32767" attributes="0"/>
                           <Component id="jBSendMail" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -304,8 +303,6 @@
                       <Component id="jBCreateBill" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBCreateRegistration" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jBUploadBill" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBSendMail" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="132" max="32767" attributes="0"/>
@@ -364,17 +361,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBCreateRegistrationActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JButton" name="jBUploadBill">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/at/redeye/FrameWork/base/resources/icons/fileexport.gif"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Upload Bill"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBUploadBillActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JButton" name="jBSendMail">
@@ -482,7 +468,11 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Component id="tableFilter2" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane2" pref="640" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="jScrollPane2" pref="640" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jBUploadBill" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -497,7 +487,10 @@
                           <Component id="tableFilter2" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane2" pref="300" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane2" pref="300" max="32767" attributes="0"/>
+                          <Component id="jBUploadBill" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -513,6 +506,17 @@
               </Properties>
             </Component>
             <Component class="at.redeye.twelvelittlescoutsclerk.tableFilter" name="tableFilter2">
+            </Component>
+            <Component class="javax.swing.JButton" name="jBUploadBill">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/at/redeye/FrameWork/base/resources/icons/fileexport.gif"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Upload Bill"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBUploadBillActionPerformed"/>
+              </Events>
             </Component>
             <Container class="javax.swing.JScrollPane" name="jScrollPane2">
               <AuxValues>

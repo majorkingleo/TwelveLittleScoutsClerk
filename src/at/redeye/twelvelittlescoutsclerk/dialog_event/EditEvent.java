@@ -109,6 +109,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     TableManipulator tmBills;
     List<DBBill> bills_values = new ArrayList<>();
+    TableManipulator tmBookingLines;
+    List<DBBookingLine> booking_lines_values = new ArrayList<>();
     // AI modification end
     
     /**
@@ -243,8 +245,38 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jTabbedPane1.addChangeListener(e -> {
             if (jTabbedPane1.getSelectedComponent() == jPanelBills) {
                 feed_bills();
+            } else if (jTabbedPane1.getSelectedComponent() == jPanelBookingLines) {
+                feed_booking_lines();
             }
         });
+        // AI modification end
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        // Booking Lines tab: shows all booking lines associated with this event
+        DBBookingLine blProto = new DBBookingLine();
+
+        tmBookingLines = new TableManipulator(root, jTBookingLines, blProto);
+
+        tmBookingLines.hide(blProto.hist.lo_user);
+        tmBookingLines.hide(blProto.hist.lo_zeit);
+        tmBookingLines.hide(blProto.hist.ae_user);
+        tmBookingLines.hide(blProto.hist.an_user);
+        tmBookingLines.hide(blProto.hist.an_zeit);
+        tmBookingLines.hide(blProto.hist.ae_zeit);
+        tmBookingLines.hide(blProto.bp_idx);
+        tmBookingLines.hide(blProto.idx);
+        tmBookingLines.hide(blProto.contact_idx);
+        tmBookingLines.hide(blProto.parent_idx);
+        tmBookingLines.hide(blProto.splitpos);
+        tmBookingLines.hide(blProto.account_class_idx);
+
+        tmBookingLines.prepareTable();
+
+        feed_booking_lines(false);
+
+        tmBookingLines.autoResize();
+
+        tableFilter3.setFilter(jTBookingLines);
         // AI modification end
     }
     
@@ -516,6 +548,61 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         };
     }
 
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private void feed_booking_lines() {
+        feed_booking_lines(true);
+    }
+
+    /** Loads all booking lines associated with this event (via BOOKINGLINE2EVENTS) into the Booking Lines tab. */
+    private void feed_booking_lines(boolean autombox) {
+        new AutoMBox(getTitle(), autombox) {
+
+            @Override
+            public void do_stuff() throws Exception {
+                tmBookingLines.clear();
+
+                Transaction trans = getTransaction();
+
+                // Collect booking line ids linked to this event
+                DBBookingLine2Events b2e = new DBBookingLine2Events();
+                List<DBBookingLine2Events> links = trans.fetchTable2(b2e,
+                        "where " + trans.markColumn(b2e.bp_idx) + " = " + mainwin.getBPIdx()
+                                + " and " + trans.markColumn(b2e.event_idx) + " = " + event.idx.toString());
+
+                Set<Integer> bl_ids = new HashSet<>();
+                for (DBBookingLine2Events link : links) {
+                    if (link.bl_idx.getValue() != null && link.bl_idx.getValue() > 0) {
+                        bl_ids.add(link.bl_idx.getValue());
+                    }
+                }
+
+                booking_lines_values.clear();
+
+                if (!bl_ids.isEmpty()) {
+                    StringBuilder ids = new StringBuilder();
+                    for (Integer id : bl_ids) {
+                        if (ids.length() > 0) {
+                            ids.append(",");
+                        }
+                        ids.append(id);
+                    }
+
+                    DBBookingLine bl = new DBBookingLine();
+                    String where = "where " + trans.markColumn(bl, bl.bp_idx) + " = " + mainwin.getBPIdx()
+                            + " and " + trans.markColumn(bl, bl.idx) + " in ( " + ids + " )"
+                            + " order by " + trans.markColumn(bl, bl.date);
+
+                    booking_lines_values = trans.fetchTable2(bl, where);
+
+                    for (DBBookingLine entry : booking_lines_values) {
+                        tmBookingLines.add(entry);
+                    }
+                }
+            }
+        };
+    }
+    // AI modification end
+
     private void openBill() {
         if (!checkAnyAndSingleSelection(jTBills)) {
             return;
@@ -764,6 +851,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jTBills = new javax.swing.JTable();
         jLabel9 = new javax.swing.JLabel();
         tableFilter2 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
+        jPanelBookingLines = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTBookingLines = new javax.swing.JTable();
+        jLabel11 = new javax.swing.JLabel();
+        tableFilter3 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         // AI modification end
         jLabel4 = new javax.swing.JLabel();
         jTBillingTemplate = new javax.swing.JComboBox();
@@ -1092,6 +1184,52 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         // AI modification end
 
         jTabbedPane1.addTab("Bills", jPanelBills);
+
+        jPanelBookingLines.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jLabel11.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
+        jLabel11.setText("Booking Lines");
+
+        jTBookingLines.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jTBookingLines);
+
+        javax.swing.GroupLayout jPanelBookingLinesLayout = new javax.swing.GroupLayout(jPanelBookingLines);
+        jPanelBookingLines.setLayout(jPanelBookingLinesLayout);
+        jPanelBookingLinesLayout.setHorizontalGroup(
+            jPanelBookingLinesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelBookingLinesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelBookingLinesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelBookingLinesLayout.createSequentialGroup()
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 0, Short.MAX_VALUE)
+                        .addComponent(tableFilter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanelBookingLinesLayout.setVerticalGroup(
+            jPanelBookingLinesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelBookingLinesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelBookingLinesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(tableFilter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Booking Lines", jPanelBookingLines);
         // AI modification end
 
         jLabel4.setText("Billing Template");
@@ -1797,11 +1935,16 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JPanel jPanelBills;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JPanel jPanelBookingLines;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTBills;
+    private javax.swing.JTable jTBookingLines;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField jTIncomingInvoices;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter2;
+    private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter3;
     // AI modification end
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;

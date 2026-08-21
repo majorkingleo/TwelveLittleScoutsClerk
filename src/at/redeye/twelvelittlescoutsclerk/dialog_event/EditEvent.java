@@ -237,6 +237,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         tmBills.autoResize();
 
+        tableFilter2.setFilter(jTBills);
+
         // Refresh the bills table whenever the Bills tab becomes visible
         jTabbedPane1.addChangeListener(e -> {
             if (jTabbedPane1.getSelectedComponent() == jPanelBills) {
@@ -738,6 +740,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jPanelBills = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTBills = new javax.swing.JTable();
+        jLabel9 = new javax.swing.JLabel();
+        tableFilter2 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
         // AI modification end
         jLabel4 = new javax.swing.JLabel();
         jTBillingTemplate = new javax.swing.JComboBox();
@@ -749,7 +753,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         jLabel2.setText("Name");
 
-        jLabel3.setText("Costs");
+        jLabel3.setText("Costs by Member");
 
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBClose.setText("Close");
@@ -1006,6 +1010,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         jPanelBills.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
+        jLabel9.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
+        jLabel9.setText("Bills");
+
         jTBills.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -1030,13 +1037,22 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelBillsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+                .addGroup(jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelBillsLayout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 0, Short.MAX_VALUE)
+                        .addComponent(tableFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanelBillsLayout.setVerticalGroup(
             jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelBillsLayout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(tableFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -1719,9 +1735,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JPanel jPanel5;
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JPanel jPanelBills;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTBills;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter2;
     // AI modification end
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;

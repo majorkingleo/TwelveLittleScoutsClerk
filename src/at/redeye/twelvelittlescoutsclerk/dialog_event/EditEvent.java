@@ -550,6 +550,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
             openBill();
         }
     }//GEN-LAST:event_jTBillsMouseClicked
+
+    private void jBShowBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBShowBillActionPerformed
+        openBill();
+    }//GEN-LAST:event_jBShowBillActionPerformed
     // AI modification end
 
     @Override
@@ -727,6 +731,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jBCreateBill = new javax.swing.JButton();
         jBCreateRegistration = new javax.swing.JButton();
         jBUploadBill = new javax.swing.JButton();
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jBShowBill = new javax.swing.JButton();
+        // AI modification end
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jTRegistrationTemplate = new javax.swing.JComboBox();
@@ -1053,7 +1060,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addGroup(jPanelBillsLayout.createSequentialGroup()
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jBUploadBill, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jBUploadBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jBShowBill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanelBillsLayout.setVerticalGroup(
@@ -1066,9 +1075,21 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                    .addComponent(jBUploadBill))
+                    .addGroup(jPanelBillsLayout.createSequentialGroup()
+                        .addComponent(jBUploadBill)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBShowBill)))
                 .addContainerGap())
         );
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jBShowBill.setText("Show Bill");
+        jBShowBill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBShowBillActionPerformed(evt);
+            }
+        });
+        // AI modification end
 
         jTabbedPane1.addTab("Bills", jPanelBills);
         // AI modification end
@@ -1745,6 +1766,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBSave;
     // AI modification start (Claude Sonnet 4.6)
     private javax.swing.JButton jBUploadBill;
+    // AI modification end
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private javax.swing.JButton jBShowBill;
     // AI modification end
     private javax.swing.JCheckBox jCCacheOpen;
     // AI modification start (GPT-5.4)

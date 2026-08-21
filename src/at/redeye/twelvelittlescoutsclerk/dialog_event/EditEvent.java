@@ -501,6 +501,17 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 for (DBBill entry : bills_values) {
                     tmBills.add(entry);
                 }
+
+                // Sum all uploaded (incoming) bills associated with this event
+                double incoming_total = 0.0;
+                for (DBBill entry : bills_values) {
+                    if (entry.direction.handler.getValue() == DBBill.Direction.INCOMING.ordinal()
+                            && !entry.isCanceled()
+                            && entry.amount.getValue() != null) {
+                        incoming_total += entry.amount.getValue();
+                    }
+                }
+                jTIncomingInvoices.setText(String.format("%.2f", incoming_total));
             }
         };
     }
@@ -720,6 +731,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jLabel6 = new javax.swing.JLabel();
         jTRegistrationTemplate = new javax.swing.JComboBox();
         jTRegistrationCosts = new javax.swing.JTextField();
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jLabel10 = new javax.swing.JLabel();
+        jTIncomingInvoices = new javax.swing.JTextField();
+        // AI modification end
         // AI modification start (GPT-5.4)
         jLabel7 = new javax.swing.JLabel();
         jCCountsToAvailableCashAmount = new javax.swing.JCheckBox();
@@ -1066,6 +1081,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
         jLabel6.setText("Registration Costs");
 
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jLabel10.setText("Incoming Invoices");
+
+        jTIncomingInvoices.setEditable(false);
+        // AI modification end
+
         // AI modification start (GPT-5.4)
         jLabel7.setText("Available Cash Amount");
 
@@ -1093,6 +1114,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jLabel4)
                             .addComponent(jLabel5)
                             .addComponent(jLabel6)
+                            .addComponent(jLabel10)
                             .addComponent(jLabel7)
                             .addComponent(jLabel8))
                         .addGap(62, 62, 62)
@@ -1100,6 +1122,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jTBillingTemplate)
                             .addComponent(jTRegistrationTemplate)
                             .addComponent(jTRegistrationCosts)
+                            .addComponent(jTIncomingInvoices)
                             .addComponent(jTCosts)
                             .addComponent(jTName)
                             .addComponent(jCCountsToAvailableCashAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1130,6 +1153,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jLabel6)
                     .addComponent(jTRegistrationCosts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(jTIncomingInvoices, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                // AI modification end
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(jCCountsToAvailableCashAmount))
@@ -1594,7 +1623,16 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
 
     // AI modification start (Claude Sonnet 4.6)
     private void jBUploadBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUploadBillActionPerformed
-        invokeDialogUnique(new UploadExternalBill(mainwin, event.idx.getValue()));
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        UploadExternalBill upload = new UploadExternalBill(mainwin, event.idx.getValue());
+        upload.registerOnCloseListener(new Runnable() {
+            @Override
+            public void run() {
+                feed_bills();
+            }
+        });
+        invokeDialogUnique(upload);
+        // AI modification end
     }//GEN-LAST:event_jBUploadBillActionPerformed
     // AI modification end
 
@@ -1736,9 +1774,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JPanel jPanelBills;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTBills;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextField jTIncomingInvoices;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter2;
     // AI modification end
     private javax.swing.JScrollPane jScrollPane1;

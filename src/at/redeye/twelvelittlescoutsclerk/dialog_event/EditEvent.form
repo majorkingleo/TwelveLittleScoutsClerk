@@ -46,6 +46,7 @@
                           <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel12" alignment="0" min="-2" max="-2" attributes="0"/>
                             <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
@@ -54,6 +55,7 @@
                           <Component id="jTRegistrationTemplate" max="32767" attributes="0"/>
                           <Component id="jTRegistrationCosts" max="32767" attributes="0"/>
                           <Component id="jTIncomingInvoices" max="32767" attributes="0"/>
+                          <Component id="jTSumBookingLines" max="32767" attributes="0"/>
                           <Component id="jTCosts" max="32767" attributes="0"/>
                           <Component id="jTName" max="32767" attributes="0"/>
                             <Component id="jCCountsToAvailableCashAmount" max="32767" attributes="0"/>
@@ -96,6 +98,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTIncomingInvoices" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jTSumBookingLines" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
                 <Group type="103" groupAlignment="3" attributes="0">
@@ -666,6 +673,16 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTIncomingInvoices">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel12">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Sum Booking Lines"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="jTSumBookingLines">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>

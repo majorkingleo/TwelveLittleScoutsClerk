@@ -598,6 +598,15 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         tmBookingLines.add(entry);
                     }
                 }
+
+                // Sum the amounts of all booking lines linked to this event
+                double booking_lines_total = 0.0;
+                for (DBBookingLine entry : booking_lines_values) {
+                    if (entry.amount.getValue() != null) {
+                        booking_lines_total += entry.amount.getValue();
+                    }
+                }
+                jTSumBookingLines.setText(String.format("%.2f", booking_lines_total));
             }
         };
     }
@@ -828,6 +837,8 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
         jLabel10 = new javax.swing.JLabel();
         jTIncomingInvoices = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        jTSumBookingLines = new javax.swing.JTextField();
         // AI modification end
         // AI modification start (GPT-5.4)
         jLabel7 = new javax.swing.JLabel();
@@ -1242,6 +1253,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jLabel10.setText("Incoming Invoices");
 
         jTIncomingInvoices.setEditable(false);
+
+        jLabel12.setText("Sum Booking Lines");
+
+        jTSumBookingLines.setEditable(false);
         // AI modification end
 
         // AI modification start (GPT-5.4)
@@ -1272,6 +1287,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jLabel5)
                             .addComponent(jLabel6)
                             .addComponent(jLabel10)
+                            .addComponent(jLabel12)
                             .addComponent(jLabel7)
                             .addComponent(jLabel8))
                         .addGap(62, 62, 62)
@@ -1280,6 +1296,7 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jTRegistrationTemplate)
                             .addComponent(jTRegistrationCosts)
                             .addComponent(jTIncomingInvoices)
+                            .addComponent(jTSumBookingLines)
                             .addComponent(jTCosts)
                             .addComponent(jTName)
                             .addComponent(jCCountsToAvailableCashAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1314,6 +1331,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
                     .addComponent(jTIncomingInvoices, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(jTSumBookingLines, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 // AI modification end
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1937,12 +1958,14 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JLabel jLabel10;
     private javax.swing.JPanel jPanelBookingLines;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTBills;
     private javax.swing.JTable jTBookingLines;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField jTIncomingInvoices;
+    private javax.swing.JTextField jTSumBookingLines;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter2;
     private at.redeye.twelvelittlescoutsclerk.tableFilter tableFilter3;
     // AI modification end

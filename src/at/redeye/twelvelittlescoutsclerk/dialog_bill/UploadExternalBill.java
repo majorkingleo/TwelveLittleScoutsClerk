@@ -392,8 +392,13 @@ public class UploadExternalBill extends BaseDialogDialog {
         return true;
     }
 
+    // AI modification start (Claude Sonnet 4.6, 2026-09-03):
+    // File drops must not destroy the text paste/copy handler of
+    // JTextComponents (e.g. jTAmount). A plain setTransferHandler(th)
+    // replaced it so Ctrl+V / middle mouse paste did nothing.
+    // -> keep the original handler and delegate all non-file transfers to it.
     private void initDropSupport() {
-        TransferHandler th = new TransferHandler() {
+        TransferHandler fileDropHandler = new TransferHandler() {
             @Override
             public boolean canImport(TransferSupport support) {
                 return support.isDrop()
@@ -420,17 +425,68 @@ public class UploadExternalBill extends BaseDialogDialog {
             }
         };
 
-        setTransferHandlerRecursive(getContentPane(), th);
+        setTransferHandlerRecursive(getContentPane(), fileDropHandler);
     }
 
-    private void setTransferHandlerRecursive(Container container, TransferHandler th) {
+    private void setTransferHandlerRecursive(Container container, TransferHandler fileDropHandler) {
         for (java.awt.Component comp : container.getComponents()) {
             if (comp instanceof JComponent) {
-                ((JComponent) comp).setTransferHandler(th);
+                final JComponent jc = (JComponent) comp;
+                final TransferHandler original = jc.getTransferHandler();
+                if (original == null) {
+                    jc.setTransferHandler(fileDropHandler);
+                } else {
+                    // wrap: file drops -> fileDropHandler, everything else
+                    // (clipboard paste/copy/cut, text drops) -> original
+                    jc.setTransferHandler(new DelegatingDropHandler(fileDropHandler, original));
+                }
             }
             if (comp instanceof Container) {
-                setTransferHandlerRecursive((Container) comp, th);
+                setTransferHandlerRecursive((Container) comp, fileDropHandler);
             }
+        }
+    }
+
+    private static class DelegatingDropHandler extends TransferHandler {
+
+        private final TransferHandler fileDropHandler;
+        private final TransferHandler original;
+
+        DelegatingDropHandler(TransferHandler fileDropHandler, TransferHandler original) {
+            this.fileDropHandler = fileDropHandler;
+            this.original = original;
+        }
+
+        private boolean isFileDrop(TransferSupport support) {
+            return support.isDrop()
+                    && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
+
+        @Override
+        public boolean canImport(TransferSupport support) {
+            if (isFileDrop(support)) {
+                return true;
+            }
+            return original.canImport(support);
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            if (isFileDrop(support)) {
+                return fileDropHandler.importData(support);
+            }
+            return original.importData(support);
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return original.getSourceActions(c);
+        }
+
+        @Override
+        public void exportToClipboard(JComponent comp, java.awt.datatransfer.Clipboard clip, int action)
+                throws IllegalStateException {
+            original.exportToClipboard(comp, clip, action);
         }
     }
     // AI modification end

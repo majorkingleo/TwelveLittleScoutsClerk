@@ -41,6 +41,7 @@ import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
 import at.redeye.twelvelittlescoutsclerk.dialog_bill.UploadExternalBill;
 import at.redeye.twelvelittlescoutsclerk.dialog_bill.ViewBill;
+import at.redeye.twelvelittlescoutsclerk.reports.eventsettlement.ReportEventSettlement;
 import java.awt.Color;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -95,6 +96,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private String MESSAGE_NO_MEMBER_SELECTED;
     // AI modification start (Claude Sonnet 4.6)
     private String MESSAGE_NEW_BILL_CANCEL_REASON;
+    // AI modification end
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private String MESSAGE_SAVE_EVENT_FIRST;
     // AI modification end
 
     DBEvent event;
@@ -297,6 +301,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         MESSAGE_NO_MEMBER_SELECTED                  = MlM("No member selected.");
         // AI modification start (Claude Sonnet 4.6)
         MESSAGE_NEW_BILL_CANCEL_REASON              = MlM("new Bill");
+        // AI modification end
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        MESSAGE_SAVE_EVENT_FIRST                    = MlM("The event has to be saved first.");
         // AI modification end
 
         // to invokde translations texts
@@ -848,6 +855,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jLabel8 = new javax.swing.JLabel();
         jCAccountClassEdit = new javax.swing.JComboBox<>();
         // AI-generated end
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jBGenerateReport = new javax.swing.JButton();
+        // AI modification end
         jBSendBillMail = new javax.swing.JButton();
         jBSendRegistrationMail = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -1269,6 +1279,15 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jLabel8.setText("Account Class:");
         // jCAccountClassEdit is populated dynamically in constructor
         // AI-generated end
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        jBGenerateReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/reload.png"))); // NOI18N
+        jBGenerateReport.setText("Generate Report");
+        jBGenerateReport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBGenerateReportActionPerformed(evt);
+            }
+        });
+        // AI modification end
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1300,7 +1319,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                             .addComponent(jTCosts)
                             .addComponent(jTName)
                             .addComponent(jCCountsToAvailableCashAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jCAccountClassEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE))))
+                            .addComponent(jCAccountClassEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE)
+                            // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                            .addComponent(jBGenerateReport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            // AI modification end
+                            )))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -1347,6 +1370,11 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jCAccountClassEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 // AI-generated end
+                // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBGenerateReport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                // AI modification end
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1911,6 +1939,26 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         };
     }
 
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private void jBGenerateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBGenerateReportActionPerformed
+        generateEventReport();
+    }//GEN-LAST:event_jBGenerateReportActionPerformed
+
+    /**
+     * Opens the per-event settlement ("Abrechnung") preview for this event.
+     * The preview can be printed or exported as an ODS file (same behaviour as
+     * the Cash Flow report). Requires the event to be saved already (idx > 0).
+     */
+    private void generateEventReport() {
+        gui_to_var();
+        if (event.idx.getValue() == null || event.idx.getValue() <= 0) {
+            JOptionPane.showMessageDialog(this, MESSAGE_SAVE_EVENT_FIRST);
+            return;
+        }
+        invokeDialogUnique(new ReportEventSettlement(mainwin, event));
+    }
+    // AI modification end
+
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAddMember;
@@ -1928,6 +1976,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     // AI modification end
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JButton jBShowBill;
+    // AI modification end
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private javax.swing.JButton jBGenerateReport;
     // AI modification end
     private javax.swing.JCheckBox jCCacheOpen;
     // AI modification start (GPT-5.4)

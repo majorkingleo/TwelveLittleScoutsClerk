@@ -287,15 +287,15 @@ public class DBBill extends DBStrukt {
         idx.setAsPrimaryKey();
         bp_idx.shouldHaveIndex();
 
-        event_idx.canBeNull();
-
-
+        event_idx.setCanBeNull(true);
+    
         hist.setTitle(" ");
 
         addForeignKey(FK_BILLING_PERIOD, 5);
         addForeignKey(FK_EVENT, 8);
 
-        setVersion(8);
+        setVersion(10);
+
     }
 
     @Override

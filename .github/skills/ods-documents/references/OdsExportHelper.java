@@ -76,6 +76,21 @@ public final class OdsExportHelper {
         }
     }
 
+    /**
+     * Appends a row without inherited styles.
+     *
+     * odfdom's appendRow() copies the cell style names of the previous row, so a
+     * coloured header row would tint every following row. The cloned style names
+     * are removed here, giving a clean row that can be styled individually.
+     */
+    public static OdfTableRow appendCleanRow(OdfTable table) {
+        OdfTableRow row = table.appendRow();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            row.getCellByIndex(i).getOdfElement().removeAttribute("table:style-name");
+        }
+        return row;
+    }
+
     /** Writes a text cell; empty values are skipped unless a style is requested. */
     public static void setText(OdfTableRow row, int column, String value, boolean bold, String background) {
         if ((value == null || value.isEmpty()) && !bold && background == null) {

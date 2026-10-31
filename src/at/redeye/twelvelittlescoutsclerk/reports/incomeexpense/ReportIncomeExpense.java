@@ -356,31 +356,31 @@ public class ReportIncomeExpense extends BaseDialog {
         setText(periodRow, 0, "Zeitraum: " + renderer.getStartDateLabel()
                 + " - " + renderer.getEndDateLabel(), true, null);
 
-        OdfTableRow startRow = table.appendRow();
+        OdfTableRow startRow = appendCleanRow(table);
         setText(startRow, 0, "Startkontostand per " + renderer.getStartDateLabel()
                 + " : Eur " + money(renderer.getStartBalance()), true, null);
 
-        table.appendRow(); // spacer
+        appendCleanRow(table); // spacer
 
         boolean firstSection = true;
         firstSection = writeSection(table, "Ausgaben " + renderer.getPeriodLabel(),
                 renderer.getExpenseRows(), renderer.getExpenseMonthTotals(),
                 renderer.getExpenseTotal(), monthLabels, firstSection);
 
-        table.appendRow(); // spacer
+        appendCleanRow(table); // spacer
         firstSection = writeSection(table, "Einnahmen " + renderer.getPeriodLabel(),
                 renderer.getIncomeRows(), renderer.getIncomeMonthTotals(),
                 renderer.getIncomeTotal(), monthLabels, firstSection);
 
         if (!renderer.getLiabilityRows().isEmpty()) {
-            table.appendRow(); // spacer
+            appendCleanRow(table); // spacer
             writeSection(table, "Verbindlichkeiten " + renderer.getPeriodLabel(),
                     renderer.getLiabilityRows(), renderer.getLiabilityMonthTotals(),
                     renderer.getLiabilityTotal(), monthLabels, firstSection);
         }
 
-        table.appendRow(); // spacer
-        OdfTableRow balanceRow = table.appendRow();
+        appendCleanRow(table); // spacer
+        OdfTableRow balanceRow = appendCleanRow(table);
         setText(balanceRow, 0, "Kontostand per " + renderer.getEndDateLabel()
                 + " : Eur " + money(renderer.getEndBalance()), true, null);
 
@@ -404,7 +404,7 @@ public class ReportIncomeExpense extends BaseDialog {
             double[] monthTotals, double total, List<String> monthLabels, boolean withMonthLabels) {
         int monthCount = monthLabels.size();
 
-        OdfTableRow header = table.appendRow();
+        OdfTableRow header = appendCleanRow(table);
         setText(header, 0, title, true, COLOR_HEADER);
         for (int i = 0; i < monthCount; i++) {
             setText(header, 1 + i, withMonthLabels ? monthLabels.get(i) : "", true, COLOR_HEADER);
@@ -413,7 +413,7 @@ public class ReportIncomeExpense extends BaseDialog {
 
         int number = 1;
         for (ReportIncomeExpenseRenderer.Row row : rows) {
-            OdfTableRow dataRow = table.appendRow();
+            OdfTableRow dataRow = appendCleanRow(table);
             setText(dataRow, 0, number + ". " + row.getName(), false, null);
             for (int i = 0; i < monthCount; i++) {
                 setMoney(dataRow, 1 + i, row.getValue(i), false, null);
@@ -422,7 +422,7 @@ public class ReportIncomeExpense extends BaseDialog {
             number++;
         }
 
-        OdfTableRow totalRow = table.appendRow();
+        OdfTableRow totalRow = appendCleanRow(table);
         setText(totalRow, 0, "Summe", true, null);
         for (int i = 0; i < monthCount; i++) {
             setMoney(totalRow, 1 + i, monthTotals[i], true, null);
@@ -438,14 +438,14 @@ public class ReportIncomeExpense extends BaseDialog {
         table.setTableName("Buchungszeilen");
         ensureColumns(table, 4);
 
-        OdfTableRow header = table.appendRow();
+        OdfTableRow header = table.getRowCount() > 0 ? table.getRowByIndex(0) : appendCleanRow(table);
         setText(header, 0, "Datum", true, null);
         setText(header, 1, "Konto", true, null);
         setText(header, 2, "Beschreibung", true, null);
         setText(header, 3, "Betrag (€)", true, null);
 
         for (DBBookingLine bl : renderer.getBookingLines()) {
-            OdfTableRow row = table.appendRow();
+            OdfTableRow row = appendCleanRow(table);
 
             String date = "";
             if (bl.date != null && bl.date.getValue() != null) {
@@ -477,6 +477,19 @@ public class ReportIncomeExpense extends BaseDialog {
     }
 
     // ---- ODS helpers ----
+
+    /**
+     * odfdom's appendRow() copies the cell style names of the previous row, which
+     * would spread the header background (and bold) over all following rows.
+     * The cloned style names are removed so every new row starts unstyled.
+     */
+    private static OdfTableRow appendCleanRow(OdfTable table) {
+        OdfTableRow row = table.appendRow();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            row.getCellByIndex(i).getOdfElement().removeAttribute("table:style-name");
+        }
+        return row;
+    }
 
     private static void ensureColumns(OdfTable table, int columnCount) {
         if (table.getColumnCount() < columnCount) {

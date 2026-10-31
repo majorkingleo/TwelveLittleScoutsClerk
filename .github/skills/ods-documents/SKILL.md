@@ -79,8 +79,24 @@ Reuse the existing empty row for the first line instead:
 OdfTableRow firstRow = table.getRowCount() > 0 ? table.getRowByIndex(0) : table.appendRow();
 ```
 
-All further lines use `table.appendRow()`. Use an empty `appendRow()` as a spacer
-row between blocks.
+### `appendRow()` clones the cell styles of the previous row
+
+This is the most painful odfdom trap: every `appendRow()` copies the `table:style-name`
+of the last row's cells. A coloured header row therefore tints **all following rows**.
+Always append rows through a helper that strips the cloned style names:
+
+```java
+private static OdfTableRow appendCleanRow(OdfTable table) {
+    OdfTableRow row = table.appendRow();
+    for (int i = 0; i < table.getColumnCount(); i++) {
+        row.getCellByIndex(i).getOdfElement().removeAttribute("table:style-name");
+    }
+    return row;
+}
+```
+
+Use it for data rows, total rows and spacer rows alike. All further lines use
+`appendCleanRow(table)`; an empty appended row is a spacer between blocks.
 
 ---
 
@@ -231,6 +247,7 @@ layout and totals.
 
 - [ ] Export runs inside `AutoMBox`, uses the renderer getters (no duplicated queries)
 - [ ] `appendColumns(...)` before the first `appendRow()`; first line reuses row 0
+- [ ] All rows appended via `appendCleanRow(...)` (no inherited styles)
 - [ ] `setTablePrintAttribute(true)` on the first sheet
 - [ ] No `removeRowsByIndex(...)` loop
 - [ ] Money via `setDoubleValue(...)` + `setFormatString("€ #,##0.00")`, negatives red
@@ -249,6 +266,7 @@ layout and totals.
 | Don't | Why |
 |-------|-----|
 | `while (getRowCount() > 0) removeRowsByIndex(0, 1)` | never terminates — last row cannot be removed |
+| plain `table.appendRow()` after a styled row | clones its cell styles → whole sheet gets the header background |
 | `cell.setCurrencyFormat(symbol, pattern)` | `IllegalArgumentException` in odfdom 0.10.0 |
 | `setDoubleValue` with formatted strings (`"€ 159,58"`) | value becomes text, no calculation possible |
 | `col.setWidth(...)` | `NumberFormatException` on comma-decimal locales |

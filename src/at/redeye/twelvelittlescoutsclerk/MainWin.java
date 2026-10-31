@@ -198,6 +198,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
         // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
         jMenuItemCashFlow = new javax.swing.JMenuItem();
         // AI modification end
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        jMenuItemIncomeExpense = new javax.swing.JMenuItem();
+        // AI modification end
         jMenu4 = new javax.swing.JMenu();
         jMenuDesign = new javax.swing.JMenu();
         jMSettings = new javax.swing.JMenuItem();
@@ -411,6 +414,16 @@ public class MainWin extends BaseDialog implements MainWinInterface {
             }
         });
         jMenu6.add(jMenuItemCashFlow);
+        // AI modification end
+
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        jMenuItemIncomeExpense.setText("Income / Expenses");
+        jMenuItemIncomeExpense.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemIncomeExpenseActionPerformed(evt);
+            }
+        });
+        jMenu6.add(jMenuItemIncomeExpense);
         // AI modification end
 
         jMenuBar1.add(jMenu6);
@@ -729,6 +742,13 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     }//GEN-LAST:event_jMenuItemCashFlowActionPerformed
     // AI modification end
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    private void jMenuItemIncomeExpenseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemIncomeExpenseActionPerformed
+        if( checkAz() )
+            invokeDialogUnique(new at.redeye.twelvelittlescoutsclerk.reports.incomeexpense.ReportIncomeExpense(this));
+    }//GEN-LAST:event_jMenuItemIncomeExpenseActionPerformed
+    // AI modification end
+
     private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
         invokeDialogUnique(new ReportAudit(this));
     }//GEN-LAST:event_jMenuItem7ActionPerformed
@@ -931,6 +951,9 @@ public class MainWin extends BaseDialog implements MainWinInterface {
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JMenuItem jMenuItemOperational;
     private javax.swing.JMenuItem jMenuItemCashFlow;
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    private javax.swing.JMenuItem jMenuItemIncomeExpense;
+    // AI modification end
     // AI modification end
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;

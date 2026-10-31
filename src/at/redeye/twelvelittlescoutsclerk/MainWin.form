@@ -187,6 +187,16 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemCashFlowActionPerformed"/>
               </Events>
             </MenuItem>
+            <!-- AI modification start (GitHub Copilot / DeepSeek V4 Flash) -->
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItemIncomeExpense">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Income / Expenses"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemIncomeExpenseActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <!-- AI modification end -->
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu4">

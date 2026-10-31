@@ -36,6 +36,7 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill2BookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillTemplate;
 import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
@@ -604,6 +605,27 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     for (DBBookingLine entry : booking_lines_values) {
                         tmBookingLines.add(entry);
                     }
+
+                    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                    DBBill2BookingLine linkProto = new DBBill2BookingLine();
+                    List<DBBill2BookingLine> billLinks = trans.fetchTable2(linkProto,
+                            "where " + trans.markColumn(linkProto.bp_idx) + " = " + mainwin.getBPIdx()
+                            + " and " + trans.markColumn(linkProto.bl_idx) + " in ( " + ids + " )");
+                    Set<Integer> blWithBill = new HashSet<>();
+                    for (DBBill2BookingLine link : billLinks) {
+                        if (link.bl_idx.getValue() != null) {
+                            blWithBill.add(link.bl_idx.getValue());
+                        }
+                    }
+                    for (int i = 0; i < booking_lines_values.size(); i++) {
+                        DBBookingLine entry = booking_lines_values.get(i);
+                        if (entry.idx.getValue() != null && blWithBill.contains(entry.idx.getValue())) {
+                            for (var col : entry.getAllValues()) {
+                                tmBookingLines.setCellColor(col, i, new Color(198, 239, 206));
+                            }
+                        }
+                    }
+                    // AI modification end
                 }
 
                 // Sum the amounts of all booking lines linked to this event
@@ -877,6 +899,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         jTBookingLines = new javax.swing.JTable();
         jLabel11 = new javax.swing.JLabel();
         tableFilter3 = new at.redeye.twelvelittlescoutsclerk.tableFilter();
+        // AI modification end
+        // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+        jBUploadBillForBookingLine = new javax.swing.JButton();
         // AI modification end
         jLabel4 = new javax.swing.JLabel();
         jTBillingTemplate = new javax.swing.JComboBox();
@@ -1224,6 +1249,16 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         ));
         jScrollPane3.setViewportView(jTBookingLines);
 
+        // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+        jBUploadBillForBookingLine.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
+        jBUploadBillForBookingLine.setText("Upload Bill");
+        jBUploadBillForBookingLine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBUploadBillForBookingLineActionPerformed(evt);
+            }
+        });
+        // AI modification end
+
         javax.swing.GroupLayout jPanelBookingLinesLayout = new javax.swing.GroupLayout(jPanelBookingLines);
         jPanelBookingLines.setLayout(jPanelBookingLinesLayout);
         jPanelBookingLinesLayout.setHorizontalGroup(
@@ -1235,7 +1270,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                         .addComponent(jLabel11)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 0, Short.MAX_VALUE)
                         .addComponent(tableFilter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE))
+                    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                    .addGroup(jPanelBookingLinesLayout.createSequentialGroup()
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBUploadBillForBookingLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    // AI modification end
                 .addContainerGap())
         );
         jPanelBookingLinesLayout.setVerticalGroup(
@@ -1246,7 +1286,12 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     .addComponent(jLabel11)
                     .addComponent(tableFilter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                .addGroup(jPanelBookingLinesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .addGroup(jPanelBookingLinesLayout.createSequentialGroup()
+                        .addComponent(jBUploadBillForBookingLine)))
+                // AI modification end
                 .addContainerGap())
         );
 
@@ -1842,6 +1887,33 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     }//GEN-LAST:event_jBUploadBillActionPerformed
     // AI modification end
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private void jBUploadBillForBookingLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUploadBillForBookingLineActionPerformed
+        if (jTBookingLines.getSelectedRowCount() != 1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select exactly one booking line.", "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        int modelRow = jTBookingLines.convertRowIndexToModel(jTBookingLines.getSelectedRow());
+        if (modelRow < 0 || modelRow >= booking_lines_values.size()) {
+            return;
+        }
+
+        final DBBookingLine bookingLine = booking_lines_values.get(modelRow);
+
+        UploadExternalBill upload = new UploadExternalBill(mainwin, event.idx.getValue(), bookingLine.idx.getValue());
+        upload.registerOnCloseListener(new Runnable() {
+            @Override
+            public void run() {
+                feed_booking_lines();
+            }
+        });
+        invokeDialogUnique(upload);
+    }//GEN-LAST:event_jBUploadBillForBookingLineActionPerformed
+    // AI modification end
+
     private void jBSendMailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBSendMailActionPerformed
 
         final EditEvent me = this;
@@ -1973,6 +2045,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
     private javax.swing.JButton jBSave;
     // AI modification start (Claude Sonnet 4.6)
     private javax.swing.JButton jBUploadBill;
+    // AI modification end
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private javax.swing.JButton jBUploadBillForBookingLine;
     // AI modification end
     // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
     private javax.swing.JButton jBShowBill;

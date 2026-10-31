@@ -106,6 +106,9 @@ public class Main extends BaseModuleLauncher
             root.getBindtypeManager().register(new DBBookingLine2Events());
             root.getBindtypeManager().register(new DBBookingLine());
             root.getBindtypeManager().register(new DBBill());
+            // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+            root.getBindtypeManager().register(new DBBill2BookingLine());
+            // AI modification end
             root.getBindtypeManager().register(new DBBillTemplate());
             root.getBindtypeManager().register(new DBMailJob());
             root.getBindtypeManager().register(new DBAccountClasses());

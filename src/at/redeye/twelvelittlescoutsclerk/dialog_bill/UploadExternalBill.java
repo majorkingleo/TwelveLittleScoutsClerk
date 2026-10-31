@@ -11,6 +11,7 @@ import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill2BookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import java.awt.Container;
 import java.awt.datatransfer.DataFlavor;
@@ -32,6 +33,9 @@ public class UploadExternalBill extends BaseDialogDialog {
     MainWin mainwin;
     File selectedFile;
     boolean saved = false;
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    Integer preselectedBookingLineIdx;
+    // AI modification end
 
     // AI modification start (Claude Sonnet 4.6)
     static class EventDescr {
@@ -57,14 +61,20 @@ public class UploadExternalBill extends BaseDialogDialog {
     // AI modification end
 
     public UploadExternalBill(MainWin mainwin) {
-        this(mainwin, null);
+        this(mainwin, null, null);
     }
 
     public UploadExternalBill(MainWin mainwin, Integer preselectedEventIdx) {
+        this(mainwin, preselectedEventIdx, null);
+    }
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    public UploadExternalBill(MainWin mainwin, Integer preselectedEventIdx, Integer preselectedBookingLineIdx) {
         super(mainwin.getRoot(), "Upload External Bill");
         initComponents();
 
         this.mainwin = mainwin;
+        this.preselectedBookingLineIdx = preselectedBookingLineIdx;
 
         // AI modification start (Claude Sonnet 4.6)
         initMessages();
@@ -77,6 +87,7 @@ public class UploadExternalBill extends BaseDialogDialog {
         fillJCEvent(preselectedEventIdx);
         // AI modification end
     }
+    // AI modification end
 
     // AI modification start (Claude Sonnet 4.6)
     private void initMessages() {
@@ -292,6 +303,23 @@ public class UploadExternalBill extends BaseDialogDialog {
                 }
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                         trans, bill, bill.hist, root.getUserName());
+
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                // Link the uploaded bill to the selected booking line (n:m).
+                if (preselectedBookingLineIdx != null && preselectedBookingLineIdx > 0) {
+                    DBBill2BookingLine link = new DBBill2BookingLine();
+                    link.idx.loadFromCopy(mainwin.getNewSequenceValue(
+                            DBBill2BookingLine.BILL2BOOKINGLINE_IDX_SEQUENCE));
+                    link.bp_idx.loadFromCopy(mainwin.getBPIdx());
+                    link.bill_idx.loadFromCopy(newIdx);
+                    link.bl_idx.loadFromCopy(preselectedBookingLineIdx);
+                    link.bill_name.loadFromString(file.getName());
+                    link.amount.loadFromCopy(amountVal);
+                    DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                            trans, link, link.hist, root.getUserName());
+                }
+                // AI modification end
+
                 trans.commit();
 
                 saved = true;

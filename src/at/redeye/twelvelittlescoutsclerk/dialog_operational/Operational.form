@@ -100,6 +100,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCAssignedActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JCheckBox" name="jCBillAssigned">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Bill assigned"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCBillAssignedActionPerformed"/>
+          </Events>
+        </Component>
         <Component class="javax.swing.JCheckBox" name="jCFrom">
           <Properties>
             <Property name="text" type="java.lang.String" value="From"/>
@@ -158,6 +166,21 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBAssignActionPerformed"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="jPanelBillsTab">
+          <Properties>
+            <Property name="tabTitle" type="java.lang.String" value="Bills"/>
+          </Properties>
+          <SubComponents>
+            <Component class="javax.swing.JButton" name="jBUploadBill">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Upload Bill"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBUploadBillActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

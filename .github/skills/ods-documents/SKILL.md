@@ -119,15 +119,19 @@ error prone (`newStyleStyleElement(a, b)` takes (family, name), not (name, famil
 
 ### Colour scheme (project standard)
 
+Background colours are used **only for section header rows**. Everything else is
+plain and distinguished by bold text only.
+
 | Element | Property | Value |
 |---------|----------|-------|
-| Section header rows | background | `#8ea9db` (medium blue), bold |
-| Total rows | background | `#e2efda` (light green), bold |
-| Balance line | background | `#ffd966` (amber), bold |
+| Section header rows (Ausgaben / Einnahmen / …) | background | `#8ea9db` (medium blue), bold |
+| Total rows | — | bold only, no fill |
+| Balance line | — | bold only, no fill |
 | Negative amounts | font color | `#c00000` (dark red) |
-| Zeitraum / Startkontostand | — | bold, no fill |
+| Zeitraum / Startkontostand | — | bold only |
+| Second sheet (e.g. Buchungszeilen) | — | no fills at all, bold header text |
 
-Keep the fills light enough to print well and do not mix more than these colours.
+Keep it that simple: one fill colour, one accent colour for negatives.
 
 ### Blank instead of zero
 
@@ -194,9 +198,9 @@ A report that resembles the printed yearly ledger uses:
 | 2 | spacer |
 | 3 | section header: `Ausgaben <year>` + month labels + `Summe`, background `#8ea9db` |
 | … | one row per account class: `1. Name`, one money cell per month, total |
-| … | total row `Summe` (bold, background `#e2efda`) |
+| … | total row `Summe` (bold, no fill) |
 | … | spacer, `Einnahmen <year>` (month labels only in the first section) |
-| … | spacer, `Kontostand per <till> : Eur <amount>` (bold, background `#ffd966`) |
+| … | spacer, `Kontostand per <till> : Eur <amount>` (bold, no fill) |
 
 Month labels: `Jan Feb März April Mai Juni Juli Aug. Sept Okt Nov Dez`, with a
 2-digit year suffix (`Jan 24`) when the range spans multiple years. Cap the number of
@@ -230,7 +234,8 @@ layout and totals.
 - [ ] `setTablePrintAttribute(true)` on the first sheet
 - [ ] No `removeRowsByIndex(...)` loop
 - [ ] Money via `setDoubleValue(...)` + `setFormatString("€ #,##0.00")`, negatives red
-- [ ] Zero values left blank (unless a total row needs the background)
+- [ ] Zero values left blank (unless a total row needs bold formatting)
+- [ ] Background only on section header rows; detail sheets without fills
 - [ ] Bold/background via `getOdfElement().setProperty(...)`
 - [ ] Explicit column widths via `ColumnWidth` style property
 - [ ] `.ods` extension enforced, last open path updated

@@ -20,19 +20,14 @@ import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties;
  * odfdom 0.10.0. Copy into the report package and adapt the visibility as needed.
  *
  * Colour scheme used by the reports in this project:
- *  - section headers: medium blue with bold black text
- *  - total rows:      light green, bold
- *  - balance line:    amber, bold
+ *  - section headers: medium blue background with bold black text (only fill in the sheet)
+ *  - totals, balance line: bold only, no fill
  *  - negative values: dark red
  */
 public final class OdsExportHelper {
 
-    /** colour for section header rows */
+    /** background colour for section header rows (the only coloured rows) */
     public static final String COLOR_HEADER = "#8ea9db";
-    /** colour for total rows */
-    public static final String COLOR_TOTAL = "#e2efda";
-    /** colour for the final balance line */
-    public static final String COLOR_BALANCE = "#ffd966";
     /** font colour for negative amounts */
     public static final String COLOR_NEGATIVE = "#c00000";
 

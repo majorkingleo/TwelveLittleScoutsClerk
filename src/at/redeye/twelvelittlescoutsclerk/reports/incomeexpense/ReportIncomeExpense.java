@@ -41,12 +41,8 @@ public class ReportIncomeExpense extends BaseDialog {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     // AI-generated start (GitHub Copilot / DeepSeek V4 Flash)
-    /** background of the section header rows */
+    /** background of the section header rows (the only coloured rows) */
     private static final String COLOR_HEADER = "#8ea9db";
-    /** background of the total rows */
-    private static final String COLOR_TOTAL = "#e2efda";
-    /** background of the final balance line */
-    private static final String COLOR_BALANCE = "#ffd966";
     /** font color of negative amounts */
     private static final String COLOR_NEGATIVE = "#c00000";
     // AI-generated end
@@ -386,7 +382,7 @@ public class ReportIncomeExpense extends BaseDialog {
         table.appendRow(); // spacer
         OdfTableRow balanceRow = table.appendRow();
         setText(balanceRow, 0, "Kontostand per " + renderer.getEndDateLabel()
-                + " : Eur " + money(renderer.getEndBalance()), true, COLOR_BALANCE);
+                + " : Eur " + money(renderer.getEndBalance()), true, null);
 
         setColumnWidths(table, monthLabels.size());
 
@@ -427,11 +423,11 @@ public class ReportIncomeExpense extends BaseDialog {
         }
 
         OdfTableRow totalRow = table.appendRow();
-        setText(totalRow, 0, "Summe", true, COLOR_TOTAL);
+        setText(totalRow, 0, "Summe", true, null);
         for (int i = 0; i < monthCount; i++) {
-            setMoney(totalRow, 1 + i, monthTotals[i], true, COLOR_TOTAL);
+            setMoney(totalRow, 1 + i, monthTotals[i], true, null);
         }
-        setMoney(totalRow, monthCount + 1, total, true, COLOR_TOTAL);
+        setMoney(totalRow, monthCount + 1, total, true, null);
 
         return false;
     }
@@ -443,10 +439,10 @@ public class ReportIncomeExpense extends BaseDialog {
         ensureColumns(table, 4);
 
         OdfTableRow header = table.appendRow();
-        setText(header, 0, "Datum", true, COLOR_HEADER);
-        setText(header, 1, "Konto", true, COLOR_HEADER);
-        setText(header, 2, "Beschreibung", true, COLOR_HEADER);
-        setText(header, 3, "Betrag (€)", true, COLOR_HEADER);
+        setText(header, 0, "Datum", true, null);
+        setText(header, 1, "Konto", true, null);
+        setText(header, 2, "Beschreibung", true, null);
+        setText(header, 3, "Betrag (€)", true, null);
 
         for (DBBookingLine bl : renderer.getBookingLines()) {
             OdfTableRow row = table.appendRow();

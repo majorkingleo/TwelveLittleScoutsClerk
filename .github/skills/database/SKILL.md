@@ -59,6 +59,7 @@ TwelveLittleScoutsClerk/bindtypes/
 ├── DBMembers2Groups.java     # M2M: members ↔ groups (version 3)
 ├── DBMembers2Contacts.java   # M2M: members ↔ contacts (version 2)
 ├── DBBookingLine2Events.java # M2M: booking lines ↔ events (version 3)
+├── DBBill2BookingLine.java   # M2M: bills ↔ booking lines (version 1)
 ├── DBAccountClasses.java     # Accounting categories (version 1)
 ├── DBBillTemplate.java       # Bill templates (version 2)
 └── DBAudit.java              # Audit log (version 1, no bp_idx)
@@ -215,6 +216,9 @@ Generated invoices and registration bills.
 | `direction` | DBEnumAsInteger | | | 2 | OUTGOING/INCOMING |
 | `bill_type` | DBEnumAsInteger | | | 3 | INVOICE/REGISTRATION |
 | `registration_number` | INTEGER | | | 4 | Registration sequence |
+| `amount` | DOUBLE | | | | 7 | Invoice amount |
+| `event_idx` | INTEGER | | | EVENT.idx (nullable) | 8 | Linked event |
+| `event_name` | VARCHAR(50) | | | | 8 | Event name (denormalized) |
 | `hist` | DBHistory | | | | 1 | Change history |
 
 **Enums:**
@@ -222,10 +226,11 @@ Generated invoices and registration bills.
 - `Direction`: OUTGOING, INCOMING
 - `BillType`: INVOICE, REGISTRATION
 
-**Version:** 6
+**Version:** 8
 **Sequences:** `BILL_IDX_SEQ`, `REGISTRATION_IDX_SEQ`
 **Foreign Keys:**
 - `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v5)
+- `FK_EVENT` → EVENT.idx (added in v8, nullable)
 
 **DBStrukt Class:** `DBBill`
 
@@ -432,6 +437,61 @@ Links financial transactions to events and participants.
 
 ---
 
+#### BILL2BOOKINGLINE
+
+Direct (explicit) assignment of bills to booking lines. Many-to-many: one bill can
+be linked to multiple booking lines and vice versa.
+
+| Column | Type | PK | Index | FK | Version | Description |
+|--------|------|----|-------|----|---------|-------------|
+| `idx` | INTEGER | ✓ | | | 1 | Primary key |
+| `bp_idx` | INTEGER | | ✓ | BILLING_PERIOD.idx | 1 | Billing period |
+| `bill_idx` | INTEGER | | | BILLS.idx | 1 | Bill |
+| `bl_idx` | INTEGER | | | BOOKINGLINE.idx | 1 | Booking line |
+| `bill_name` | VARCHAR(255) | | | | 1 | Copy of `BILLS.file_name` (denormalized, debugging) |
+| `amount` | DOUBLE | | | | 1 | Copy of `BILLS.amount` (denormalized, debugging) |
+| `hist` | DBHistory | | | | 1 | Change history |
+
+**Version:** 1
+**Sequence:** `B2B_IDX_SEQUENCE`
+**Foreign Keys:**
+- `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (v1)
+- `FK_BILL` → BILLS.idx (v1)
+- `FK_BOOKING_LINE` → BOOKINGLINE.idx (v1)
+
+**DBStrukt Class:** `DBBill2BookingLine`
+
+---
+
+### Invoice (Bill) ↔ Booking Line Relationships
+
+There are **two** ways a bill can be related to a booking line:
+
+1. **Direct** — explicit row in `BILL2BOOKINGLINE`.
+   Used for manually assigned bills (e.g. an uploaded external invoice attached
+   to a bank transaction).
+
+2. **Indirect** — `EVENTMEMBERS.bill_idx` / `EVENTMEMBERS.registration_bill_idx`
+   combined with `BOOKINGLINE2EVENTS` where `event_idx` **and** `member_idx`
+   match. This expresses "the member has this bill and this booking line belongs
+   to that member/event".
+
+**Do not duplicate indirect relationships into `BILL2BOOKINGLINE`.** Each
+relationship has a single source of truth. To query both kinds together use:
+
+```java
+Map<Integer, Set<Integer>> billsPerBookingLine =
+    BillBookingLineHelper.fetchBillsPerBookingLine(trans, bpIdx);
+// key   = booking line idx
+// value = set of bill idx (direct + indirect)
+```
+
+Callers can test `billsPerBookingLine.containsKey(blIdx)` to know whether a
+booking line has at least one bill. Event-level `BOOKINGLINE2EVENTS` rows
+without `member_idx` do **not** count as an indirect bill relation.
+
+---
+
 ### System Tables
 
 #### MAIL_JOBS
@@ -514,6 +574,7 @@ BILLING_PERIOD (bp_idx)
 ├── MEMBERS2GROUPS
 ├── MEMBERS2CONTACTS
 ├── BOOKINGLINE2EVENTS
+├── BILL2BOOKINGLINE
 └── ACCOUNT_CLASSES
 ```
 
@@ -546,6 +607,9 @@ BILLING_PERIOD (bp_idx)
 | BOOKINGLINE2EVENTS | event_idx | EVENT | 3 |
 | BOOKINGLINE2EVENTS | member_idx | MEMBER | 3 |
 | BOOKINGLINE2EVENTS | contact_idx | CONTACT | 3 |
+| BILL2BOOKINGLINE | bp_idx | BILLING_PERIOD | 1 |
+| BILL2BOOKINGLINE | bill_idx | BILLS | 1 |
+| BILL2BOOKINGLINE | bl_idx | BOOKINGLINE | 1 |
 | ACCOUNT_CLASSES | bp_idx | BILLING_PERIOD | 1 |
 
 
@@ -622,7 +686,8 @@ For table T with current DB version V and code version N (V < N):
 | BOOKINGLINE | 3 | Added account_class_idx, account_class |
 | MEMBERS2GROUPS | 3 | Added bp_idx FK, group, member_name |
 | BOOKINGLINE2EVENTS | 3 | Added member_name, event_name |
-| BILL | 6 | Added registration_number, bill_type, direction, state |
+| BILL | 8 | Added amount, event_idx, event_name (v7/v8) |
+| BILL2BOOKINGLINE | 1 | Initial |
 | EVENT | 9 | Added costs, paid, planned_costs, templates, registration_costs, account fields |
 | EVENTMEMBERS | 6 | Added bill_idx, registration_bill_idx |
 | MAIL_JOBS | 3 | Added acknowledged flag |
@@ -675,6 +740,7 @@ Each primary key uses a database sequence:
 | MEMBERS2GROUPS | M2G_IDX_SEQUENCE | Member-group link IDs |
 | MEMBERS2CONTACTS | M2C_IDX_SEQUENCE | Member-contact link IDs |
 | BOOKINGLINE2EVENTS | B2E_IDX_SEQUENCE | Booking-event link IDs |
+| BILL2BOOKINGLINE | B2B_IDX_SEQUENCE | Bill-booking-line link IDs |
 | BOOKINGLINE | BL_IDX_SEQUENCE | Booking line IDs |
 | ACCOUNT_CLASSES | ACCLASS_IDX_SEQU | Account class IDs |
 | BILL_TEMPLATES | BILL_TEMP_IDX_SEQ | Template IDs |

@@ -12,6 +12,7 @@ import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.FrameWork.base.tablemanipulator.TableManipulator;
 import at.redeye.FrameWork.base.tablemanipulator.validators.DateValidator;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
 import at.redeye.Plugins.JDatePicker.JDatePicker;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
@@ -20,6 +21,7 @@ import at.redeye.twelvelittlescoutsclerk.BillBookingLineHelper;
 import at.redeye.twelvelittlescoutsclerk.DateFilter;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_bill.UploadExternalBill;
 import java.awt.Color;
@@ -55,6 +57,11 @@ public class Operational extends BaseDialog {
     MainWin mainwin;
     List<DBBookingLine> values;
     TableManipulator tm;
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    TableManipulator tmBills;
+    List<DBBill> bills_values = new ArrayList<>();
+    boolean ignoreSelectionChanges = false;
+    // AI modification end
     DBDateTime filter_date_from = new DBDateTime("dummy");
     DBDateTime filter_date_till = new DBDateTime("dummy");
     ArrayList<JComponent> filters = new ArrayList<>();
@@ -87,8 +94,49 @@ public class Operational extends BaseDialog {
 
         tm.prepareTable();
 
+        // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+        DBBill billProto = new DBBill();
+        tmBills = new TableManipulator(root, jTBills, billProto);
+        tmBills.hide(billProto.hist.lo_user);
+        tmBills.hide(billProto.hist.lo_zeit);
+        tmBills.hide(billProto.hist.ae_user);
+        tmBills.hide(billProto.hist.an_user);
+        tmBills.hide(billProto.hist.an_zeit);
+        tmBills.hide(billProto.hist.ae_zeit);
+        tmBills.hide(billProto.bp_idx);
+        tmBills.hide(billProto.idx);
+        tmBills.hide(billProto.odt_data);
+        tmBills.hide(billProto.pdf_data);
+        tmBills.prepareTable();
+        tmBills.autoResize();
+        jBUploadBill.setEnabled(false);
+        // AI modification end
+
         // enable multi-selection
         jTContent.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+        jTContent.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            @Override
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                if (evt.getValueIsAdjusting() || ignoreSelectionChanges) {
+                    return;
+                }
+                updateUploadBillButtonState();
+                feed_bills_for_selection();
+            }
+        });
+
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                if (jTabbedPane1.getSelectedComponent() == jPanelBillsTab) {
+                    updateUploadBillButtonState();
+                    feed_bills_for_selection();
+                }
+            }
+        });
+        // AI modification end
 
         bindVar(jDateFrom, filter_date_from);
         bindVar(jDateTill, filter_date_till);
@@ -192,7 +240,13 @@ public class Operational extends BaseDialog {
         new AutoMBox(getTitle(), autombox) {
             @Override
             public void do_stuff() throws Exception {
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                ignoreSelectionChanges = true;
+                // AI modification end
                 tm.clear();
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                ignoreSelectionChanges = false;
+                // AI modification end
 
                 DBBookingLine bookingline = new DBBookingLine();
                 Transaction trans = getTransaction();
@@ -282,9 +336,102 @@ public class Operational extends BaseDialog {
                     }
                 }
                 // AI modification end
+
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                tmBills.clear();
+                bills_values.clear();
+                jTSumBills.setText("");
+                updateUploadBillButtonState();
+                // AI modification end
             }
         };
     }
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private void updateUploadBillButtonState() {
+        boolean singleSelection = jTContent.getSelectedRowCount() == 1;
+        jBUploadBill.setEnabled(singleSelection && !mainwin.isAzLocked());
+    }
+
+    private void feed_bills_for_selection() {
+        feed_bills_for_selection(true);
+    }
+
+    /** Loads the bills of the currently selected booking line into the Bills tab. */
+    private void feed_bills_for_selection(boolean autombox) {
+        new AutoMBox(getTitle(), autombox) {
+            @Override
+            public void do_stuff() throws Exception {
+                tmBills.clear();
+                bills_values.clear();
+                jTSumBills.setText("");
+
+                if (values == null || jTContent.getSelectedRowCount() != 1) {
+                    return;
+                }
+
+                int modelRow = jTContent.convertRowIndexToModel(jTContent.getSelectedRow());
+                if (modelRow < 0 || modelRow >= values.size()) {
+                    return;
+                }
+
+                Integer bookingLineIdx = values.get(modelRow).idx.getValue();
+                if (bookingLineIdx == null) {
+                    return;
+                }
+
+                Transaction trans = getTransaction();
+                Map<Integer, Set<Integer>> billsPerBookingLine =
+                        BillBookingLineHelper.fetchBillsPerBookingLine(trans, mainwin.getBPIdx());
+                Set<Integer> billIds = billsPerBookingLine.get(bookingLineIdx);
+
+                if (billIds == null || billIds.isEmpty()) {
+                    return;
+                }
+
+                StringBuilder ids = new StringBuilder();
+                for (Integer id : billIds) {
+                    if (ids.length() > 0) {
+                        ids.append(",");
+                    }
+                    ids.append(id);
+                }
+
+                DBBill billProto = new DBBill();
+                String where = "where " + trans.markColumn(billProto.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(billProto.idx) + " in ( " + ids + " )"
+                        + " order by " + trans.markColumn(billProto.billingnr);
+
+                bills_values = trans.fetchTable2(billProto, where, FetchOption.EXCLUDE_BLOBS);
+
+                double sum = 0.0;
+                for (DBBill bill : bills_values) {
+                    tmBills.add(bill);
+                    if (bill.amount.getValue() != null) {
+                        sum += bill.amount.getValue();
+                    }
+                }
+                jTSumBills.setText(String.format("%.2f", sum));
+            }
+        };
+    }
+
+    private void selectBookingLineById(Integer bookingLineIdx) {
+        if (bookingLineIdx == null || values == null) {
+            return;
+        }
+        for (int modelRow = 0; modelRow < values.size(); modelRow++) {
+            if (bookingLineIdx.equals(values.get(modelRow).idx.getValue())) {
+                int viewRow = jTContent.convertRowIndexToView(modelRow);
+                if (viewRow >= 0) {
+                    jTContent.setRowSelectionInterval(viewRow, viewRow);
+                    jTContent.scrollRectToVisible(jTContent.getCellRect(viewRow, 0, true));
+                }
+                return;
+            }
+        }
+    }
+    // AI modification end
 
     private void populateAccountClassFilter()
             throws SQLException, TableBindingNotRegisteredException,
@@ -389,6 +536,10 @@ public class Operational extends BaseDialog {
         jBAssign = new javax.swing.JButton();
         // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
         jPanelBillsTab = new javax.swing.JPanel();
+        jScrollPaneBills = new javax.swing.JScrollPane();
+        jTBills = new javax.swing.JTable();
+        jLSumBills = new javax.swing.JLabel();
+        jTSumBills = new javax.swing.JTextField();
         jBUploadBill = new javax.swing.JButton();
         // AI modification end
         jPanel1 = new javax.swing.JPanel();
@@ -594,7 +745,23 @@ public class Operational extends BaseDialog {
         jTabbedPane1.addTab("Account Class Assignment", jPanelAssignTab);
 
         // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-        // --- tab panel: Bills (upload a bill for the selected booking line) ---
+        // --- tab panel: Bills (bills of the selected booking line) ---
+        jTBills.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPaneBills.setViewportView(jTBills);
+
+        jLSumBills.setText("Sum:");
+        jTSumBills.setEditable(false);
+
         jBUploadBill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
         jBUploadBill.setText("Upload Bill");
         jBUploadBill.addActionListener(new java.awt.event.ActionListener() {
@@ -609,15 +776,27 @@ public class Operational extends BaseDialog {
             jPanelBillsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelBillsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jBUploadBill)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanelBillsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPaneBills, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+                    .addGroup(jPanelBillsTabLayout.createSequentialGroup()
+                        .addComponent(jLSumBills)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTSumBills, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jBUploadBill)))
+                .addContainerGap())
         );
         jPanelBillsTabLayout.setVerticalGroup(
             jPanelBillsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelBillsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jBUploadBill)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPaneBills, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelBillsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLSumBills)
+                    .addComponent(jTSumBills, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBUploadBill))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Bills", jPanelBillsTab);
@@ -809,12 +988,14 @@ public class Operational extends BaseDialog {
         }
 
         final DBBookingLine bookingLine = values.get(modelRow);
+        final Integer bookingLineIdx = bookingLine.idx.getValue();
 
-        UploadExternalBill uploadBill = new UploadExternalBill(mainwin, null, bookingLine.idx.getValue());
+        UploadExternalBill uploadBill = new UploadExternalBill(mainwin, null, bookingLineIdx);
         uploadBill.registerOnCloseListener(new Runnable() {
             @Override
             public void run() {
                 feed_table();
+                selectBookingLineById(bookingLineIdx);
             }
         });
         invokeDialogUnique(uploadBill);
@@ -829,7 +1010,11 @@ public class Operational extends BaseDialog {
     private javax.swing.JButton jBUploadBill;
     private javax.swing.JComboBox<AccountClassDescr> jCBillAssignedFilter;
     private javax.swing.JLabel jLBillAssigned;
+    private javax.swing.JLabel jLSumBills;
     private javax.swing.JPanel jPanelBillsTab;
+    private javax.swing.JScrollPane jScrollPaneBills;
+    private javax.swing.JTable jTBills;
+    private javax.swing.JTextField jTSumBills;
     // AI modification end
     private javax.swing.JComboBox<AccountClassDescr> jCAccountClassAssign;
     private javax.swing.JComboBox<AccountClassDescr> jCAccountClassFilter;

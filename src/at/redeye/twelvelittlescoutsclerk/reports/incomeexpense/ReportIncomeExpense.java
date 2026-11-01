@@ -10,21 +10,30 @@ import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.Plugins.JDatePicker.JDatePicker;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
+import at.redeye.twelvelittlescoutsclerk.reports.incomeexpense.ReportIncomeExpenseRenderer.BillRef;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
 import org.odftoolkit.odfdom.doc.table.OdfTableCell;
 import org.odftoolkit.odfdom.doc.table.OdfTableRow;
+import org.odftoolkit.odfdom.dom.element.table.TableTableCellElementBase;
+import org.odftoolkit.odfdom.dom.element.text.TextAElement;
+import org.odftoolkit.odfdom.dom.element.text.TextPElement;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties;
 import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties;
+import org.odftoolkit.odfdom.pkg.OdfFileDom;
 
 // AI-generated start (GitHub Copilot / DeepSeek V4 Flash)
 /**
@@ -45,6 +54,8 @@ public class ReportIncomeExpense extends BaseDialog {
     private static final String COLOR_HEADER = "#8ea9db";
     /** font color of negative amounts */
     private static final String COLOR_NEGATIVE = "#c00000";
+    /** sub directory that receives the bill documents */
+    private static final String BELEGE_DIR_NAME = "belege";
     // AI-generated end
 
     private final MainWin mainwin;
@@ -108,8 +119,13 @@ public class ReportIncomeExpense extends BaseDialog {
 
     private ReportIncomeExpenseRenderer createRenderer() {
         gui_to_var();
+        return createRenderer(parseStartBalance());
+    }
+
+    /** Builds and fills the renderer; must not touch Swing components. */
+    private ReportIncomeExpenseRenderer createRenderer(double startBalance) {
         ReportIncomeExpenseRenderer renderer = new ReportIncomeExpenseRenderer(
-                getTransaction(), mainwin.getAZ(), parseStartBalance(), dateFrom, dateTill);
+                getTransaction(), mainwin.getAZ(), startBalance, dateFrom, dateTill);
         renderer.collectData();
         return renderer;
     }
@@ -142,6 +158,7 @@ public class ReportIncomeExpense extends BaseDialog {
         jReport = new javax.swing.JTextPane();
         jPanelButtons = new javax.swing.JPanel();
         jBExportODT = new javax.swing.JButton();
+        jBExportODSWithBills = new javax.swing.JButton();
         jBPrint = new javax.swing.JButton();
         jBClose = new javax.swing.JButton();
 
@@ -224,6 +241,14 @@ public class ReportIncomeExpense extends BaseDialog {
             }
         });
 
+        jBExportODSWithBills.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
+        jBExportODSWithBills.setText("Export ODS with Bills");
+        jBExportODSWithBills.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBExportODSWithBillsActionPerformed(evt);
+            }
+        });
+
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
@@ -242,6 +267,8 @@ public class ReportIncomeExpense extends BaseDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBExportODT)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBExportODSWithBills)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBClose)
                 .addContainerGap())
         );
@@ -252,6 +279,7 @@ public class ReportIncomeExpense extends BaseDialog {
                 .addGroup(jPanelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBPrint)
                     .addComponent(jBExportODT)
+                    .addComponent(jBExportODSWithBills)
                     .addComponent(jBClose))
                 .addContainerGap())
         );
@@ -294,6 +322,10 @@ public class ReportIncomeExpense extends BaseDialog {
         exportToODS();
     }//GEN-LAST:event_jBExportODTActionPerformed
 
+    private void jBExportODSWithBillsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBExportODSWithBillsActionPerformed
+        exportToODSWithBills();
+    }//GEN-LAST:event_jBExportODSWithBillsActionPerformed
+
     private void jBCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCloseActionPerformed
         if (canClose()) {
             close();
@@ -335,6 +367,127 @@ public class ReportIncomeExpense extends BaseDialog {
                 setWaitCursor(false);
             }
         };
+    }
+
+    /**
+     * Exports the ODS into a chosen directory and writes the referenced bill
+     * documents into the sub directory {@value #BELEGE_DIR_NAME}.
+     */
+    private void exportToODSWithBills() {
+        if (jReport.getText() == null || jReport.getText().trim().isEmpty()) {
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser(mainwin.getLastOpenPath());
+        chooser.setDialogTitle("Export ODS with Bills - choose directory");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        final File exportDir = chooser.getSelectedFile();
+        mainwin.setLastOpenPath(exportDir.getAbsolutePath());
+        final File odsFile = new File(exportDir, "Einnahmen-Ausgaben.ods");
+        final File belegeDir = new File(exportDir, BELEGE_DIR_NAME);
+
+        // read the input fields on the EDT, the worker only uses the values
+        gui_to_var();
+        final double startBalance = parseStartBalance();
+
+        if (odsFile.exists() && JOptionPane.showConfirmDialog(this,
+                "Overwrite existing file?\n" + odsFile.getAbsolutePath(),
+                getTitle(), JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        final ExportProgressDialog progress = new ExportProgressDialog(this, "Export ODS with Bills");
+
+        new SwingWorker<Integer, Void>() {
+            private Exception failure;
+
+            @Override
+            protected Integer doInBackground() {
+                try {
+                    ReportIncomeExpenseRenderer renderer = createRenderer(startBalance);
+                    renderer.render();
+
+                    List<BillRef> bills = renderer.getAllBills();
+                    int steps = bills.size() + 2;
+                    progress.initProgress(steps);
+                    progress.setProgress(0, "Creating report ...");
+
+                    if (!belegeDir.exists() && !belegeDir.mkdirs()) {
+                        throw new IOException("Cannot create directory: " + belegeDir.getAbsolutePath());
+                    }
+
+                    progress.setProgress(1, "Saving spreadsheet ...");
+                    writeOds(odsFile, renderer);
+
+                    int step = 2;
+                    for (BillRef bill : bills) {
+                        progress.setProgress(step, "Copying bill: " + bill.getExportName());
+                        writeBillFile(bill, belegeDir);
+                        step++;
+                    }
+
+                    progress.setProgress(steps, "Finished");
+                    return bills.size();
+                } catch (Exception ex) {
+                    failure = ex;
+                    return -1;
+                }
+            }
+
+            @Override
+            protected void done() {
+                progress.closeDialog();
+                if (failure != null) {
+                    JOptionPane.showMessageDialog(ReportIncomeExpense.this,
+                            failure.getMessage(), "Export ODS with Bills", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                try {
+                    int count = get();
+                    JOptionPane.showMessageDialog(ReportIncomeExpense.this,
+                            "Export finished.\nSpreadsheet: " + odsFile.getAbsolutePath()
+                            + "\nBills: " + count + " in " + belegeDir.getAbsolutePath(),
+                            "Export ODS with Bills", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(ReportIncomeExpense.this,
+                            String.valueOf(ex.getMessage()), "Export ODS with Bills",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
+
+        progress.setVisible(true);
+    }
+
+    /** Writes the document of one bill into the belege directory. */
+    private void writeBillFile(BillRef ref, File belegeDir) throws Exception {
+        DBBill bill = new DBBill();
+        bill.idx.loadFromCopy(ref.getBillIdx());
+        getTransaction().fetchTableWithPrimkey(bill);
+
+        byte[] data;
+        if (ref.getExportName().toLowerCase(Locale.ROOT).endsWith(".odt")
+                && bill.odt_data.value != null && bill.odt_data.value.length > 0) {
+            data = bill.odt_data.value;
+        } else {
+            data = bill.pdf_data.value;
+        }
+        if (data == null || data.length == 0) {
+            data = bill.odt_data.value;
+        }
+        if (data == null || data.length == 0) {
+            return; // no document stored for this bill
+        }
+
+        File target = new File(belegeDir, ref.getExportName());
+        try (FileOutputStream fos = new FileOutputStream(target)) {
+            fos.write(data);
+        }
     }
 
     private void writeOds(File targetFile, ReportIncomeExpenseRenderer renderer) throws Exception {
@@ -386,7 +539,8 @@ public class ReportIncomeExpense extends BaseDialog {
 
         setColumnWidths(table, monthLabels.size());
 
-        writeBookingLinesSheet(spreadsheet, renderer);
+        File belegeDir = new File(targetFile.getAbsoluteFile().getParentFile(), BELEGE_DIR_NAME);
+        writeBookingLinesSheet(spreadsheet, renderer, belegeDir);
 
         try (FileOutputStream fos = new FileOutputStream(targetFile)) {
             spreadsheet.save(fos);
@@ -433,16 +587,17 @@ public class ReportIncomeExpense extends BaseDialog {
     }
 
     private void writeBookingLinesSheet(OdfSpreadsheetDocument spreadsheet,
-            ReportIncomeExpenseRenderer renderer) {
+            ReportIncomeExpenseRenderer renderer, File belegeDir) {
         OdfTable table = OdfTable.newTable(spreadsheet);
         table.setTableName("Buchungszeilen");
-        ensureColumns(table, 4);
+        ensureColumns(table, 5);
 
         OdfTableRow header = table.getRowCount() > 0 ? table.getRowByIndex(0) : appendCleanRow(table);
         setText(header, 0, "Datum", true, null);
         setText(header, 1, "Konto", true, null);
         setText(header, 2, "Beschreibung", true, null);
         setText(header, 3, "Betrag (€)", true, null);
+        setText(header, 4, "Beleg", true, null);
 
         for (DBBookingLine bl : renderer.getBookingLines()) {
             OdfTableRow row = appendCleanRow(table);
@@ -471,9 +626,14 @@ public class ReportIncomeExpense extends BaseDialog {
 
             double amount = bl.amount != null ? bl.amount.getValue() : 0.0;
             setMoney(row, 3, amount, false, null);
+
+            List<BillRef> bills = renderer.getBillsForBookingLine(bl.idx.getValue());
+            if (!bills.isEmpty()) {
+                setLinks(row, 4, bills, belegeDir);
+            }
         }
 
-        setColumnWidths(table, new String[] { "2.6cm", "4.5cm", "8cm", "2.8cm" });
+        setColumnWidths(table, new String[] { "2.6cm", "4.5cm", "8cm", "2.8cm", "7cm" });
     }
 
     // ---- ODS helpers ----
@@ -537,6 +697,41 @@ public class ReportIncomeExpense extends BaseDialog {
     }
 
     /**
+     * Writes one hyperlink per bill into the cell. Multiple bills result in
+     * multiple lines inside the same cell, each linking to the file below the
+     * {@code belege} directory.
+     */
+    private static void setLinks(OdfTableRow row, int column, List<BillRef> bills, File belegeDir) {
+        OdfTableCell cell = row.getCellByIndex(column);
+        TableTableCellElementBase cellElement = cell.getOdfElement();
+        while (cellElement.getFirstChild() != null) {
+            cellElement.removeChild(cellElement.getFirstChild());
+        }
+        for (BillRef bill : bills) {
+            TextPElement paragraph = new TextPElement((OdfFileDom) cellElement.getOwnerDocument());
+            cellElement.appendChild(paragraph);
+            TextAElement link = paragraph.newTextAElement(
+                    toFileUri(new File(belegeDir, bill.getExportName())), "simple");
+            link.setTextContent(bill.getExportName());
+        }
+    }
+
+    /**
+     * Absolute {@code file:} URI for a bill document.
+     *
+     * LibreOffice resolves relative cell hyperlinks against the document path
+     * including the ODS file name, which results in a broken
+     * {@code .../report.ods/belege/file.pdf} location. Absolute URIs work.
+     */
+    private static String toFileUri(File file) {
+        String uri = file.toURI().toASCIIString();
+        if (uri.startsWith("file:/") && !uri.startsWith("file:///")) {
+            uri = "file:///" + uri.substring("file:/".length());
+        }
+        return uri;
+    }
+
+    /**
      * Sets explicit column widths. setWidth() in odfdom 0.10.0 fails on locale
      * specific decimal values, so the width is written as style property.
      */
@@ -562,6 +757,7 @@ public class ReportIncomeExpense extends BaseDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
+    private javax.swing.JButton jBExportODSWithBills;
     private javax.swing.JButton jBExportODT;
     private javax.swing.JButton jBGenerate;
     private javax.swing.JButton jBPrint;

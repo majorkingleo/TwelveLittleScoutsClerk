@@ -10,8 +10,11 @@ import at.redeye.FrameWork.base.bindtypes.DBDateTime;
 import at.redeye.FrameWork.base.reports.BaseReportRenderer;
 import at.redeye.FrameWork.base.reports.ReportRenderer;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
+import at.redeye.twelvelittlescoutsclerk.BillBookingLineHelper;
 import at.redeye.twelvelittlescoutsclerk.DateFilter;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 
@@ -24,10 +27,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 // AI-generated start (GitHub Copilot / DeepSeek V4 Flash)
 /**
@@ -90,6 +96,33 @@ public class ReportIncomeExpenseRenderer extends BaseReportRenderer implements R
         }
     }
 
+    /** A bill (receipt) linked to a booking line. */
+    public static class BillRef {
+        private final int billIdx;
+        private final String fileName;
+        private final String exportName;
+
+        BillRef(int billIdx, String fileName, String exportName) {
+            this.billIdx = billIdx;
+            this.fileName = fileName;
+            this.exportName = exportName;
+        }
+
+        public int getBillIdx() {
+            return billIdx;
+        }
+
+        /** Original file name stored in the bill record (may be empty). */
+        public String getFileName() {
+            return fileName;
+        }
+
+        /** Sanitized, unique file name used below the {@code belege} directory. */
+        public String getExportName() {
+            return exportName;
+        }
+    }
+
     private final Transaction trans;
     private final DBBillingPeriod bp;
     private final double startBalance;
@@ -113,6 +146,8 @@ public class ReportIncomeExpenseRenderer extends BaseReportRenderer implements R
     private String endDateLabel = "";
     private String periodLabel = "";
     private List<DBBookingLine> bookingLines = new ArrayList<>();
+    private final Map<Integer, List<BillRef>> billsPerBookingLine = new LinkedHashMap<>();
+    private final Map<Integer, BillRef> allBills = new LinkedHashMap<>();
 
     public ReportIncomeExpenseRenderer(Transaction trans, DBBillingPeriod bp, double startBalance,
             DBDateTime dateFrom, DBDateTime dateTill) {
@@ -308,6 +343,106 @@ public class ReportIncomeExpenseRenderer extends BaseReportRenderer implements R
         this.periodLabel = from.getYear() == till.getYear()
                 ? String.valueOf(from.getYear())
                 : from.getYear() + "/" + till.getYear();
+
+        collectBills();
+    }
+
+    /**
+     * Loads the bills (receipts) linked to the collected booking lines.
+     * Canceled bills are ignored. The export file name is derived from the
+     * stored file name and made unique within the report.
+     */
+    private void collectBills() throws Exception {
+        billsPerBookingLine.clear();
+        allBills.clear();
+
+        Map<Integer, Set<Integer>> links = BillBookingLineHelper.fetchBillsPerBookingLine(trans, bp.idx.getValue());
+        if (links.isEmpty()) {
+            return;
+        }
+
+        DBBill billProto = new DBBill();
+        List<DBBill> bills = trans.fetchTable2(billProto,
+                "where " + trans.markColumn(billProto, billProto.bp_idx) + " = " + bp.idx,
+                FetchOption.EXCLUDE_BLOBS);
+
+        Map<Integer, DBBill> billByIdx = new HashMap<>();
+        for (DBBill bill : bills) {
+            billByIdx.put(bill.idx.getValue(), bill);
+        }
+
+        Set<Integer> linkedBillIdx = new TreeSet<>();
+        for (Set<Integer> ids : links.values()) {
+            linkedBillIdx.addAll(ids);
+        }
+
+        Set<String> usedNames = new HashSet<>();
+        Map<Integer, BillRef> refsByIdx = new HashMap<>();
+        for (Integer billIdx : linkedBillIdx) {
+            DBBill bill = billByIdx.get(billIdx);
+            if (bill == null || bill.isCanceled()) {
+                continue;
+            }
+            String originalName = bill.file_name != null ? bill.file_name.toString().trim() : "";
+            BillRef ref = new BillRef(billIdx, originalName, buildExportName(bill, usedNames));
+            refsByIdx.put(billIdx, ref);
+            allBills.put(billIdx, ref);
+        }
+
+        for (Map.Entry<Integer, Set<Integer>> entry : links.entrySet()) {
+            List<BillRef> refs = new ArrayList<>();
+            for (Integer billIdx : entry.getValue()) {
+                BillRef ref = refsByIdx.get(billIdx);
+                if (ref != null) {
+                    refs.add(ref);
+                }
+            }
+            if (refs.isEmpty()) {
+                continue;
+            }
+            refs.sort((a, b) -> a.getExportName().compareToIgnoreCase(b.getExportName()));
+            billsPerBookingLine.put(entry.getKey(), refs);
+        }
+    }
+
+    private static String buildExportName(DBBill bill, Set<String> usedNames) {
+        String base = bill.file_name != null ? bill.file_name.toString().trim() : "";
+        if (base.isEmpty()) {
+            String nr = bill.billingnr != null ? bill.billingnr.toString() : String.valueOf(bill.idx.getValue());
+            base = "Beleg-" + nr;
+        }
+        base = sanitizeFileName(base);
+        if (!hasFileExtension(base)) {
+            base = base + ".pdf";
+        }
+
+        String candidate = base;
+        for (int i = 2; !usedNames.add(candidate); i++) {
+            candidate = appendSuffix(base, "-" + i);
+        }
+        return candidate;
+    }
+
+    private static String sanitizeFileName(String name) {
+        String cleaned = name.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_").trim();
+        while (cleaned.startsWith(".")) {
+            cleaned = cleaned.substring(1);
+        }
+        return cleaned.isEmpty() ? "Beleg" : cleaned;
+    }
+
+    private static boolean hasFileExtension(String name) {
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0 || dot == name.length() - 1) {
+            return false;
+        }
+        String extension = name.substring(dot + 1);
+        return extension.length() <= 5 && extension.chars().allMatch(Character::isLetterOrDigit);
+    }
+
+    private static String appendSuffix(String name, String suffix) {
+        int dot = name.lastIndexOf('.');
+        return dot > 0 ? name.substring(0, dot) + suffix + name.substring(dot) : name + suffix;
     }
 
     private void addRowIfUsed(List<Row> rows, String name, double[] values) {
@@ -520,6 +655,17 @@ public class ReportIncomeExpenseRenderer extends BaseReportRenderer implements R
 
     public List<DBBookingLine> getBookingLines() {
         return new ArrayList<>(bookingLines);
+    }
+
+    /** Bills linked to the given booking line (empty list when there are none). */
+    public List<BillRef> getBillsForBookingLine(int bookingLineIdx) {
+        List<BillRef> refs = billsPerBookingLine.get(bookingLineIdx);
+        return refs != null ? new ArrayList<>(refs) : new ArrayList<>();
+    }
+
+    /** All distinct bills referenced by the report, in stable order. */
+    public List<BillRef> getAllBills() {
+        return new ArrayList<>(allBills.values());
     }
 
     public DBBillingPeriod getBillingPeriod() {

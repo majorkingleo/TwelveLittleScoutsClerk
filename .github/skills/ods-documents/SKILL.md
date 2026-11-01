@@ -149,6 +149,32 @@ plain and distinguished by bold text only.
 
 Keep it that simple: one fill colour, one accent colour for negatives.
 
+### Hyperlink cells
+
+A cell may contain one `<text:p>` per line, each holding a `<text:a>`:
+
+```java
+OdfTableCell cell = row.getCellByIndex(4);
+TableTableCellElementBase el = cell.getOdfElement();
+while (el.getFirstChild() != null) {
+    el.removeChild(el.getFirstChild());
+}
+for (File file : files) {
+    TextPElement p = new TextPElement((OdfFileDom) el.getOwnerDocument());
+    el.appendChild(p);
+    TextAElement a = p.newTextAElement(toFileUri(file), "simple");
+    a.setTextContent(file.getName());
+}
+```
+
+- `newTextAElement(href, type)` — the second argument is `xlink:type`, use `"simple"`.
+- **Use an absolute `file:` URI**, not a relative path: LibreOffice resolves relative
+  cell hyperlinks against the document path *including the ODS file name*, which
+  produces broken targets like `.../report.ods/belege/file.pdf`.
+  Build it with `file.toURI().toASCIIString()` (normalise to `file:///...`) so blanks
+  and umlauts are encoded automatically.
+- The referenced files must exist at that absolute location when the link is clicked.
+
 ### Blank instead of zero
 
 Ledger-style reports leave zero values empty (like the printed sheet). Skip a cell when
@@ -255,6 +281,7 @@ layout and totals.
 - [ ] Background only on section header rows; detail sheets without fills
 - [ ] Bold/background via `getOdfElement().setProperty(...)`
 - [ ] Explicit column widths via `ColumnWidth` style property
+- [ ] Hyperlink cells use `text:a` with `xlink:type="simple"` and absolute `file:` URIs
 - [ ] `.ods` extension enforced, last open path updated
 - [ ] `mvn clean compile` succeeds and no `data/` folder is touched
 - [ ] AI modifications marked with start/end comments

@@ -113,6 +113,7 @@ public class Operational extends BaseDialog {
         tmBills.prepareTable();
         tmBills.autoResize();
         jBUploadBill.setEnabled(false);
+        jBAssignBill.setEnabled(false);
         // AI modification end
 
         // enable multi-selection
@@ -364,7 +365,9 @@ public class Operational extends BaseDialog {
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
     private void updateUploadBillButtonState() {
         boolean singleSelection = jTContent.getSelectedRowCount() == 1;
-        jBUploadBill.setEnabled(singleSelection && !mainwin.isAzLocked());
+        boolean enabled = singleSelection && !mainwin.isAzLocked();
+        jBUploadBill.setEnabled(enabled);
+        jBAssignBill.setEnabled(enabled);
     }
 
     private void updateUnassignBillButtonState() {
@@ -601,6 +604,7 @@ public class Operational extends BaseDialog {
         jTBills = new javax.swing.JTable();
         jLSumBills = new javax.swing.JLabel();
         jTSumBills = new javax.swing.JTextField();
+        jBAssignBill = new javax.swing.JButton();
         jBUnassignBill = new javax.swing.JButton();
         jBUploadBill = new javax.swing.JButton();
         // AI modification end
@@ -832,6 +836,15 @@ public class Operational extends BaseDialog {
             }
         });
 
+        jBAssignBill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edit.png"))); // NOI18N
+        jBAssignBill.setText("Assign Bill");
+        jBAssignBill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBAssignBillActionPerformed(evt);
+            }
+        });
+        jBAssignBill.setEnabled(false);
+
         jBUnassignBill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edittrash.gif"))); // NOI18N
         jBUnassignBill.setText("Unassign Bill");
         jBUnassignBill.addActionListener(new java.awt.event.ActionListener() {
@@ -854,6 +867,8 @@ public class Operational extends BaseDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTSumBills, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jBAssignBill)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jBUnassignBill)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jBUploadBill)))
@@ -868,6 +883,7 @@ public class Operational extends BaseDialog {
                 .addGroup(jPanelBillsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLSumBills)
                     .addComponent(jTSumBills, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBAssignBill)
                     .addComponent(jBUnassignBill)
                     .addComponent(jBUploadBill))
                 .addContainerGap())
@@ -1077,6 +1093,119 @@ public class Operational extends BaseDialog {
     // AI modification end
 
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private void jBAssignBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBAssignBillActionPerformed
+        final Integer bookingLineIdx = getSelectedBookingLineIdx();
+        if (bookingLineIdx == null) {
+            return;
+        }
+
+        String input = (String) javax.swing.JOptionPane.showInputDialog(
+                this,
+                MlM("Enter invoice number:"),
+                MlM("Assign invoice"),
+                javax.swing.JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                "");
+
+        if (input == null) {
+            return;
+        }
+
+        final String invoiceNr = input.trim();
+        if (invoiceNr.isEmpty()) {
+            return;
+        }
+
+        final boolean[] assigned = { false };
+
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+                Transaction trans = getTransaction();
+                DBBill billProto = new DBBill();
+
+                String safe = invoiceNr.replace("'", "''");
+                String where = "where " + trans.markColumn(billProto.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(billProto.billingnr) + " = '" + safe + "'";
+
+                List<DBBill> found = trans.fetchTable2(billProto, where);
+
+                if (found.isEmpty()) {
+                    javax.swing.JOptionPane.showMessageDialog(Operational.this,
+                            String.format(MlM("No invoice found with number %s"), invoiceNr),
+                            MlM("Assign invoice"),
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                if (found.size() > 1) {
+                    javax.swing.JOptionPane.showMessageDialog(Operational.this,
+                            String.format(MlM("Multiple invoices found with number %s"), invoiceNr),
+                            MlM("Assign invoice"),
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                DBBill bill = found.get(0);
+
+                if (bill.isCanceled()) {
+                    javax.swing.JOptionPane.showMessageDialog(Operational.this,
+                            MlM("Invoice is canceled."),
+                            MlM("Assign invoice"),
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                Integer billIdx = bill.idx.getValue();
+
+                if (directLinksByBillIdx.containsKey(billIdx)) {
+                    javax.swing.JOptionPane.showMessageDialog(Operational.this,
+                            MlM("Invoice is already assigned to this booking line."),
+                            MlM("Assign invoice"),
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                for (DBBill shown : bills_values) {
+                    if (billIdx.equals(shown.idx.getValue())) {
+                        javax.swing.JOptionPane.showMessageDialog(Operational.this,
+                                MlM("Invoice is already assigned to this booking line."),
+                                MlM("Assign invoice"),
+                                javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+                }
+
+                DBBill2BookingLine link = new DBBill2BookingLine();
+                link.idx.loadFromCopy(mainwin.getNewSequenceValue(
+                        DBBill2BookingLine.BILL2BOOKINGLINE_IDX_SEQUENCE));
+                link.bp_idx.loadFromCopy(mainwin.getBPIdx());
+                link.bill_idx.loadFromCopy(billIdx);
+                link.bl_idx.loadFromCopy(bookingLineIdx);
+
+                String billName = bill.file_name.toString();
+                link.bill_name.loadFromString(billName != null ? billName : "");
+
+                Double amount = bill.amount.getValue();
+                link.amount.loadFromCopy(amount != null ? amount : 0.0);
+
+                DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                        trans, link, link.hist, root.getUserName());
+                trans.commit();
+
+                assigned[0] = true;
+            }
+        };
+
+        if (assigned[0]) {
+            feed_table();
+            selectBookingLineById(bookingLineIdx);
+        }
+    }//GEN-LAST:event_jBAssignBillActionPerformed
+    // AI modification end
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
     private void jBUnassignBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUnassignBillActionPerformed
         final Integer bookingLineIdx = getSelectedBookingLineIdx();
         final Integer billIdx = getSelectedBillIdx();
@@ -1150,6 +1279,7 @@ public class Operational extends BaseDialog {
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBRefresh;
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private javax.swing.JButton jBAssignBill;
     private javax.swing.JButton jBUnassignBill;
     private javax.swing.JButton jBUploadBill;
     private javax.swing.JComboBox<AccountClassDescr> jCBillAssignedFilter;

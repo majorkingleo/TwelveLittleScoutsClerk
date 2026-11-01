@@ -16,17 +16,17 @@ import at.redeye.Plugins.JDatePicker.JDatePicker;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.TableBindingNotRegisteredException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.UnsupportedDBDataTypeException;
 import at.redeye.SqlDBInterface.SqlDBIO.impl.WrongBindFileFormatException;
+import at.redeye.twelvelittlescoutsclerk.BillBookingLineHelper;
 import at.redeye.twelvelittlescoutsclerk.DateFilter;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill2BookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_bill.UploadExternalBill;
 import java.awt.Color;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -198,15 +198,10 @@ public class Operational extends BaseDialog {
                 Transaction trans = getTransaction();
 
                 // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-                DBBill2BookingLine linkProto = new DBBill2BookingLine();
-                List<DBBill2BookingLine> billLinks = trans.fetchTable2(linkProto,
-                        "where " + trans.markColumn(linkProto.bp_idx) + " = " + mainwin.getBPIdx());
-                Set<Integer> blWithBill = new HashSet<>();
-                for (DBBill2BookingLine link : billLinks) {
-                    if (link.bl_idx.getValue() != null) {
-                        blWithBill.add(link.bl_idx.getValue());
-                    }
-                }
+                // Includes direct links (BILL2BOOKINGLINE) and indirect event member bills.
+                Map<Integer, Set<Integer>> billsPerBookingLine =
+                        BillBookingLineHelper.fetchBillsPerBookingLine(trans, mainwin.getBPIdx());
+                Set<Integer> blWithBill = billsPerBookingLine.keySet();
                 // AI modification end
 
                 StringBuilder sql = new StringBuilder();

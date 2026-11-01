@@ -27,6 +27,7 @@ import at.redeye.twelvelittlescoutsclerk.NewSequenceValueInterface;
 import at.redeye.twelvelittlescoutsclerk.UpdateEvent;
 import at.redeye.twelvelittlescoutsclerk.EventHelper;
 import at.redeye.twelvelittlescoutsclerk.AppConfigDefinitions;
+import at.redeye.twelvelittlescoutsclerk.BillBookingLineHelper;
 import at.redeye.twelvelittlescoutsclerk.BillingHelper;
 import at.redeye.twelvelittlescoutsclerk.MailJobHelper;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
@@ -36,7 +37,6 @@ import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBMember;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
-import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill2BookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillTemplate;
 import at.redeye.twelvelittlescoutsclerk.dialog_bookingline.BookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_member.EditMember;
@@ -607,16 +607,10 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
                     }
 
                     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-                    DBBill2BookingLine linkProto = new DBBill2BookingLine();
-                    List<DBBill2BookingLine> billLinks = trans.fetchTable2(linkProto,
-                            "where " + trans.markColumn(linkProto.bp_idx) + " = " + mainwin.getBPIdx()
-                            + " and " + trans.markColumn(linkProto.bl_idx) + " in ( " + ids + " )");
-                    Set<Integer> blWithBill = new HashSet<>();
-                    for (DBBill2BookingLine link : billLinks) {
-                        if (link.bl_idx.getValue() != null) {
-                            blWithBill.add(link.bl_idx.getValue());
-                        }
-                    }
+                    // Includes direct links (BILL2BOOKINGLINE) and indirect event member bills.
+                    Set<Integer> blWithBill = BillBookingLineHelper
+                            .fetchBillsPerBookingLine(trans, mainwin.getBPIdx())
+                            .keySet();
                     for (int i = 0; i < booking_lines_values.size(); i++) {
                         DBBookingLine entry = booking_lines_values.get(i);
                         if (entry.idx.getValue() != null && blWithBill.contains(entry.idx.getValue())) {

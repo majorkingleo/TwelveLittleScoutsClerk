@@ -22,11 +22,13 @@ import at.redeye.twelvelittlescoutsclerk.DateFilter;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBAccountClasses;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill2BookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.dialog_bill.UploadExternalBill;
 import java.awt.Color;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +63,7 @@ public class Operational extends BaseDialog {
     TableManipulator tmBills;
     List<DBBill> bills_values = new ArrayList<>();
     boolean ignoreSelectionChanges = false;
+    Map<Integer, DBBill2BookingLine> directLinksByBillIdx = new HashMap<>();
     // AI modification end
     DBDateTime filter_date_from = new DBDateTime("dummy");
     DBDateTime filter_date_till = new DBDateTime("dummy");
@@ -133,6 +136,15 @@ public class Operational extends BaseDialog {
                 if (jTabbedPane1.getSelectedComponent() == jPanelBillsTab) {
                     updateUploadBillButtonState();
                     feed_bills_for_selection();
+                }
+            }
+        });
+
+        jTBills.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            @Override
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                if (!evt.getValueIsAdjusting()) {
+                    updateUnassignBillButtonState();
                 }
             }
         });
@@ -340,8 +352,10 @@ public class Operational extends BaseDialog {
                 // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
                 tmBills.clear();
                 bills_values.clear();
+                directLinksByBillIdx.clear();
                 jTSumBills.setText("");
                 updateUploadBillButtonState();
+                updateUnassignBillButtonState();
                 // AI modification end
             }
         };
@@ -351,6 +365,37 @@ public class Operational extends BaseDialog {
     private void updateUploadBillButtonState() {
         boolean singleSelection = jTContent.getSelectedRowCount() == 1;
         jBUploadBill.setEnabled(singleSelection && !mainwin.isAzLocked());
+    }
+
+    private void updateUnassignBillButtonState() {
+        Integer billIdx = getSelectedBillIdx();
+        boolean enabled = jTContent.getSelectedRowCount() == 1
+                && billIdx != null
+                && directLinksByBillIdx.containsKey(billIdx)
+                && !mainwin.isAzLocked();
+        jBUnassignBill.setEnabled(enabled);
+    }
+
+    private Integer getSelectedBookingLineIdx() {
+        if (values == null || jTContent.getSelectedRowCount() != 1) {
+            return null;
+        }
+        int modelRow = jTContent.convertRowIndexToModel(jTContent.getSelectedRow());
+        if (modelRow < 0 || modelRow >= values.size()) {
+            return null;
+        }
+        return values.get(modelRow).idx.getValue();
+    }
+
+    private Integer getSelectedBillIdx() {
+        if (bills_values == null || jTBills.getSelectedRowCount() != 1) {
+            return null;
+        }
+        int modelRow = jTBills.convertRowIndexToModel(jTBills.getSelectedRow());
+        if (modelRow < 0 || modelRow >= bills_values.size()) {
+            return null;
+        }
+        return bills_values.get(modelRow).idx.getValue();
     }
 
     private void feed_bills_for_selection() {
@@ -364,7 +409,9 @@ public class Operational extends BaseDialog {
             public void do_stuff() throws Exception {
                 tmBills.clear();
                 bills_values.clear();
+                directLinksByBillIdx.clear();
                 jTSumBills.setText("");
+                updateUnassignBillButtonState();
 
                 if (values == null || jTContent.getSelectedRowCount() != 1) {
                     return;
@@ -381,11 +428,24 @@ public class Operational extends BaseDialog {
                 }
 
                 Transaction trans = getTransaction();
+
+                // Direct assignments (BILL2BOOKINGLINE) - only these can be unassigned here.
+                DBBill2BookingLine linkProto = new DBBill2BookingLine();
+                List<DBBill2BookingLine> directLinks = trans.fetchTable2(linkProto,
+                        "where " + trans.markColumn(linkProto.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(linkProto.bl_idx) + " = " + bookingLineIdx);
+                for (DBBill2BookingLine link : directLinks) {
+                    if (link.bill_idx.getValue() != null) {
+                        directLinksByBillIdx.put(link.bill_idx.getValue(), link);
+                    }
+                }
+
                 Map<Integer, Set<Integer>> billsPerBookingLine =
                         BillBookingLineHelper.fetchBillsPerBookingLine(trans, mainwin.getBPIdx());
                 Set<Integer> billIds = billsPerBookingLine.get(bookingLineIdx);
 
                 if (billIds == null || billIds.isEmpty()) {
+                    updateUnassignBillButtonState();
                     return;
                 }
 
@@ -412,6 +472,7 @@ public class Operational extends BaseDialog {
                     }
                 }
                 jTSumBills.setText(String.format("%.2f", sum));
+                updateUnassignBillButtonState();
             }
         };
     }
@@ -540,6 +601,7 @@ public class Operational extends BaseDialog {
         jTBills = new javax.swing.JTable();
         jLSumBills = new javax.swing.JLabel();
         jTSumBills = new javax.swing.JTextField();
+        jBUnassignBill = new javax.swing.JButton();
         jBUploadBill = new javax.swing.JButton();
         // AI modification end
         jPanel1 = new javax.swing.JPanel();
@@ -770,6 +832,15 @@ public class Operational extends BaseDialog {
             }
         });
 
+        jBUnassignBill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/edittrash.gif"))); // NOI18N
+        jBUnassignBill.setText("Unassign Bill");
+        jBUnassignBill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBUnassignBillActionPerformed(evt);
+            }
+        });
+        jBUnassignBill.setEnabled(false);
+
         javax.swing.GroupLayout jPanelBillsTabLayout = new javax.swing.GroupLayout(jPanelBillsTab);
         jPanelBillsTab.setLayout(jPanelBillsTabLayout);
         jPanelBillsTabLayout.setHorizontalGroup(
@@ -783,6 +854,8 @@ public class Operational extends BaseDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTSumBills, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jBUnassignBill)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jBUploadBill)))
                 .addContainerGap())
         );
@@ -795,6 +868,7 @@ public class Operational extends BaseDialog {
                 .addGroup(jPanelBillsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLSumBills)
                     .addComponent(jTSumBills, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBUnassignBill)
                     .addComponent(jBUploadBill))
                 .addContainerGap())
         );
@@ -1002,11 +1076,81 @@ public class Operational extends BaseDialog {
     }//GEN-LAST:event_jBUploadBillActionPerformed
     // AI modification end
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private void jBUnassignBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUnassignBillActionPerformed
+        final Integer bookingLineIdx = getSelectedBookingLineIdx();
+        final Integer billIdx = getSelectedBillIdx();
+        if (bookingLineIdx == null || billIdx == null) {
+            return;
+        }
+
+        final DBBill2BookingLine link = directLinksByBillIdx.get(billIdx);
+        if (link == null) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    MlM("This bill is assigned indirectly via the event member and cannot be removed here."),
+                    MlM("Remove bill assignment"),
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        Object[] options = {
+            MlM("Remove assignment only"),
+            MlM("Remove and cancel invoice"),
+            MlM("Cancel")
+        };
+
+        int choice = javax.swing.JOptionPane.showOptionDialog(this,
+                MlM("What should happen with the invoice?"),
+                MlM("Remove bill assignment"),
+                javax.swing.JOptionPane.YES_NO_CANCEL_OPTION,
+                javax.swing.JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+        if (choice != 0 && choice != 1) {
+            return;
+        }
+
+        final boolean cancelBill = (choice == 1);
+
+        new AutoMBox(getTitle()) {
+            @Override
+            public void do_stuff() throws Exception {
+                Transaction trans = getTransaction();
+                try {
+                    trans.deleteWithPrimaryKey(link);
+
+                    if (cancelBill) {
+                        DBBill bill = new DBBill();
+                        bill.idx.loadFromCopy(billIdx);
+                        if (trans.fetchTableWithPrimkey(bill)) {
+                            bill.state.handler.setValue(DBBill.State.CANCELED.ordinal());
+                            bill.cancel_reason.loadFromString(MlM("Unassigned in Operational"));
+                            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                                    trans, bill, bill.hist, root.getUserName());
+                        }
+                    }
+
+                    trans.commit();
+                } catch (Exception ex) {
+                    trans.rollback();
+                    throw ex;
+                }
+            }
+        };
+
+        feed_table();
+        selectBookingLineById(bookingLineIdx);
+    }//GEN-LAST:event_jBUnassignBillActionPerformed
+    // AI modification end
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBAssign;
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBRefresh;
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private javax.swing.JButton jBUnassignBill;
     private javax.swing.JButton jBUploadBill;
     private javax.swing.JComboBox<AccountClassDescr> jCBillAssignedFilter;
     private javax.swing.JLabel jLBillAssigned;

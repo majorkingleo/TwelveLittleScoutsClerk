@@ -197,6 +197,14 @@
                 <Property name="editable" type="boolean" value="false"/>
               </Properties>
             </Component>
+            <Component class="javax.swing.JButton" name="jBUnassignBill">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Unassign Bill"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBUnassignBillActionPerformed"/>
+              </Events>
+            </Component>
             <Component class="javax.swing.JButton" name="jBUploadBill">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Upload Bill"/>

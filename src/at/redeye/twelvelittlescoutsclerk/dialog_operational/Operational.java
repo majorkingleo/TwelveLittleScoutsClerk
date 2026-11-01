@@ -106,7 +106,7 @@ public class Operational extends BaseDialog {
         filters.add(jDateTill);
         filters.add(jCAccountClassFilter);
         // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-        filters.add(jCBillAssigned);
+        filters.add(jCBillAssignedFilter);
         // AI modification end
 
         new AutoMBox(getTitle(), false) {
@@ -114,6 +114,9 @@ public class Operational extends BaseDialog {
             public void do_stuff() throws Exception {
                 populateAccountClassFilter();
                 populateAccountClassAssign();
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                populateBillAssignedFilter();
+                // AI modification end
             }
         };
 
@@ -224,19 +227,30 @@ public class Operational extends BaseDialog {
                 }
 
                 // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-                if (jCBillAssigned.isSelected()) {
-                    if (blWithBill.isEmpty()) {
-                        sql.append(" and 1 = 0 ");
-                    } else {
-                        StringBuilder billIds = new StringBuilder();
-                        for (Integer id : blWithBill) {
-                            if (billIds.length() > 0) {
-                                billIds.append(",");
-                            }
-                            billIds.append(id);
+                AccountClassDescr billFilter = (AccountClassDescr) jCBillAssignedFilter.getSelectedItem();
+                if (billFilter != null && billFilter.filterIdx != 0) {
+                    StringBuilder billIds = new StringBuilder();
+                    for (Integer id : blWithBill) {
+                        if (billIds.length() > 0) {
+                            billIds.append(",");
                         }
-                        sql.append(" and ").append(trans.markColumn(bookingline.idx))
-                           .append(" in ( ").append(billIds).append(" ) ");
+                        billIds.append(id);
+                    }
+
+                    if (billFilter.filterIdx == 1) {
+                        // assigned: only booking lines with at least one bill
+                        if (blWithBill.isEmpty()) {
+                            sql.append(" and 1 = 0 ");
+                        } else {
+                            sql.append(" and ").append(trans.markColumn(bookingline.idx))
+                               .append(" in ( ").append(billIds).append(" ) ");
+                        }
+                    } else if (billFilter.filterIdx == -1) {
+                        // unassigned: only booking lines without any bill
+                        if (!blWithBill.isEmpty()) {
+                            sql.append(" and ").append(trans.markColumn(bookingline.idx))
+                               .append(" not in ( ").append(billIds).append(" ) ");
+                        }
                     }
                 }
                 // AI modification end
@@ -296,6 +310,16 @@ public class Operational extends BaseDialog {
         jCAccountClassFilter.setSelectedIndex(1); // default: "any"
     }
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+    private void populateBillAssignedFilter() {
+        jCBillAssignedFilter.removeAllItems();
+        jCBillAssignedFilter.addItem(new AccountClassDescr("assigned", 1, null));
+        jCBillAssignedFilter.addItem(new AccountClassDescr("unassigned", -1, null));
+        jCBillAssignedFilter.addItem(new AccountClassDescr("any", 0, null));
+        jCBillAssignedFilter.setSelectedIndex(2); // default: "any" (no filter)
+    }
+    // AI modification end
+
     private void populateAccountClassAssign()
             throws SQLException, TableBindingNotRegisteredException,
                    UnsupportedDBDataTypeException, WrongBindFileFormatException {
@@ -325,6 +349,16 @@ public class Operational extends BaseDialog {
                 }
             }
         } catch (NumberFormatException ignored) {}
+        // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+        // Fallback: prefer the "any" item (filterIdx == 0) for both combos.
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            AccountClassDescr item = combo.getItemAt(i);
+            if (item != null && item.filterIdx == 0) {
+                combo.setSelectedIndex(i);
+                return;
+            }
+        }
+        // AI modification end
         if (combo.getItemCount() > 1) {
             combo.setSelectedIndex(1);
         }
@@ -344,7 +378,8 @@ public class Operational extends BaseDialog {
         jCUnassigned = new javax.swing.JCheckBox();
         jCAssigned = new javax.swing.JCheckBox();
         // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-        jCBillAssigned = new javax.swing.JCheckBox();
+        jLBillAssigned = new javax.swing.JLabel();
+        jCBillAssignedFilter = new javax.swing.JComboBox<>();
         // AI modification end
         jCFrom = new javax.swing.JCheckBox();
         jDateFrom = new at.redeye.Plugins.JDatePicker.JDatePicker();
@@ -416,10 +451,10 @@ public class Operational extends BaseDialog {
         });
 
         // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-        jCBillAssigned.setText("Bill assigned");
-        jCBillAssigned.addActionListener(new java.awt.event.ActionListener() {
+        jLBillAssigned.setText("Bill:");
+        jCBillAssignedFilter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCBillAssignedActionPerformed(evt);
+                jCBillAssignedFilterActionPerformed(evt);
             }
         });
         // AI modification end
@@ -474,10 +509,6 @@ public class Operational extends BaseDialog {
                 .addComponent(jCIn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCOut)
-                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCBillAssigned)
-                // AI modification end
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(jPanel4Layout.createSequentialGroup()
@@ -492,6 +523,12 @@ public class Operational extends BaseDialog {
                 .addComponent(jLAccountClass)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCAccountClassFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLBillAssigned)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCBillAssignedFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                // AI modification end
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -507,9 +544,6 @@ public class Operational extends BaseDialog {
                                 .addComponent(jCIn)
                                 .addComponent(jCUnassigned)
                                 .addComponent(jCAssigned)
-                                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-                                .addComponent(jCBillAssigned)
-                                // AI modification end
                                 .addComponent(jLInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -517,7 +551,11 @@ public class Operational extends BaseDialog {
                             .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jDateTill, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jCAccountClassFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jCAccountClassFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
+                                .addComponent(jLBillAssigned)
+                                .addComponent(jCBillAssignedFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                // AI modification end
                             .addComponent(jCTill)
                             .addComponent(jLAccountClass))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -679,9 +717,9 @@ public class Operational extends BaseDialog {
     }//GEN-LAST:event_jCAssignedActionPerformed
 
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
-    private void jCBillAssignedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCBillAssignedActionPerformed
+    private void jCBillAssignedFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCBillAssignedFilterActionPerformed
         feed_table(true);
-    }//GEN-LAST:event_jCBillAssignedActionPerformed
+    }//GEN-LAST:event_jCBillAssignedFilterActionPerformed
     // AI modification end
 
     private void jCUnassignedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCUnassignedActionPerformed
@@ -794,7 +832,8 @@ public class Operational extends BaseDialog {
     private javax.swing.JButton jBRefresh;
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
     private javax.swing.JButton jBUploadBill;
-    private javax.swing.JCheckBox jCBillAssigned;
+    private javax.swing.JComboBox<AccountClassDescr> jCBillAssignedFilter;
+    private javax.swing.JLabel jLBillAssigned;
     private javax.swing.JPanel jPanelBillsTab;
     // AI modification end
     private javax.swing.JComboBox<AccountClassDescr> jCAccountClassAssign;

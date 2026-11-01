@@ -100,12 +100,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCAssignedActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="jCBillAssigned">
+        <Component class="javax.swing.JLabel" name="jLBillAssigned">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Bill assigned"/>
+            <Property name="text" type="java.lang.String" value="Bill:"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="jCBillAssignedFilter">
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCBillAssignedActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCBillAssignedFilterActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JCheckBox" name="jCFrom">

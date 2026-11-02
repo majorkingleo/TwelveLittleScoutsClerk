@@ -490,7 +490,8 @@ public class UploadExternalBill extends BaseDialogDialog {
 
                 Transaction trans = getTransaction();
 
-                // one time backfill for bills uploaded before the checksum column existed
+                // safety net for bills uploaded before the checksum column existed
+                // (the startup job BillChecksumWorker does this in the background)
                 BillChecksumHelper.backfillMissingChecksums(trans, mainwin.getBPIdx(), root.getUserName());
                 trans.commit();
 

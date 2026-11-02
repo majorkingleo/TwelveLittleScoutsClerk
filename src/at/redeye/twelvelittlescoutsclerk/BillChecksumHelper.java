@@ -111,6 +111,82 @@ public class BillChecksumHelper {
     }
 
     /**
+     * Returns all bills which have no checksum yet (without blobs).
+     *
+     * @param bpIdx billing period to restrict the search to, or {@code null}
+     *              for all billing periods
+     */
+    public static List<DBBill> fetchBillsWithoutChecksum(Transaction trans, Integer bpIdx)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException {
+
+        DBBill proto = new DBBill();
+
+        String where = "where ";
+
+        if (bpIdx != null) {
+            where += trans.markColumn(proto.bp_idx) + " = " + bpIdx + " and ";
+        }
+
+        where += "( " + trans.markColumn(proto.checksum) + " is null"
+                + " or " + trans.markColumn(proto.checksum) + " = '' )"
+                + " order by " + trans.markColumn(proto.idx);
+
+        return trans.fetchTable2(proto, where, FetchOption.EXCLUDE_BLOBS);
+    }
+
+    /**
+     * Loads a single bill including its blobs.
+     *
+     * @return the bill, or {@code null} if it does not exist
+     */
+    public static DBBill loadBill(Transaction trans, Integer billIdx)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException,
+                   IOException {
+
+        if (billIdx == null) {
+            return null;
+        }
+
+        DBBill bill = new DBBill();
+        bill.idx.loadFromCopy(billIdx);
+
+        if (!trans.fetchTableWithPrimkey(bill)) {
+            return null;
+        }
+
+        return bill;
+    }
+
+    /**
+     * Computes the checksum of the bill document and stores it in the database.
+     * The caller is responsible for committing the transaction.
+     *
+     * @return true if a checksum was written
+     */
+    public static boolean updateChecksum(Transaction trans, DBBill bill, String user)
+            throws SQLException, TableBindingNotRegisteredException,
+                   UnsupportedDBDataTypeException, WrongBindFileFormatException,
+                   IOException {
+
+        String checksum = compute(getBillData(bill));
+
+        if (checksum.isEmpty()) {
+            return false;
+        }
+
+        if (checksum.equals(getChecksum(bill))) {
+            return false;
+        }
+
+        bill.checksum.loadFromString(checksum);
+        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bill, bill.hist, user);
+
+        return true;
+    }
+
+    /**
      * Computes and stores the checksum for all bills of the given billing period
      * which have no checksum yet (bills uploaded before the column existed).
      * The caller is responsible for committing the transaction.
@@ -122,24 +198,15 @@ public class BillChecksumHelper {
                    UnsupportedDBDataTypeException, WrongBindFileFormatException,
                    IOException {
 
-        DBBill proto = new DBBill();
-
-        String where = "where " + trans.markColumn(proto.bp_idx) + " = " + bpIdx
-                + " and ( " + trans.markColumn(proto.checksum) + " is null"
-                + " or " + trans.markColumn(proto.checksum) + " = '' )";
-
-        List<DBBill> bills = trans.fetchTable2(proto, where);
+        List<DBBill> bills = fetchBillsWithoutChecksum(trans, bpIdx);
 
         int count = 0;
 
-        for (DBBill bill : bills) {
-            String checksum = compute(getBillData(bill));
-            if (checksum.isEmpty()) {
-                continue;
+        for (DBBill entry : bills) {
+            DBBill bill = loadBill(trans, entry.idx.getValue());
+            if (bill != null && updateChecksum(trans, bill, user)) {
+                count++;
             }
-            bill.checksum.loadFromString(checksum);
-            DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bill, bill.hist, user);
-            count++;
         }
 
         return count;

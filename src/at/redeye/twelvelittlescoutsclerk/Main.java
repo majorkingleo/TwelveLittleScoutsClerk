@@ -165,6 +165,14 @@ public class Main extends BaseModuleLauncher
         syncBillsThread.setDaemon(true);
         syncBillsThread.start();
         // AI-generated end
+
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        // Startup job: compute the missing checksums of already existing bills
+        BillChecksumWorker billChecksumWorker = new BillChecksumWorker(root);
+        Thread billChecksumThread = new Thread(billChecksumWorker, "BillChecksumWorker");
+        billChecksumThread.setDaemon(true);
+        billChecksumThread.start();
+        // AI modification end
     }
     
     public void silentCheckTableVersions() {

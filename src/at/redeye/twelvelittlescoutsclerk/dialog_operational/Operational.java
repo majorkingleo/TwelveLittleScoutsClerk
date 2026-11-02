@@ -110,6 +110,9 @@ public class Operational extends BaseDialog {
         tmBills.hide(billProto.idx);
         tmBills.hide(billProto.odt_data);
         tmBills.hide(billProto.pdf_data);
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        tmBills.hide(billProto.checksum);
+        // AI modification end
         tmBills.prepareTable();
         tmBills.autoResize();
         jBUploadBill.setEnabled(false);
@@ -1081,11 +1084,23 @@ public class Operational extends BaseDialog {
         final Integer bookingLineIdx = bookingLine.idx.getValue();
 
         UploadExternalBill uploadBill = new UploadExternalBill(mainwin, null, bookingLineIdx);
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        // If the same invoice is already in the database: show the error message,
+        // close the upload dialog and offer to assign the existing invoice.
+        uploadBill.setCloseOnDuplicate(true);
+        // AI modification end
         uploadBill.registerOnCloseListener(new Runnable() {
             @Override
             public void run() {
                 feed_table();
                 selectBookingLineById(bookingLineIdx);
+                // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+                DBBill duplicate = uploadBill.getDuplicateBill();
+                if (duplicate != null) {
+                    String invoiceNr = duplicate.billingnr.getValue();
+                    assignBillToBookingLine(bookingLineIdx, invoiceNr == null ? "" : invoiceNr);
+                }
+                // AI modification end
             }
         });
         invokeDialogUnique(uploadBill);
@@ -1099,6 +1114,18 @@ public class Operational extends BaseDialog {
             return;
         }
 
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        assignBillToBookingLine(bookingLineIdx, "");
+        // AI modification end
+    }//GEN-LAST:event_jBAssignBillActionPerformed
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    /**
+     * Asks for an invoice number (prefilled with initialInvoiceNr) and assigns
+     * the matching invoice to the given booking line.
+     */
+    private void assignBillToBookingLine(final Integer bookingLineIdx, String initialInvoiceNr) {
+
         String input = (String) javax.swing.JOptionPane.showInputDialog(
                 this,
                 MlM("Enter invoice number:"),
@@ -1106,7 +1133,7 @@ public class Operational extends BaseDialog {
                 javax.swing.JOptionPane.PLAIN_MESSAGE,
                 null,
                 null,
-                "");
+                initialInvoiceNr == null ? "" : initialInvoiceNr);
 
         if (input == null) {
             return;
@@ -1177,6 +1204,24 @@ public class Operational extends BaseDialog {
                     }
                 }
 
+                // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+                // the UI state may be stale (e.g. directly after an upload dialog
+                // was closed) -> check the link in the database as well
+                DBBill2BookingLine linkProto = new DBBill2BookingLine();
+                List<DBBill2BookingLine> existingLinks = trans.fetchTable2(linkProto,
+                        "where " + trans.markColumn(linkProto.bp_idx) + " = " + mainwin.getBPIdx()
+                        + " and " + trans.markColumn(linkProto.bill_idx) + " = " + billIdx
+                        + " and " + trans.markColumn(linkProto.bl_idx) + " = " + bookingLineIdx);
+
+                if (!existingLinks.isEmpty()) {
+                    javax.swing.JOptionPane.showMessageDialog(Operational.this,
+                            MlM("Invoice is already assigned to this booking line."),
+                            MlM("Assign invoice"),
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                // AI modification end
+
                 DBBill2BookingLine link = new DBBill2BookingLine();
                 link.idx.loadFromCopy(mainwin.getNewSequenceValue(
                         DBBill2BookingLine.BILL2BOOKINGLINE_IDX_SEQUENCE));
@@ -1202,8 +1247,9 @@ public class Operational extends BaseDialog {
             feed_table();
             selectBookingLineById(bookingLineIdx);
         }
-    }//GEN-LAST:event_jBAssignBillActionPerformed
-    // AI modification end
+    }
+    // AI modification end (GitHub Copilot / DeepSeek V4 Flash)
+    // AI modification end (GitHub Copilot / DeepSeek V4 Pro)
 
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
     private void jBUnassignBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUnassignBillActionPerformed

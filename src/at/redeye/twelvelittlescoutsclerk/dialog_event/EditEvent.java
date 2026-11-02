@@ -237,6 +237,9 @@ public class EditEvent extends BaseDialogDialog implements NewSequenceValueInter
         tmBills.hide(billProto.idx);
         tmBills.hide(billProto.odt_data);
         tmBills.hide(billProto.pdf_data);
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        tmBills.hide(billProto.checksum);
+        // AI modification end
 
         tmBills.prepareTable();
 

@@ -247,6 +247,11 @@ public class DBBill extends DBStrukt {
     public static final DBDouble        AMOUNT               = new DBDouble("amount", "Amount");
     public static final DBInteger       EVENT_IDX            = new DBInteger("event_idx", "Event Idx");  // FK to EVENT.idx
     public static final DBString        EVENT_NAME           = new DBString("event_name", "Event Name", 50);  // copy of EVENT.name    
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    /** SHA-256 hex checksum over the document blob (pdf_data or odt_data). */
+    public static final DBString        CHECKSUM             = new DBString("checksum", "Checksum", 64);
+    // AI modification end
     
 
     public DBInteger       idx                  = IDX.getCopy();
@@ -264,6 +269,9 @@ public class DBBill extends DBStrukt {
     public DBDouble        amount               = AMOUNT.getCopy();
     public DBInteger       event_idx            = EVENT_IDX.getCopy();
     public DBString        event_name           = EVENT_NAME.getCopy();
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    public DBString        checksum             = CHECKSUM.getCopy();
+    // AI modification end
 
     public DBBill() {
         super("BILLS");
@@ -282,6 +290,9 @@ public class DBBill extends DBStrukt {
         add(amount, 7);
         add(event_idx, 8);
         add(event_name, 8);
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        add(checksum, 11);
+        // AI modification end
         add(hist);        
 
         idx.setAsPrimaryKey();
@@ -294,7 +305,10 @@ public class DBBill extends DBStrukt {
         addForeignKey(FK_BILLING_PERIOD, 5);
         addForeignKey(FK_EVENT, 8);
 
-        setVersion(10);
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        // version 11: added checksum column
+        setVersion(11);
+        // AI modification end
 
     }
 

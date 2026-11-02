@@ -9,6 +9,7 @@ import at.redeye.FrameWork.base.BaseDialogDialog;
 import at.redeye.FrameWork.base.DefaultInsertOrUpdater;
 import at.redeye.FrameWork.base.transaction.Transaction;
 import at.redeye.twelvelittlescoutsclerk.DocumentFieldDoubleAndNoComma;
+import at.redeye.twelvelittlescoutsclerk.BillChecksumHelper;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill2BookingLine;
@@ -37,6 +38,13 @@ public class UploadExternalBill extends BaseDialogDialog {
     Integer preselectedBookingLineIdx;
     // AI modification end
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    /** Bill that was found to be identical to the selected file, or null. */
+    private DBBill duplicateBill;
+    /** true: close the dialog when a duplicate is detected (Operational flow). */
+    private boolean closeOnDuplicate = false;
+    // AI modification end
+
     // AI modification start (Claude Sonnet 4.6)
     static class EventDescr {
         public DBEvent event;
@@ -58,6 +66,10 @@ public class UploadExternalBill extends BaseDialogDialog {
     private String MESSAGE_UNSUPPORTED_TYPE;
     private String MESSAGE_UPLOAD_OK;
     private String MESSAGE_INVALID_AMOUNT;
+    // AI modification end
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    private String MESSAGE_DUPLICATE_BILL;
     // AI modification end
 
     public UploadExternalBill(MainWin mainwin) {
@@ -96,6 +108,9 @@ public class UploadExternalBill extends BaseDialogDialog {
         MESSAGE_UNSUPPORTED_TYPE = MlM("Unsupported file type. Only PDF, ODT and JPEG files are allowed.");
         MESSAGE_UPLOAD_OK = MlM("External bill uploaded and saved.");
         MESSAGE_INVALID_AMOUNT = MlM("Invalid amount.");
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        MESSAGE_DUPLICATE_BILL = MlM("Invoice already exists (invoice number %s).");
+        // AI modification end
     }
     // AI modification end
 
@@ -301,6 +316,12 @@ public class UploadExternalBill extends BaseDialogDialog {
                     // pdf and jpeg are stored in the pdf_data blob
                     bill.pdf_data.value = data;
                 }
+
+                // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+                // checksum over the document blob (used for duplicate detection)
+                bill.checksum.loadFromString(BillChecksumHelper.compute(data));
+                // AI modification end
+
                 DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
                         trans, bill, bill.hist, root.getUserName());
 
@@ -398,6 +419,25 @@ public class UploadExternalBill extends BaseDialogDialog {
         return saved;
     }
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    /**
+     * When set to true the dialog closes itself as soon as a duplicate bill is
+     * detected (used by the Operational dialog to open the invoice assignment
+     * dialog afterwards).
+     */
+    public void setCloseOnDuplicate(boolean closeOnDuplicate) {
+        this.closeOnDuplicate = closeOnDuplicate;
+    }
+
+    /**
+     * @return the bill which was detected as duplicate of the selected file,
+     *         or null if no duplicate was found
+     */
+    public DBBill getDuplicateBill() {
+        return duplicateBill;
+    }
+    // AI modification end
+
     /**
      * Validates and remembers the file to upload. Returns false and shows a
      * message when the file type is not supported.
@@ -414,11 +454,79 @@ public class UploadExternalBill extends BaseDialogDialog {
             return false;
         }
 
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        if (isDuplicate(file)) {
+            return false;
+        }
+        // AI modification end
+
+        duplicateBill = null;
         selectedFile = file;
         jLFileName.setText(file.getName());
         jBSave.setEnabled(true);
         return true;
     }
+
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+    /**
+     * Checks if a bill with the same document blob (checksum) already exists in
+     * the current billing period. Shows "Rechnung bereits vorhanden" and
+     * remembers the existing bill in {@link #duplicateBill}.
+     *
+     * @return true if the file is a duplicate and must not be uploaded
+     */
+    private boolean isDuplicate(final File file) {
+
+        final DBBill[] found = { null };
+
+        new AutoMBox(UploadExternalBill.class.getName()) {
+            @Override
+            public void do_stuff() throws Exception {
+                String checksum = BillChecksumHelper.compute(file);
+
+                if (checksum.isEmpty()) {
+                    return;
+                }
+
+                Transaction trans = getTransaction();
+
+                // one time backfill for bills uploaded before the checksum column existed
+                BillChecksumHelper.backfillMissingChecksums(trans, mainwin.getBPIdx(), root.getUserName());
+                trans.commit();
+
+                found[0] = BillChecksumHelper.findDuplicate(trans, mainwin.getBPIdx(), checksum);
+            }
+        };
+
+        if (found[0] == null) {
+            return false;
+        }
+
+        duplicateBill = found[0];
+
+        String invoiceNr = duplicateBill.billingnr.getValue();
+
+        JOptionPane.showMessageDialog(this,
+                String.format(MESSAGE_DUPLICATE_BILL, invoiceNr == null ? "" : invoiceNr),
+                MESSAGE_TITLE,
+                JOptionPane.WARNING_MESSAGE);
+
+        selectedFile = null;
+        jLFileName.setText("(no file)");
+        jBSave.setEnabled(false);
+
+        if (closeOnDuplicate) {
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    close();
+                }
+            });
+        }
+
+        return true;
+    }
+    // AI modification end
 
     // AI modification start (Claude Sonnet 4.6, 2026-09-03):
     // File drops must not destroy the text paste/copy handler of
@@ -445,6 +553,12 @@ public class UploadExternalBill extends BaseDialogDialog {
                             DataFlavor.javaFileListFlavor);
                     for (File file : files) {
                         setFile(file);
+                        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+                        // a duplicate closes the dialog -> ignore further files
+                        if (duplicateBill != null) {
+                            return true;
+                        }
+                        // AI modification end
                     }
                     return true;
                 } catch (UnsupportedFlavorException | IOException ex) {

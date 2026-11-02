@@ -219,6 +219,7 @@ Generated invoices and registration bills.
 | `amount` | DOUBLE | | | | 7 | Invoice amount |
 | `event_idx` | INTEGER | | | EVENT.idx (nullable) | 8 | Linked event |
 | `event_name` | VARCHAR(50) | | | | 8 | Event name (denormalized) |
+| `checksum` | VARCHAR(64) | | | | 11 | SHA-256 hex checksum over the document blob (duplicate detection) |
 | `hist` | DBHistory | | | | 1 | Change history |
 
 **Enums:**
@@ -226,7 +227,7 @@ Generated invoices and registration bills.
 - `Direction`: OUTGOING, INCOMING
 - `BillType`: INVOICE, REGISTRATION
 
-**Version:** 8
+**Version:** 11
 **Sequences:** `BILL_IDX_SEQ`, `REGISTRATION_IDX_SEQ`
 **Foreign Keys:**
 - `FK_BILLING_PERIOD` → BILLING_PERIOD.idx (added in v5)
@@ -687,6 +688,7 @@ For table T with current DB version V and code version N (V < N):
 | MEMBERS2GROUPS | 3 | Added bp_idx FK, group, member_name |
 | BOOKINGLINE2EVENTS | 3 | Added member_name, event_name |
 | BILL | 8 | Added amount, event_idx, event_name (v7/v8) |
+| BILL | 11 | Added checksum (SHA-256 over the document blob) |
 | BILL2BOOKINGLINE | 1 | Initial |
 | EVENT | 9 | Added costs, paid, planned_costs, templates, registration_costs, account fields |
 | EVENTMEMBERS | 6 | Added bill_idx, registration_bill_idx |

@@ -52,6 +52,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# AI modification start (GitHub Copilot / DeepSeek V4.1 Flash)
+# --- install bundled local JARs (not available on Maven Central) ---
+# Runs only when the marker artifact is missing, so repeated installs stay fast.
+if [[ ! -f "$HOME/.m2/repository/com/mjtoolbox/jshortcut/0.4-local/jshortcut-0.4-local.jar" ]]; then
+    echo "Installing bundled local JARs into the local Maven repository..."
+    bash "$APP_DIR/../FrameWork/scripts/install_local_jars.sh"
+    bash "$SCRIPT_DIR/install_local_jars.sh"
+fi
+# AI modification end
+
 # --- validate ---
 JAR_PATH="$TARGET_DIR/$APP_JAR"
 if [[ ! -f "$JAR_PATH" ]]; then

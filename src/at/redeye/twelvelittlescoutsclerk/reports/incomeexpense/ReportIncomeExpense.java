@@ -54,7 +54,7 @@ public class ReportIncomeExpense extends BaseDialog {
     private static final String COLOR_HEADER = "#8ea9db";
     /** font color of negative amounts */
     private static final String COLOR_NEGATIVE = "#c00000";
-    /** sub directory that receives the bill documents */
+    /** sub directory that receives the bill documents (next to the ODS file) */
     private static final String BELEGE_DIR_NAME = "belege";
     // AI-generated end
 
@@ -539,8 +539,12 @@ public class ReportIncomeExpense extends BaseDialog {
 
         setColumnWidths(table, monthLabels.size());
 
-        File belegeDir = new File(targetFile.getAbsoluteFile().getParentFile(), BELEGE_DIR_NAME);
-        writeBookingLinesSheet(spreadsheet, renderer, belegeDir);
+        // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
+        // The links are written relative to the ODS location, so the complete
+        // export directory can be moved/copied to another place.
+        File odsDir = targetFile.getAbsoluteFile().getParentFile();
+        writeBookingLinesSheet(spreadsheet, renderer, odsDir);
+        // AI modification end
 
         try (FileOutputStream fos = new FileOutputStream(targetFile)) {
             spreadsheet.save(fos);
@@ -587,7 +591,7 @@ public class ReportIncomeExpense extends BaseDialog {
     }
 
     private void writeBookingLinesSheet(OdfSpreadsheetDocument spreadsheet,
-            ReportIncomeExpenseRenderer renderer, File belegeDir) {
+            ReportIncomeExpenseRenderer renderer, File odsDir) {
         OdfTable table = OdfTable.newTable(spreadsheet);
         table.setTableName("Buchungszeilen");
         ensureColumns(table, 5);
@@ -629,7 +633,7 @@ public class ReportIncomeExpense extends BaseDialog {
 
             List<BillRef> bills = renderer.getBillsForBookingLine(bl.idx.getValue());
             if (!bills.isEmpty()) {
-                setLinks(row, 4, bills, belegeDir);
+                setLinks(row, 4, bills, odsDir);
             }
         }
 
@@ -696,12 +700,17 @@ public class ReportIncomeExpense extends BaseDialog {
         return String.format(MONEY_LOCALE, "%,.2f", value);
     }
 
+    // AI modification start (GitHub Copilot / DeepSeek V4 Flash)
     /**
      * Writes one hyperlink per bill into the cell. Multiple bills result in
      * multiple lines inside the same cell, each linking to the file below the
-     * {@code belege} directory.
+     * {@code belege} directory next to the ODS document.
+     *
+     * The href is written RELATIVE to the spreadsheet so that a complete export
+     * directory can be moved or copied to another location without breaking the
+     * links.
      */
-    private static void setLinks(OdfTableRow row, int column, List<BillRef> bills, File belegeDir) {
+    private static void setLinks(OdfTableRow row, int column, List<BillRef> bills, File odsDir) {
         OdfTableCell cell = row.getCellByIndex(column);
         TableTableCellElementBase cellElement = cell.getOdfElement();
         while (cellElement.getFirstChild() != null) {
@@ -711,25 +720,40 @@ public class ReportIncomeExpense extends BaseDialog {
             TextPElement paragraph = new TextPElement((OdfFileDom) cellElement.getOwnerDocument());
             cellElement.appendChild(paragraph);
             TextAElement link = paragraph.newTextAElement(
-                    toFileUri(new File(belegeDir, bill.getExportName())), "simple");
+                    toRelativeBillUri(odsDir, bill.getExportName()), "simple");
             link.setTextContent(bill.getExportName());
         }
     }
 
     /**
-     * Absolute {@code file:} URI for a bill document.
+     * Relative href of a bill document inside the {@code belege} sub directory
+     * of the ODS document.
      *
-     * LibreOffice resolves relative cell hyperlinks against the document path
-     * including the ODS file name, which results in a broken
-     * {@code .../report.ods/belege/file.pdf} location. Absolute URIs work.
+     * LibreOffice resolves relative cell hyperlinks against the ODS file name
+     * as if it were a directory, which results in
+     * {@code .../report.ods/belege/file.pdf}. Therefore the relative path has to
+     * start with {@code ../}; the resulting link is
+     * {@code ../belege/file.pdf} and stays valid when the whole export folder is
+     * moved to another location.
      */
-    private static String toFileUri(File file) {
-        String uri = file.toURI().toASCIIString();
-        if (uri.startsWith("file:/") && !uri.startsWith("file:///")) {
-            uri = "file:///" + uri.substring("file:/".length());
+    private static String toRelativeBillUri(File odsDir, String exportName) {
+        File belegeDir = new File(odsDir, BELEGE_DIR_NAME);
+        File billFile = new File(belegeDir, exportName);
+
+        // the base URI must end with "/", otherwise relativize() does not work
+        String base = odsDir.getAbsoluteFile().toURI().toASCIIString();
+        if (!base.endsWith("/")) {
+            base = base + "/";
         }
-        return uri;
+
+        // relativize() encodes blanks/umlauts/special characters, and returns the
+        // unchanged (absolute) URI if the bill lies outside the export directory
+        java.net.URI relative = java.net.URI.create(base).relativize(billFile.getAbsoluteFile().toURI());
+        String uri = relative.isAbsolute() ? billFile.getName() : relative.toASCIIString();
+
+        return "../" + uri;
     }
+    // AI modification end
 
     /**
      * Sets explicit column widths. setWidth() in odfdom 0.10.0 fails on locale

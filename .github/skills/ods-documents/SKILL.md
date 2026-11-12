@@ -162,18 +162,22 @@ while (el.getFirstChild() != null) {
 for (File file : files) {
     TextPElement p = new TextPElement((OdfFileDom) el.getOwnerDocument());
     el.appendChild(p);
-    TextAElement a = p.newTextAElement(toFileUri(file), "simple");
+    TextAElement a = p.newTextAElement(toRelativeLink(odsDir, file), "simple");
     a.setTextContent(file.getName());
 }
 ```
 
 - `newTextAElement(href, type)` — the second argument is `xlink:type`, use `"simple"`.
-- **Use an absolute `file:` URI**, not a relative path: LibreOffice resolves relative
-  cell hyperlinks against the document path *including the ODS file name*, which
-  produces broken targets like `.../report.ods/belege/file.pdf`.
-  Build it with `file.toURI().toASCIIString()` (normalise to `file:///...`) so blanks
-  and umlauts are encoded automatically.
-- The referenced files must exist at that absolute location when the link is clicked.
+- **Use a link relative to the ODS document**, so the complete export folder can be
+  moved/copied to another place. LibreOffice resolves relative cell hyperlinks
+  against the **ODS file name as if it were a directory**
+  (`./belege/x.pdf` → `.../report.ods/belege/x.pdf`), so the href must start with
+  `../` — `../belege/x.pdf` resolves to `.../belege/x.pdf` next to the ODS. Verified
+  with LibreOffice 2026-11-12 (HTML and PDF export resolve it correctly).
+- Build the relative part with `URI.relativize` so blanks and umlauts are encoded
+  automatically (`../belege/2024-10%20%C3%96BB.pdf`); never hand-concatenate names.
+- Absolute `file:///` URIs break as soon as the export folder is moved — do **not**
+  use them for report exports.
 
 ### Blank instead of zero
 
@@ -281,7 +285,8 @@ layout and totals.
 - [ ] Background only on section header rows; detail sheets without fills
 - [ ] Bold/background via `getOdfElement().setProperty(...)`
 - [ ] Explicit column widths via `ColumnWidth` style property
-- [ ] Hyperlink cells use `text:a` with `xlink:type="simple"` and absolute `file:` URIs
+- [ ] Hyperlink cells use `text:a` with `xlink:type="simple"` and a path relative to
+      the ODS (`../belege/file.pdf`), so the export folder stays movable
 - [ ] `.ods` extension enforced, last open path updated
 - [ ] `mvn clean compile` succeeds and no `data/` folder is touched
 - [ ] AI modifications marked with start/end comments

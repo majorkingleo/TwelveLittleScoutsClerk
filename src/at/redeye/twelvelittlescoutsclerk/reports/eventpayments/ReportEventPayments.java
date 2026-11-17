@@ -13,6 +13,7 @@ package at.redeye.twelvelittlescoutsclerk.reports.eventpayments;
 
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
+import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
@@ -86,6 +87,9 @@ public class ReportEventPayments extends BaseDialog {
         this.mainwin = mainwin;
         initComponents();
         initMessages();
+
+        // enabled again by generateReport() as soon as the selected event has bills
+        jBExportODSWithBills.setEnabled(false);
 
         FixNimbusBackgroundColor.fixNimbusBackgroundColor(jReport);
 
@@ -161,8 +165,12 @@ public class ReportEventPayments extends BaseDialog {
                     if (event == null) {
                         jReport.setText("<html><body>" + (jCBEvent.getItemCount() == 0 ? MESSAGE_NO_EVENTS : MESSAGE_NO_EVENT)
                                 + "</body></html>");
+                        jBExportODSWithBills.setEnabled(false);
                         return;
                     }
+
+                    // exporting with bills only makes sense if the event has any
+                    jBExportODSWithBills.setEnabled(!collectEventBills(event, false).isEmpty());
 
                     ReportEventPaymentsRenderer renderer = createRenderer(event);
                     jReport.setText(renderer.render());
@@ -321,12 +329,19 @@ public class ReportEventPayments extends BaseDialog {
         progress.setVisible(true);
     }
 
+    private List<EventBill> collectEventBills(DBEvent event) throws Exception {
+        return collectEventBills(event, true);
+    }
+
     /**
      * Collects all bills of the event: bills linked directly via
      * {@code BILLS.event_idx} plus bills referenced by the members
      * ({@code bill_idx} / {@code registration_bill_idx}). Canceled bills are skipped.
+     *
+     * @param withDocuments {@code false} keeps the (large) document blobs out of
+     *                      the result, useful for a plain "are there any bills" check
      */
-    private List<EventBill> collectEventBills(DBEvent event) throws Exception {
+    private List<EventBill> collectEventBills(DBEvent event, boolean withDocuments) throws Exception {
         DBEventMember emProto = new DBEventMember();
         List<DBEventMember> members = getTransaction().fetchTable2(emProto,
                 "where " + getTransaction().markColumn(emProto.bp_idx) + " = " + event.bp_idx.toString()
@@ -365,7 +380,9 @@ public class ReportEventPayments extends BaseDialog {
         }
         where += " ) order by " + getTransaction().markColumn(billProto.billingnr);
 
-        List<DBBill> bills = getTransaction().fetchTable2(billProto, where);
+        List<DBBill> bills = withDocuments
+                ? getTransaction().fetchTable2(billProto, where)
+                : getTransaction().fetchTable2(billProto, where, FetchOption.EXCLUDE_BLOBS);
 
         List<EventBill> result = new ArrayList<>();
         Set<String> usedNames = new HashSet<>();

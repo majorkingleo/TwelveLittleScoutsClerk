@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import org.apache.log4j.Logger;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
 public class Operational extends BaseDialog {
@@ -73,10 +74,16 @@ public class Operational extends BaseDialog {
     private static final Color BILL_ASSIGNED_COLOR = new Color(198, 239, 206);
     // AI modification end
 
+    private static final Logger logger = Logger.getLogger(Operational.class.getName());
+
+    private String MESSAGE_ASSIGNED;
+
     public Operational(MainWin mainwin) {
         super(mainwin.getRoot(), "Operational" + " - " + mainwin.getAZ().title );
 
         initComponents();
+
+        MESSAGE_ASSIGNED = MlM("Assigned account class %s to %d booking line(s).");
 
         this.mainwin = mainwin;
 
@@ -259,6 +266,7 @@ public class Operational extends BaseDialog {
                 // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
                 ignoreSelectionChanges = true;
                 // AI modification end
+                jLInfo.setText(" ");
                 tm.clear();
                 // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
                 ignoreSelectionChanges = false;
@@ -542,7 +550,10 @@ public class Operational extends BaseDialog {
                 + " order by " + trans.markColumn(acClass, acClass.name));
 
         for (DBAccountClasses ac : classes) {
-            jCAccountClassAssign.addItem(new AccountClassDescr(ac.name.toString(), ac.idx.getValue(), ac));
+            // show the idx too, so it is obvious which account class will be assigned
+            jCAccountClassAssign.addItem(new AccountClassDescr(
+                    ac.name.toString() + " (" + ac.idx.getValue() + ")",
+                    ac.idx.getValue(), ac));
         }
     }
 
@@ -1034,6 +1045,9 @@ public class Operational extends BaseDialog {
             modelRows[i] = jTContent.convertRowIndexToModel(selectedViewRows[i]);
         }
 
+        final String assignedLabel = formatAccountClassLabel(descr);
+        final List<Integer> assignedIds = new ArrayList<>();
+
         new AutoMBox(getTitle()) {
             @Override
             public void do_stuff() throws Exception {
@@ -1052,9 +1066,24 @@ public class Operational extends BaseDialog {
                             bl.account_class_idx.loadFromCopy(0);
                             bl.account_class.loadFromString("");
                         }
-                        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(trans, bl);
+
+                        // with history, so the change is visible in the database
+                        // (hist_aezeit / hist_aeuser) and auditable
+                        DefaultInsertOrUpdater.insertOrUpdateValuesWithPrimKey(
+                                trans, bl, bl.hist, root.getUserName());
+
+                        if (bl.idx.getValue() != null) {
+                            assignedIds.add(bl.idx.getValue());
+                        }
                     }
+
+                    if (assignedIds.isEmpty()) {
+                        throw new IllegalStateException(MlM("No booking line could be updated."));
+                    }
+
                     trans.commit();
+                    logger.info("assigned account class '" + assignedLabel + "' to "
+                            + assignedIds.size() + " booking line(s): " + assignedIds);
                 } catch (Exception ex) {
                     trans.rollback();
                     throw ex;
@@ -1063,7 +1092,21 @@ public class Operational extends BaseDialog {
                 feed_table(false);
             }
         };
+
+        // give feedback and keep the assigned rows in view, so the result can be verified
+        if (!assignedIds.isEmpty()) {
+            jLInfo.setText(String.format(MESSAGE_ASSIGNED, assignedLabel, assignedIds.size()));
+            selectBookingLineById(assignedIds.get(0));
+        }
     }//GEN-LAST:event_jBAssignActionPerformed
+
+    /** "Bierkassa (17)", or "(none)" for the sentinel entry. */
+    private static String formatAccountClassLabel(AccountClassDescr descr) {
+        if (descr.accountClass == null) {
+            return "(none)";
+        }
+        return descr.accountClass.name.toString() + " (" + descr.accountClass.idx.getValue() + ")";
+    }
 
     // AI modification start (GitHub Copilot / DeepSeek V4 Pro)
     private void jBUploadBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBUploadBillActionPerformed

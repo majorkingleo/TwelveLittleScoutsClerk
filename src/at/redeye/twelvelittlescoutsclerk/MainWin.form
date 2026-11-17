@@ -197,6 +197,16 @@
               </Events>
             </MenuItem>
             <!-- AI modification end -->
+            <!-- AI modification start (GitHub Copilot / Claude Sonnet 4.6) -->
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItemEventPayments">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Event Payments"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemEventPaymentsActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <!-- AI modification end -->
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu4">

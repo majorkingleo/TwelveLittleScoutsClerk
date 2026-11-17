@@ -3,7 +3,8 @@
  *
  * Shows an HTML preview of all members of one selectable event together with
  * the amount each member paid, and allows exporting the data as an ODS
- * spreadsheet (mirroring the Income / Expenses report dialog behaviour).
+ * spreadsheet (optionally with all bills of the event) mirroring the
+ * Income / Expenses report dialog behaviour.
  *
  * @author Copyright (c) 2026 Martin Oberzalek
  */
@@ -13,26 +14,44 @@ package at.redeye.twelvelittlescoutsclerk.reports.eventpayments;
 import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
+import at.redeye.twelvelittlescoutsclerk.reports.incomeexpense.ExportProgressDialog;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
 import org.odftoolkit.odfdom.doc.table.OdfTableCell;
 import org.odftoolkit.odfdom.doc.table.OdfTableColumn;
 import org.odftoolkit.odfdom.doc.table.OdfTableRow;
+import org.odftoolkit.odfdom.dom.element.table.TableTableCellElementBase;
+import org.odftoolkit.odfdom.dom.element.text.TextAElement;
+import org.odftoolkit.odfdom.dom.element.text.TextPElement;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties;
 import org.odftoolkit.odfdom.dom.style.props.OdfTableColumnProperties;
 import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties;
+import org.odftoolkit.odfdom.pkg.OdfFileDom;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
 public class ReportEventPayments extends BaseDialog {
 
     private static final String CONFIG_EVENT = ReportEventPayments.class.getName() + ".event";
+    /** sub directory that receives the bill documents (next to the ODS file) */
+    private static final String BELEGE_DIR_NAME = "belege";
 
     private final MainWin mainwin;
 
@@ -44,6 +63,23 @@ public class ReportEventPayments extends BaseDialog {
     private String MESSAGE_EXPORT_TITLE;
     private String MESSAGE_EXPORT_FINISHED;
     private String MESSAGE_EXPORT_FAILED;
+    private String MESSAGE_EXPORT_WITH_BILLS_TITLE;
+    private String MESSAGE_EXPORT_WITH_BILLS_FINISHED;
+    private String MESSAGE_OVERWRITE;
+
+    /** One bill document that belongs to the exported event. */
+    private static class EventBill {
+
+        private final DBBill bill;
+        private final String exportName;
+        private final String memberName;
+
+        EventBill(DBBill bill, String exportName, String memberName) {
+            this.bill = bill;
+            this.exportName = exportName;
+            this.memberName = memberName;
+        }
+    }
 
     public ReportEventPayments(MainWin mainwin) {
         super(mainwin.getRoot(), mainwin.getRoot().MlM("Event Payments") + " - " + mainwin.getAZ().title);
@@ -63,6 +99,9 @@ public class ReportEventPayments extends BaseDialog {
         MESSAGE_EXPORT_TITLE = MlM("Export ODS");
         MESSAGE_EXPORT_FINISHED = MlM("Export finished.\nSpreadsheet: %s");
         MESSAGE_EXPORT_FAILED = MlM("Export failed: %s");
+        MESSAGE_EXPORT_WITH_BILLS_TITLE = MlM("Export ODS with Bills");
+        MESSAGE_EXPORT_WITH_BILLS_FINISHED = MlM("Export finished.\nSpreadsheet: %s\nBills: %d in %s");
+        MESSAGE_OVERWRITE = MlM("Overwrite existing file?\n%s");
     }
 
     @Override
@@ -188,7 +227,219 @@ public class ReportEventPayments extends BaseDialog {
         };
     }
 
+    /**
+     * Exports the ODS into a chosen directory and writes all bills of the
+     * event into the sub directory {@value #BELEGE_DIR_NAME}. The exported
+     * spreadsheet gets an additional "Bills" sheet with links to the files.
+     */
+    private void exportToODSWithBills() {
+        final DBEvent event = getSelectedEvent();
+        if (event == null) {
+            JOptionPane.showMessageDialog(this, MESSAGE_NO_EVENT, MESSAGE_EXPORT_WITH_BILLS_TITLE,
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser(mainwin.getLastOpenPath());
+        chooser.setDialogTitle(MESSAGE_EXPORT_WITH_BILLS_TITLE + " - " + MlM("choose directory"));
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        final File exportDir = chooser.getSelectedFile();
+        mainwin.setLastOpenPath(exportDir.getAbsolutePath());
+        final File odsFile = new File(exportDir, sanitizeFileName(event.name.getValue()) + ".ods");
+        final File belegeDir = new File(exportDir, BELEGE_DIR_NAME);
+
+        if (odsFile.exists() && JOptionPane.showConfirmDialog(this,
+                String.format(MESSAGE_OVERWRITE, odsFile.getAbsolutePath()),
+                MESSAGE_EXPORT_WITH_BILLS_TITLE, JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        final ExportProgressDialog progress = new ExportProgressDialog(this, MESSAGE_EXPORT_WITH_BILLS_TITLE);
+
+        new SwingWorker<Integer, Void>() {
+            private Exception failure;
+
+            @Override
+            protected Integer doInBackground() {
+                try {
+                    ReportEventPaymentsRenderer renderer = createRenderer(event);
+                    List<EventBill> bills = collectEventBills(event);
+                    int steps = bills.size() + 2;
+                    progress.initProgress(steps);
+                    progress.setProgress(0, "Creating report ...");
+
+                    if (!belegeDir.exists() && !belegeDir.mkdirs()) {
+                        throw new IOException("Cannot create directory: " + belegeDir.getAbsolutePath());
+                    }
+
+                    progress.setProgress(1, "Saving spreadsheet ...");
+                    writeOds(odsFile, renderer, bills, exportDir);
+
+                    int step = 2;
+                    for (EventBill bill : bills) {
+                        progress.setProgress(step, "Copying bill: " + bill.exportName);
+                        writeBillFile(bill, belegeDir);
+                        step++;
+                    }
+
+                    progress.setProgress(steps, "Finished");
+                    return bills.size();
+                } catch (Exception ex) {
+                    failure = ex;
+                    return -1;
+                }
+            }
+
+            @Override
+            protected void done() {
+                progress.closeDialog();
+                if (failure != null) {
+                    JOptionPane.showMessageDialog(ReportEventPayments.this,
+                            String.format(MESSAGE_EXPORT_FAILED, failure.getMessage()),
+                            MESSAGE_EXPORT_WITH_BILLS_TITLE, JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                try {
+                    int count = get();
+                    JOptionPane.showMessageDialog(ReportEventPayments.this,
+                            String.format(MESSAGE_EXPORT_WITH_BILLS_FINISHED,
+                                    odsFile.getAbsolutePath(), count, belegeDir.getAbsolutePath()),
+                            MESSAGE_EXPORT_WITH_BILLS_TITLE, JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(ReportEventPayments.this,
+                            String.format(MESSAGE_EXPORT_FAILED, ex.getMessage()),
+                            MESSAGE_EXPORT_WITH_BILLS_TITLE, JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
+
+        progress.setVisible(true);
+    }
+
+    /**
+     * Collects all bills of the event: bills linked directly via
+     * {@code BILLS.event_idx} plus bills referenced by the members
+     * ({@code bill_idx} / {@code registration_bill_idx}). Canceled bills are skipped.
+     */
+    private List<EventBill> collectEventBills(DBEvent event) throws Exception {
+        DBEventMember emProto = new DBEventMember();
+        List<DBEventMember> members = getTransaction().fetchTable2(emProto,
+                "where " + getTransaction().markColumn(emProto.bp_idx) + " = " + event.bp_idx.toString()
+                + " and " + getTransaction().markColumn(emProto.event_idx) + " = " + event.idx.toString());
+
+        Map<Integer, String> memberByBill = new LinkedHashMap<>();
+        Set<Integer> billIds = new TreeSet<>();
+        for (DBEventMember em : members) {
+            String memberName = ((em.forname != null ? em.forname.toString() : "")
+                    + " " + (em.name != null ? em.name.toString() : "")).trim();
+            Integer billIdx = em.bill_idx != null ? em.bill_idx.getValue() : null;
+            if (billIdx != null && billIdx > 0) {
+                billIds.add(billIdx);
+                memberByBill.putIfAbsent(billIdx, memberName);
+            }
+            Integer registrationBillIdx = em.registration_bill_idx != null
+                    ? em.registration_bill_idx.getValue() : null;
+            if (registrationBillIdx != null && registrationBillIdx > 0) {
+                billIds.add(registrationBillIdx);
+                memberByBill.putIfAbsent(registrationBillIdx, memberName);
+            }
+        }
+
+        DBBill billProto = new DBBill();
+        String where = "where " + getTransaction().markColumn(billProto.bp_idx) + " = " + event.bp_idx.toString()
+                + " and ( " + getTransaction().markColumn(billProto.event_idx) + " = " + event.idx.toString();
+        if (!billIds.isEmpty()) {
+            StringBuilder ids = new StringBuilder();
+            for (Integer id : billIds) {
+                if (ids.length() > 0) {
+                    ids.append(",");
+                }
+                ids.append(id);
+            }
+            where += " or " + getTransaction().markColumn(billProto.idx) + " in ( " + ids + " )";
+        }
+        where += " ) order by " + getTransaction().markColumn(billProto.billingnr);
+
+        List<DBBill> bills = getTransaction().fetchTable2(billProto, where);
+
+        List<EventBill> result = new ArrayList<>();
+        Set<String> usedNames = new HashSet<>();
+        Set<Integer> usedIds = new HashSet<>();
+        for (DBBill bill : bills) {
+            if (bill.isCanceled() || bill.idx.getValue() == null || !usedIds.add(bill.idx.getValue())) {
+                continue;
+            }
+            String exportName = buildExportName(bill, usedNames);
+            result.add(new EventBill(bill, exportName, memberByBill.getOrDefault(bill.idx.getValue(), "")));
+        }
+        return result;
+    }
+
+    /** Writes the document of one bill into the belege directory. */
+    private static void writeBillFile(EventBill ref, File belegeDir) throws Exception {
+        DBBill bill = ref.bill;
+        byte[] data;
+        if (ref.exportName.toLowerCase(Locale.ROOT).endsWith(".odt")
+                && bill.odt_data.value != null && bill.odt_data.value.length > 0) {
+            data = bill.odt_data.value;
+        } else {
+            data = bill.pdf_data.value;
+        }
+        if (data == null || data.length == 0) {
+            data = bill.odt_data.value;
+        }
+        if (data == null || data.length == 0) {
+            return; // no document stored for this bill
+        }
+
+        File target = new File(belegeDir, ref.exportName);
+        try (FileOutputStream fos = new FileOutputStream(target)) {
+            fos.write(data);
+        }
+    }
+
+    private static String buildExportName(DBBill bill, Set<String> usedNames) {
+        String base = bill.file_name != null ? bill.file_name.toString().trim() : "";
+        if (base.isEmpty()) {
+            String nr = bill.billingnr != null ? bill.billingnr.toString() : String.valueOf(bill.idx.getValue());
+            base = "Beleg-" + nr;
+        }
+        base = sanitizeFileName(base);
+        if (!hasFileExtension(base)) {
+            base = base + ".pdf";
+        }
+
+        String candidate = base;
+        for (int i = 2; !usedNames.add(candidate); i++) {
+            candidate = appendSuffix(base, "-" + i);
+        }
+        return candidate;
+    }
+
+    private static boolean hasFileExtension(String name) {
+        int dot = name.lastIndexOf('.');
+        return dot > 0 && dot < name.length() - 1;
+    }
+
+    private static String appendSuffix(String name, String suffix) {
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) {
+            return name.substring(0, dot) + suffix + name.substring(dot);
+        }
+        return name + suffix;
+    }
+
     private static void writeOds(File targetFile, ReportEventPaymentsRenderer renderer) throws Exception {
+        writeOds(targetFile, renderer, null, null);
+    }
+
+    private static void writeOds(File targetFile, ReportEventPaymentsRenderer renderer,
+            List<EventBill> bills, File exportDir) throws Exception {
         OdfSpreadsheetDocument spreadsheet = OdfSpreadsheetDocument.newSpreadsheetDocument();
         OdfTable table = spreadsheet.getSpreadsheetTables().get(0);
         table.setTableName("Event Payments");
@@ -251,9 +502,89 @@ public class ReportEventPayments extends BaseDialog {
 
         setColumnWidths(table);
 
+        if (bills != null) {
+            writeBillsSheet(spreadsheet, bills, exportDir != null ? exportDir : targetFile.getAbsoluteFile().getParentFile());
+        }
+
         try (FileOutputStream fos = new FileOutputStream(targetFile)) {
             spreadsheet.save(fos);
         }
+    }
+
+    /**
+     * Writes the detail sheet with all exported bills. The file names are
+     * links relative to the ODS document, so the complete export directory
+     * stays movable.
+     */
+    private static void writeBillsSheet(OdfSpreadsheetDocument spreadsheet, List<EventBill> bills, File odsDir) {
+        OdfTable table = OdfTable.newTable(spreadsheet);
+        table.setTableName("Bills");
+        final int columnCount = 6;
+        ensureColumns(table, columnCount);
+
+        OdfTableRow headerRow = table.getRowCount() > 0 ? table.getRowByIndex(0) : appendCleanRow(table);
+        String[] header = {"Billing Nr", "Type", "Direction", "Amount (€)", "Member", "File"};
+        for (int i = 0; i < header.length; i++) {
+            setText(headerRow, i, header[i], true, null);
+        }
+
+        // newTable() may leave more than one empty row behind; keep only the header row
+        while (table.getRowCount() > 1) {
+            table.removeRowsByIndex(1, 1);
+        }
+
+        for (EventBill bill : bills) {
+            OdfTableRow row = appendCleanRow(table);
+            setText(row, 0, bill.bill.billingnr != null ? bill.bill.billingnr.toString() : "", false, null);
+            setText(row, 1, bill.bill.isRegistration() ? "REGISTRATION" : "INVOICE", false, null);
+            setText(row, 2, bill.bill.direction != null ? bill.bill.direction.toString() : "", false, null);
+            setMoney(row, 3, bill.bill.amount != null && bill.bill.amount.getValue() != null
+                    ? bill.bill.amount.getValue() : 0.0, false, null);
+            setText(row, 4, bill.memberName, false, null);
+            setBillLink(row, 5, bill.exportName, odsDir);
+        }
+
+        String[] widths = {"3.0cm", "3.0cm", "3.0cm", "2.8cm", "5.0cm", "7.0cm"};
+        for (int i = 0; i < table.getColumnCount() && i < widths.length; i++) {
+            OdfTableColumn column = table.getColumnByIndex(i);
+            if (column != null) {
+                column.getOdfElement().setProperty(OdfTableColumnProperties.ColumnWidth, widths[i]);
+            }
+        }
+    }
+
+    /** Writes one hyperlink to a bill document into the given cell. */
+    private static void setBillLink(OdfTableRow row, int column, String exportName, File odsDir) {
+        OdfTableCell cell = row.getCellByIndex(column);
+        TableTableCellElementBase cellElement = cell.getOdfElement();
+        while (cellElement.getFirstChild() != null) {
+            cellElement.removeChild(cellElement.getFirstChild());
+        }
+        TextPElement paragraph = new TextPElement((OdfFileDom) cellElement.getOwnerDocument());
+        cellElement.appendChild(paragraph);
+        TextAElement link = paragraph.newTextAElement(toRelativeBillUri(odsDir, exportName), "simple");
+        link.setTextContent(exportName);
+    }
+
+    /**
+     * Relative href of a bill document inside the {@code belege} sub directory
+     * of the ODS document. LibreOffice resolves relative cell hyperlinks
+     * against the ODS file name as if it were a directory, therefore the path
+     * has to start with {@code ../}.
+     */
+    private static String toRelativeBillUri(File odsDir, String exportName) {
+        File belegeDir = new File(odsDir, BELEGE_DIR_NAME);
+        File billFile = new File(belegeDir, exportName);
+
+        String base = odsDir.getAbsoluteFile().toURI().toASCIIString();
+        if (!base.endsWith("/")) {
+            base = base + "/";
+        }
+
+        java.net.URI relative = java.net.URI.create(base).relativize(billFile.getAbsoluteFile().toURI());
+        String uri = relative.isAbsolute() ? billFile.getName() : relative.toASCIIString();
+
+        return "../" + uri;
     }
 
     private static String sanitizeFileName(String name) {
@@ -349,6 +680,7 @@ public class ReportEventPayments extends BaseDialog {
         jReport = new javax.swing.JTextPane();
         jPanelButtons = new javax.swing.JPanel();
         jBExportODS = new javax.swing.JButton();
+        jBExportODSWithBills = new javax.swing.JButton();
         jBPrint = new javax.swing.JButton();
         jBClose = new javax.swing.JButton();
 
@@ -426,6 +758,14 @@ public class ReportEventPayments extends BaseDialog {
             }
         });
 
+        jBExportODSWithBills.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileexport.gif"))); // NOI18N
+        jBExportODSWithBills.setText("Export ODS with Bills");
+        jBExportODSWithBills.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBExportODSWithBillsActionPerformed(evt);
+            }
+        });
+
         jBClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/at/redeye/FrameWork/base/resources/icons/fileclose.gif"))); // NOI18N
         jBClose.setText("Close");
         jBClose.addActionListener(new java.awt.event.ActionListener() {
@@ -444,6 +784,8 @@ public class ReportEventPayments extends BaseDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBExportODS)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBExportODSWithBills)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBClose)
                 .addContainerGap())
         );
@@ -454,6 +796,7 @@ public class ReportEventPayments extends BaseDialog {
                 .addGroup(jPanelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBPrint)
                     .addComponent(jBExportODS)
+                    .addComponent(jBExportODSWithBills)
                     .addComponent(jBClose))
                 .addContainerGap())
         );
@@ -501,6 +844,10 @@ public class ReportEventPayments extends BaseDialog {
         exportToODS();
     }//GEN-LAST:event_jBExportODSActionPerformed
 
+    private void jBExportODSWithBillsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBExportODSWithBillsActionPerformed
+        exportToODSWithBills();
+    }//GEN-LAST:event_jBExportODSWithBillsActionPerformed
+
     private void jBCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCloseActionPerformed
         if (canClose()) {
             close();
@@ -510,6 +857,7 @@ public class ReportEventPayments extends BaseDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClose;
     private javax.swing.JButton jBExportODS;
+    private javax.swing.JButton jBExportODSWithBills;
     private javax.swing.JButton jBGenerate;
     private javax.swing.JButton jBPrint;
     private javax.swing.JComboBox<DBEvent> jCBEvent;

@@ -43,7 +43,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -144,6 +146,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     // Key = DBBookingLine.idx
     HashMap<Integer,DBBookingLine2Events> bl2es = new HashMap<>();
     List<DBBookingLine2Events> bles_to_remove = new ArrayList<>();
+    /**
+     * Ids of the booking lines handed over by {@link #selectBookingLines(List)}.
+     * Used by the "only selected" filter checkbox.
+     */
+    private final Set<Integer> selection_filter_ids = new LinkedHashSet<>();
+    /** suppresses the automatic table refresh while the checkbox is set programmatically */
+    private boolean suppress_filter_refresh = false;
     TableManipulator tm;
     Audit audit;
     DBDateTime filter_date_from = new DBDateTime("dummy");
@@ -159,6 +168,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         
         initComponents();
             
+        jCOnlySelected.setText(MlM("only selected"));
+
         this.mainwin = mainwin;
         
         DBBookingLine bookinglines = new DBBookingLine();
@@ -375,6 +386,19 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                     sql.append(" and ").append(trans.markColumn(bookingline.assigned)).append(" = 1 ");
                 }                
                 
+                if( jCOnlySelected.isSelected() && !selection_filter_ids.isEmpty() ) {
+                    StringBuilder ids = new StringBuilder();
+                    
+                    for( Integer id : selection_filter_ids ) {
+                        if( ids.length() > 0 ) {
+                            ids.append(",");
+                        }
+                        ids.append(id);
+                    }
+                    
+                    sql.append(" and ").append(trans.markColumn(bookingline.idx)).append(" in ( ").append(ids).append(" ) ");
+                }
+                
                 logger.debug("JCFrom: " + jCFrom.isSelected() + " " + filter_date_from.getDateStr());
                 logger.debug("JCTill: " + jCTill.isSelected() + " " + filter_date_till.getDateStr());
                 
@@ -462,6 +486,15 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         }
 
         try {
+            selection_filter_ids.clear();
+            selection_filter_ids.addAll(booking_line_ids);
+
+            // automatically enable the "only selected" filter, but refresh the table only once
+            suppress_filter_refresh = true;
+            jCOnlySelected.setSelected(true);
+            suppress_filter_refresh = false;
+            feed_table(true);
+
             jTContent.clearSelection();
 
             Integer first_view_row = null;
@@ -555,6 +588,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         jCIn = new javax.swing.JCheckBox();
         jCUnassigned = new javax.swing.JCheckBox();
         jCAssigned = new javax.swing.JCheckBox();
+        jCOnlySelected = new javax.swing.JCheckBox();
         jLInfo = new javax.swing.JLabel();
         jDateFrom = new at.redeye.Plugins.JDatePicker.JDatePicker();
         jDateTill = new at.redeye.Plugins.JDatePicker.JDatePicker();
@@ -934,6 +968,13 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
             }
         });
 
+        jCOnlySelected.setText("only selected");
+        jCOnlySelected.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCOnlySelectedActionPerformed(evt);
+            }
+        });
+
         jLInfo.setText(" ");
         jLInfo.setAutoscrolls(true);
 
@@ -986,6 +1027,8 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCUnassigned)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCOnlySelected)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCIn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCOut)
@@ -1018,6 +1061,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
                                 .addComponent(jCIn)
                                 .addComponent(jCUnassigned)
                                 .addComponent(jCAssigned)
+                                .addComponent(jCOnlySelected)
                                 .addComponent(jLInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(tableFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1774,6 +1818,14 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
         feed_table(true);
     }//GEN-LAST:event_jCAssignedActionPerformed
 
+    private void jCOnlySelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCOnlySelectedActionPerformed
+        if( suppress_filter_refresh ) {
+            return;
+        }
+
+        feed_table(true);
+    }//GEN-LAST:event_jCOnlySelectedActionPerformed
+
     private void jCFromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCFromActionPerformed
         jDateFrom.setEnabled( jCFrom.isSelected() );
         fix_date();
@@ -1882,6 +1934,7 @@ public class BookingLine extends BaseDialog implements NewSequenceValueInterface
     private javax.swing.JCheckBox jCFrom;
     private javax.swing.JCheckBox jCIn;
     private javax.swing.JComboBox<MemberDescr> jCMember;
+    private javax.swing.JCheckBox jCOnlySelected;
     private javax.swing.JCheckBox jCOut;
     private javax.swing.JCheckBox jCTill;
     private javax.swing.JCheckBox jCUnassigned;

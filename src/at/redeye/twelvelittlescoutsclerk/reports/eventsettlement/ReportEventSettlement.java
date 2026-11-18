@@ -99,6 +99,10 @@ public class ReportEventSettlement extends BaseDialog {
                 double total = renderer.getBookingLinesTotal();
                 double remaining = renderer.getRemaining();
                 int participants = renderer.getParticipantCount();
+                // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                int linesWithoutMemberCount = renderer.getLinesWithoutMemberCount();
+                double linesWithoutMemberTotal = renderer.getLinesWithoutMemberTotal();
+                // AI modification end
 
                 org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument spreadsheet =
                         org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument.newSpreadsheetDocument();
@@ -166,6 +170,16 @@ public class ReportEventSettlement extends BaseDialog {
                 remainingRow.getCellByIndex(0).setStringValue("Remaining (Budget + Total)");
                 remainingRow.getCellByIndex(1).setDoubleValue(remaining);
 
+                // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                org.odftoolkit.odfdom.doc.table.OdfTableRow noMemberCountRow = summaryTable.appendRow();
+                noMemberCountRow.getCellByIndex(0).setStringValue("Booking lines without member (count)");
+                noMemberCountRow.getCellByIndex(1).setDoubleValue((double) linesWithoutMemberCount);
+
+                org.odftoolkit.odfdom.doc.table.OdfTableRow noMemberSumRow = summaryTable.appendRow();
+                noMemberSumRow.getCellByIndex(0).setStringValue("Booking lines without member (sum)");
+                noMemberSumRow.getCellByIndex(1).setDoubleValue(linesWithoutMemberTotal);
+                // AI modification end
+
                 autoFitColumnWidths(summaryTable);
 
                 // ===== SHEET 2: RAW summary (no formatting) =====
@@ -188,6 +202,10 @@ public class ReportEventSettlement extends BaseDialog {
                 appendKV(rawTable, "Remaining (Budget + Total)", remaining);
                 appendKV(rawTable, "Participants", participants);
                 appendKV(rawTable, "Fee per person", fee);
+                // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                appendKV(rawTable, "Booking lines without member (count)", linesWithoutMemberCount);
+                appendKV(rawTable, "Booking lines without member (sum)", linesWithoutMemberTotal);
+                // AI modification end
 
                 autoFitColumnWidths(rawTable);
 
@@ -206,6 +224,10 @@ public class ReportEventSettlement extends BaseDialog {
                 appendKV(summary2, "Budget (planned)", planned);
                 appendKV(summary2, "Total from booking lines", total);
                 appendKV(summary2, "Remaining (Budget + Total)", remaining);
+                // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                appendKV(summary2, "Booking lines without member (count)", linesWithoutMemberCount);
+                appendKV(summary2, "Booking lines without member (sum)", linesWithoutMemberTotal);
+                // AI modification end
 
                 autoFitColumnWidths(summary2);
 
@@ -218,14 +240,19 @@ public class ReportEventSettlement extends BaseDialog {
                 blHeader.getCellByIndex(0).setStringValue("Date");
                 blHeader.getCellByIndex(1).setStringValue("Account Class");
                 blHeader.getCellByIndex(2).setStringValue("Description");
-                blHeader.getCellByIndex(3).setStringValue("Amount (€)");
+                blHeader.getCellByIndex(3).setStringValue("Member");
+                blHeader.getCellByIndex(4).setStringValue("Amount (€)");
 
                 for (DBBookingLine bl : renderer.getBookingLines()) {
                     org.odftoolkit.odfdom.doc.table.OdfTableRow row = linesTable.appendRow();
                     row.getCellByIndex(0).setStringValue(bl.date != null && bl.date.getValue() != null ? bl.date.getDateStr() : "");
                     row.getCellByIndex(1).setStringValue(accountClassOf(bl));
                     row.getCellByIndex(2).setStringValue(descriptionOf(bl));
-                    row.getCellByIndex(3).setDoubleValue(bl.amount != null && bl.amount.getValue() != null
+                    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+                    String member = renderer.getMemberOf(bl);
+                    row.getCellByIndex(3).setStringValue(member != null ? member : "(no member)");
+                    // AI modification end
+                    row.getCellByIndex(4).setDoubleValue(bl.amount != null && bl.amount.getValue() != null
                             ? bl.amount.getValue() : 0.0);
                 }
 

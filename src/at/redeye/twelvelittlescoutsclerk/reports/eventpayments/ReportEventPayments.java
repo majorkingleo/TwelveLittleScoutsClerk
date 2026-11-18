@@ -16,6 +16,7 @@ import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.transaction.Transaction.FetchOption;
 import at.redeye.twelvelittlescoutsclerk.MainWin;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBill;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import at.redeye.twelvelittlescoutsclerk.reports.FixNimbusBackgroundColor;
@@ -516,6 +517,41 @@ public class ReportEventPayments extends BaseDialog {
         setMoney(totalRow, 5, renderer.getTotalPaidCash(), true, null);
         setMoney(totalRow, 6, renderer.getTotalPaid(), true, null);
         setMoney(totalRow, 7, renderer.getTotalOpen(), true, null);
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        appendCleanRow(table); // spacer
+
+        OdfTableRow noMemberTitle = appendCleanRow(table);
+        setText(noMemberTitle, 0, "Booking lines without member assignment", true, null);
+
+        OdfTableRow noMemberInfo = appendCleanRow(table);
+        setText(noMemberInfo, 0, "Booking lines", false, null);
+        setText(noMemberInfo, 1, String.valueOf(renderer.getLinesWithoutMemberCount()), false, null);
+        setText(noMemberInfo, 2, "Sum (€)", false, null);
+        setMoney(noMemberInfo, 3, renderer.getLinesWithoutMemberTotal(), false, null);
+
+        OdfTableRow noMemberHeader = appendCleanRow(table);
+        String[] noMemberColumns = {"Date", "Account Class", "Description", "Amount (€)"};
+        for (int i = 0; i < noMemberColumns.length; i++) {
+            setText(noMemberHeader, i, noMemberColumns[i], true, null);
+        }
+
+        for (DBBookingLine bl : renderer.getLinesWithoutMember()) {
+            OdfTableRow dataRow = appendCleanRow(table);
+            setText(dataRow, 0, bl.date != null && bl.date.getValue() != null ? bl.date.getDateStr() : "", false, null);
+            setText(dataRow, 1, bl.account_class != null && bl.account_class.getValue() != null
+                    ? bl.account_class.getValue() : "", false, null);
+            setText(dataRow, 2, bl.comment != null && bl.comment.getValue() != null
+                    && !bl.comment.getValue().trim().isEmpty() ? bl.comment.getValue()
+                    : bl.line != null && bl.line.getValue() != null ? bl.line.getValue() : "", false, null);
+            setMoney(dataRow, 3, bl.amount != null && bl.amount.getValue() != null
+                    ? bl.amount.getValue() : 0.0, false, null);
+        }
+
+        OdfTableRow noMemberTotal = appendCleanRow(table);
+        setText(noMemberTotal, 0, "Total without member", true, null);
+        setMoney(noMemberTotal, 3, renderer.getLinesWithoutMemberTotal(), true, null);
+        // AI modification end
 
         setColumnWidths(table);
 

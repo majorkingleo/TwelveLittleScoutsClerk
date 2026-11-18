@@ -16,12 +16,18 @@ import at.redeye.FrameWork.base.bindtypes.DBString;
 import at.redeye.FrameWork.base.reports.BaseReportRenderer;
 import at.redeye.FrameWork.base.reports.ReportRenderer;
 import at.redeye.FrameWork.base.transaction.Transaction;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine;
+import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBookingLine2Events;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBBillingPeriod;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEvent;
 import at.redeye.twelvelittlescoutsclerk.bindtypes.DBEventMember;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
+import org.apache.log4j.Logger;
 
 // AI-generated start (GitHub Copilot / Claude Sonnet 4.6)
 public class ReportEventPaymentsRenderer extends BaseReportRenderer implements ReportRenderer {
@@ -97,6 +103,12 @@ public class ReportEventPaymentsRenderer extends BaseReportRenderer implements R
     private String eventName = "";
     private double feePerPerson = 0.0;
 
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    private static final Logger logger = Logger.getLogger(ReportEventPaymentsRenderer.class.getName());
+    private final List<DBBookingLine> linesWithoutMember = new ArrayList<>();
+    private double linesWithoutMemberTotal = 0.0;
+    // AI modification end
+
     public ReportEventPaymentsRenderer(Transaction trans, DBBillingPeriod bp, DBEvent event) {
         this.trans = trans;
         this.bp = bp;
@@ -154,7 +166,98 @@ public class ReportEventPaymentsRenderer extends BaseReportRenderer implements R
                     value(em.paid),
                     value(em.paid_cash)));
         }
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        collectLinesWithoutMember(members);
+        // AI modification end
     }
+
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    /**
+     * Booking lines of the event that belong to no member of the event.
+     * Covers event-level lines (member_idx NULL) and lines whose member is not
+     * an EVENTMEMBERS row of this event (legacy/imported data).
+     */
+    private void collectLinesWithoutMember(List<DBEventMember> members) throws Exception {
+        linesWithoutMember.clear();
+        linesWithoutMemberTotal = 0.0;
+
+        Set<Integer> memberIdxs = new HashSet<>();
+        for (DBEventMember em : members) {
+            if (em.member_idx != null && em.member_idx.getValue() != null) {
+                memberIdxs.add(em.member_idx.getValue());
+            }
+        }
+
+        DBBookingLine2Events linkProto = new DBBookingLine2Events();
+        List<DBBookingLine2Events> links = trans.fetchTable2(linkProto,
+                "where " + trans.markColumn(linkProto.bp_idx) + " = " + event.bp_idx.toString()
+                + " and " + trans.markColumn(linkProto.event_idx) + " = " + event.idx.toString());
+
+        Set<Integer> blIds = new TreeSet<>();
+        for (DBBookingLine2Events link : links) {
+            Integer memberIdx = link.member_idx != null ? link.member_idx.getValue() : null;
+            boolean hasMember = memberIdx != null && memberIdx > 0 && memberIdxs.contains(memberIdx);
+
+            logger.info("Event payments link: bl_idx=" + link.bl_idx
+                    + " member_idx=" + memberIdx
+                    + " member_name=\"" + link.member_name + "\""
+                    + " counted_as_member=" + hasMember);
+
+            if (!hasMember && link.bl_idx != null && link.bl_idx.getValue() != null
+                    && link.bl_idx.getValue() > 0) {
+                blIds.add(link.bl_idx.getValue());
+            }
+        }
+
+        if (!blIds.isEmpty()) {
+            StringBuilder ids = new StringBuilder();
+            for (Integer id : blIds) {
+                if (ids.length() > 0) {
+                    ids.append(",");
+                }
+                ids.append(id);
+            }
+            DBBookingLine blProto = new DBBookingLine();
+            linesWithoutMember.addAll(trans.fetchTable2(blProto,
+                    "where " + trans.markColumn(blProto.bp_idx) + " = " + event.bp_idx.toString()
+                    + " and " + trans.markColumn(blProto.idx) + " in ( " + ids + " )"
+                    + " order by " + trans.markColumn(blProto.date)
+                    + ", " + trans.markColumn(blProto.idx)));
+        }
+
+        for (DBBookingLine bl : linesWithoutMember) {
+            linesWithoutMemberTotal += amountOf(bl);
+        }
+
+        logger.info("Event payments result: members=" + rows.size()
+                + " lines_without_member=" + linesWithoutMember.size()
+                + " lines_without_member_total=" + linesWithoutMemberTotal);
+    }
+
+    private static double amountOf(DBBookingLine bl) {
+        return bl.amount != null && bl.amount.getValue() != null ? bl.amount.getValue() : 0.0;
+    }
+
+    private static String accountClassOf(DBBookingLine bl) {
+        return bl.account_class != null && bl.account_class.getValue() != null
+                && !bl.account_class.getValue().trim().isEmpty()
+                ? bl.account_class.getValue() : "(unassigned)";
+    }
+
+    private static String descriptionOf(DBBookingLine bl) {
+        if (bl.comment != null && bl.comment.getValue() != null
+                && !bl.comment.getValue().trim().isEmpty()) {
+            return bl.comment.getValue();
+        }
+        if (bl.line != null && bl.line.getValue() != null
+                && !bl.line.getValue().trim().isEmpty()) {
+            return bl.line.getValue();
+        }
+        return bl.reference != null && bl.reference.getValue() != null
+                ? bl.reference.getValue() : "";
+    }
+    // AI modification end
 
     private String doRender() {
         clear();
@@ -209,6 +312,30 @@ public class ReportEventPaymentsRenderer extends BaseReportRenderer implements R
                 .append("</tr>");
 
         text.append("</table>");
+
+        // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+        text.append("<h3>Booking lines without member assignment</h3>");
+        text.append("<p>").append(linesWithoutMember.size())
+                .append(" booking line(s), sum ").append(money(linesWithoutMemberTotal)).append(" €</p>");
+
+        if (linesWithoutMember.isEmpty()) {
+            text.append("<p>none</p>");
+        } else {
+            text.append("<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;'>");
+            text.append("<tr><th align='left'>Date</th><th align='left'>Account Class</th>")
+                    .append("<th align='left'>Description</th><th align='right'>Amount (€)</th></tr>");
+            for (DBBookingLine bl : linesWithoutMember) {
+                String dateStr = bl.date != null && bl.date.getValue() != null ? bl.date.getDateStr() : "";
+                text.append("<tr><td>").append(escapeHtml(dateStr)).append("</td>")
+                        .append("<td>").append(escapeHtml(accountClassOf(bl))).append("</td>")
+                        .append("<td>").append(escapeHtml(descriptionOf(bl))).append("</td>")
+                        .append("<td align='right'>").append(money(amountOf(bl))).append("</td></tr>");
+            }
+            text.append("<tr style='font-weight:bold'><td colspan='3'>Total without member</td>")
+                    .append("<td align='right'>").append(money(linesWithoutMemberTotal)).append("</td></tr>");
+            text.append("</table>");
+        }
+        // AI modification end
 
         html_stop();
         return text.toString();
@@ -295,5 +422,20 @@ public class ReportEventPaymentsRenderer extends BaseReportRenderer implements R
         }
         return sum;
     }
+
+    // AI modification start (GitHub Copilot / Claude Sonnet 4.6)
+    /** Booking lines of this event not assigned to a member of the event. */
+    public List<DBBookingLine> getLinesWithoutMember() {
+        return new ArrayList<>(linesWithoutMember);
+    }
+
+    public int getLinesWithoutMemberCount() {
+        return linesWithoutMember.size();
+    }
+
+    public double getLinesWithoutMemberTotal() {
+        return linesWithoutMemberTotal;
+    }
+    // AI modification end
 }
 // AI-generated end
